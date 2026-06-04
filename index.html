@@ -243,9 +243,29 @@
   .pdfdoc{border:1px solid var(--line);border-radius:0 0 13px 13px;background:var(--paper-2);
     box-shadow:0 10px 26px -16px rgba(27,36,34,.4);max-height:82vh;overflow:auto;
     padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;}
-  .pdfpage{width:100%;max-width:820px;height:auto;display:block;background:#fff;border:1px solid var(--line);
+  .pdfpage{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);
     border-radius:6px;box-shadow:0 6px 18px -10px rgba(27,36,34,.32);}
   .pdfloading{padding:46px 16px;text-align:center;color:var(--muted);font-style:italic;}
+  /* ---- plein écran "dans le site" ---- */
+  .pdffs{position:fixed;inset:0;z-index:9999;background:#23211c;overflow:auto;cursor:default;}
+  .pdffs-doc{display:flex;flex-direction:column;align-items:center;gap:18px;padding:34px 16px 70px;}
+  .pdffs-doc .pdfpage{max-width:1100px;box-shadow:0 14px 40px -18px rgba(0,0,0,.7);}
+  .pdffs-doc .pdfloading{color:#cfc9ba;}
+  .pdffs-close{position:fixed;top:16px;right:18px;z-index:10000;width:48px;height:48px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.16);color:#fff;font-size:22px;line-height:1;
+    cursor:pointer;display:grid;place-items:center;opacity:0;transition:opacity .25s ease, background .15s;
+    backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.4);}
+  .pdffs-close:hover{background:var(--red);border-color:var(--red);}
+  .pdffs.show-close .pdffs-close{opacity:1;}
+  /* ---- barre latérale repliable (desktop) ---- */
+  #deskNavOpen{display:none;position:fixed;top:14px;left:14px;z-index:60;width:42px;height:42px;border-radius:11px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:18px;
+    place-items:center;box-shadow:0 8px 20px -12px rgba(27,36,34,.45);}
+  #deskNavOpen:hover{border-color:var(--teal);color:var(--teal);}
+  @media(min-width:861px){
+    body.nav-collapsed .sidebar{display:none;}
+    body.nav-collapsed #deskNavOpen{display:grid;}
+  }
   .docnote{color:var(--muted);font-size:13px;margin-top:8px;}
   .docnote a{color:var(--teal);}
   .copybox{margin-top:26px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;}
@@ -305,6 +325,7 @@
     <div class="side-foot">
       <span>Progression&nbsp;: <span class="prog-num" id="progTxt">0 / 13</span> révisées</span>
       <div class="track"><span id="progBar"></span></div>
+      <button class="reset-btn" id="collapseBtn" onclick="toggleDeskNav()">‹ Replier le menu</button>
       <button class="reset-btn" id="resetBtn" onclick="resetProgress()">↺ Réinitialiser ma progression</button>
     </div>
   </aside>
@@ -317,6 +338,11 @@
     </div>
     <div class="content" id="content"></div>
   </main>
+</div>
+<button id="deskNavOpen" onclick="toggleDeskNav()" title="Afficher le menu" aria-label="Afficher le menu">☰</button>
+<div id="pdfFs" class="pdffs" style="display:none" onmousemove="fsShowClose()">
+  <button id="pdfFsClose" class="pdffs-close" onclick="closeFs()" title="Fermer (Échap)" aria-label="Fermer">✕</button>
+  <div id="pdffsdoc" class="pdffs-doc"></div>
 </div>
 
 <script>
@@ -1441,10 +1467,10 @@ const MOCK_EXAM = '1_Sources_du_cours/mock-exam.pdf';
 const MOCK_SOL  = '1_Sources_du_cours/mock-exam-solutions.pdf';
 function bestGrade(n){ const g=P.weekExamGrade[n]; return (g===0||g)?g:null; }
 if(window.pdfjsLib){ try{ pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.js'; }catch(e){} }
-function pdfEmbed(src, id){ id=id||'pdfmain'; return `<div class="docbar"><span class="dn">📄 ${src.split('/').pop()}</span><span class="acts"><a href="${src}" target="_blank">Plein écran ↗</a><a href="${src}" download>Télécharger ⬇</a></span></div>
+function pdfEmbed(src, id){ id=id||'pdfmain'; return `<div class="docbar"><span class="dn">📄 ${src.split('/').pop()}</span><span class="acts"><a href="#" onclick="openFs('${src}');return false;">Plein écran ⤢</a><a href="${src}" download>Télécharger ⬇</a></span></div>
     <div class="pdfdoc" id="${id}"><div class="pdfloading">Chargement du document…</div></div>
     <div class="docnote">PDF non affiché ? <a href="${src}" target="_blank">Ouvre-le dans un onglet</a> (ou lance le site via un serveur local / GitHub Pages).</div>`; }
-async function renderPdfInto(id, url){
+async function renderPdfInto(id, url, maxW){
   const el = document.getElementById(id);
   if(!el) return;
   if(!window.pdfjsLib){ el.innerHTML = `<div class="pdfloading">Lecteur PDF indisponible. <a href="${url}" target="_blank">Ouvrir le PDF</a>.</div>`; return; }
@@ -1454,7 +1480,7 @@ async function renderPdfInto(id, url){
     const pdf = await pdfjsLib.getDocument(url).promise;
     el.innerHTML = '';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cw  = Math.min((el.clientWidth || 780) - 32, 820);
+    const cw  = Math.min((el.clientWidth || 780) - 32, maxW || 820);
     for(let p=1; p<=pdf.numPages; p++){
       const page = await pdf.getPage(p);
       const v1 = page.getViewport({scale:1});
@@ -1496,6 +1522,18 @@ function gradeButtons(current, jsPrefix){ let b=''; for(let g=0;g<=6;g++){ b+=`<
 function setWeekGrade(n,g,btn){ P.weekExamGrade[n]=g; store.save(); document.querySelectorAll('#gradebar .gradebtn').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); updateSidebar({type:'week',n}); }
 function setExamGrade(g,btn){ P.examGrade=g; store.save(); document.querySelectorAll('#gradebar .gradebtn').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); }
 function showSol(src){ const w=$("solWrap"); if(w) w.style.display='block'; const b=$("solBtn"); if(b) b.style.display='none'; renderPdfInto('pdfsol', src); }
+
+/* --- plein écran « dans le site » (overlay PDF.js, croix qui apparaît à la souris, Échap pour sortir) --- */
+let fsTimer=null;
+function openFs(url){ const fs=$("pdfFs"); if(!fs) return; fs.style.display='block'; document.body.style.overflow='hidden';
+  const doc=$("pdffsdoc"); if(doc) doc.dataset.loaded=''; renderPdfInto('pdffsdoc', url, 1100); fsShowClose(); }
+function closeFs(){ const fs=$("pdfFs"); if(!fs) return; fs.style.display='none'; document.body.style.overflow=''; const doc=$("pdffsdoc"); if(doc){ doc.innerHTML=''; doc.dataset.loaded=''; } }
+function fsShowClose(){ const fs=$("pdfFs"); if(!fs) return; fs.classList.add('show-close'); clearTimeout(fsTimer); fsTimer=setTimeout(()=>{ const x=$("pdfFs"); if(x) x.classList.remove('show-close'); }, 2200); }
+
+/* --- repli de la barre latérale (desktop), mémorisé --- */
+function applyDeskNav(){ let off=false; try{ off=localStorage.getItem('ts-nav')==='off'; }catch(e){} document.body.classList.toggle('nav-collapsed', off); }
+function toggleDeskNav(){ const willCollapse=!document.body.classList.contains('nav-collapsed'); try{ localStorage.setItem('ts-nav', willCollapse?'off':'on'); }catch(e){} applyDeskNav(); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ const fs=$("pdfFs"); if(fs && fs.style.display==='block') closeFs(); } });
 
 /* ===== SIDEBAR ===== */
 function buildSidebar(){
@@ -1840,6 +1878,7 @@ function resetProgress(){
   }
 }
 window.addEventListener('hashchange', route);
+applyDeskNav();
 buildSidebar();
 route();
 </script>
