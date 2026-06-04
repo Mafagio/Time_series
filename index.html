@@ -1465,9 +1465,11 @@ const examPath   = n => `Examens_par_semaine/Exam_Week_${pad2(n)}.pdf`;
 const solPath    = n => `Examens_par_semaine/Exam_Week_${pad2(n)}_Solutions.pdf`;
 const MOCK_EXAM = '1_Sources_du_cours/mock-exam.pdf';
 const MOCK_SOL  = '1_Sources_du_cours/mock-exam-solutions.pdf';
+const ASSET_V = '4';                       // anti-cache : à incrémenter à chaque mise à jour des PDF
+const bust = u => u + (u.indexOf('?')<0 ? '?' : '&') + 'v=' + ASSET_V;
 function bestGrade(n){ const g=P.weekExamGrade[n]; return (g===0||g)?g:null; }
 if(window.pdfjsLib){ try{ pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.js'; }catch(e){} }
-function pdfEmbed(src, id){ id=id||'pdfmain'; return `<div class="docbar"><span class="dn">📄 ${src.split('/').pop()}</span><span class="acts"><a href="#" onclick="openFs('${src}');return false;">Plein écran ⤢</a><a href="${src}" download>Télécharger ⬇</a></span></div>
+function pdfEmbed(src, id){ id=id||'pdfmain'; return `<div class="docbar"><span class="dn">📄 ${src.split('/').pop()}</span><span class="acts"><a href="#" onclick="openFs('${src}');return false;">Plein écran ⤢</a><a href="${bust(src)}" download="${src.split('/').pop()}">Télécharger ⬇</a></span></div>
     <div class="pdfdoc" id="${id}"><div class="pdfloading">Chargement du document…</div></div>
     <div class="docnote">PDF non affiché ? <a href="${src}" target="_blank">Ouvre-le dans un onglet</a> (ou lance le site via un serveur local / GitHub Pages).</div>`; }
 async function renderPdfInto(id, url, maxW){
@@ -1477,7 +1479,7 @@ async function renderPdfInto(id, url, maxW){
   if(el.dataset.loaded===url) return;                 // déjà rendu pour cette vue
   el.dataset.loaded = url; el.innerHTML = '<div class="pdfloading">Chargement du document…</div>';
   try{
-    const pdf = await pdfjsLib.getDocument(url).promise;
+    const pdf = await pdfjsLib.getDocument(bust(url)).promise;
     el.innerHTML = '';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cw  = Math.min((el.clientWidth || 780) - 32, maxW || 820);
