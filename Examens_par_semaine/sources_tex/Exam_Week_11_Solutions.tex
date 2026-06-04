@@ -10,6 +10,16 @@
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Residual diagnostics and the danger of $R^2$.)} A correctly specified, stationary AR$(1)$ model $X_t=\phi X_{t-1}+\eps_t$ ($\abs\phi<1$) is fitted with the true parameters known. Recall that the one-step fitted value is $\hat X_t=\phi X_{t-1}$, the residual is $e_t=X_t-\hat X_t$, and that for white-noise residuals each sample residual autocorrelation $\hat r_\tau$ is approximately $\mathcal N(0,1/n)$.
+
+\textbf{(a)} Show that the residual equals the innovation, $e_t=\eps_t$, and use this to state which of the four standard residual checks (constant zero mean, constant variance, no autocorrelation, Gaussianity) the residuals must pass and why. \hfill(1.5 pts)
+
+\textbf{(b)} For $n=400$ observations, give the numerical pointwise $95\%$ correlogram band $(-1.96/\sqrt n,\,1.96/\sqrt n)$ for the residual ACF, and explain in one sentence why eyeballing this band lag-by-lag is \emph{not} a substitute for a portmanteau test. \hfill(1.5 pts)
+
+\textbf{(c)} Show that for an AR$(1)$ the population $R^2=1-s_e^2/s_y^2$ equals $\phi^2$, where $s_e^2$ is the residual variance and $s_y^2=\Var(X_t)$. Evaluate it at $\phi=0.6$, and explain why a ``low'' value here is no indictment of the model and why a higher $R^2$ obtained by fitting an AR$(4)$ to the same data is no endorsement. \hfill(2 pts)
+\statementend
+
 \textbf{(a)} Substitute the model equation into the residual: with $\hat X_t=\phi X_{t-1}$,
 \[
 e_t=X_t-\hat X_t=\bigl(\phi X_{t-1}+\eps_t\bigr)-\phi X_{t-1}=\eps_t .
@@ -38,6 +48,26 @@ At $\phi=0.6$: $\boxed{R^2=0.6^2=0.36}$. A value of $0.36$ ``looks low'' but it 
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Information criteria: AIC, AICc, BIC.)} For a model with $k$ estimated parameters fitted to $n$ observations with maximised likelihood $L$,
+\[
+\AIC=-2\ln L+2k,\qquad
+\AICc=-2\ln L+2k\,\frac{n}{n-k-1},\qquad
+\BIC=-2\ln L+k\ln n,
+\]
+and for an ARMA$(p,q)$ the parameter count is $k=p+q+1$. Smaller is better for all three.
+
+\textbf{(a)} Prove the identity
+\[
+\AICc-\AIC=\frac{2k(k+1)}{n-k-1},
+\]
+and state precisely the conditions on $n$ and $k$ under which AIC and AICc become approximately equivalent. \hfill(1.5 pts)
+
+\textbf{(b)} Consider a mean-zero ARMA$(p,q)$ model in which exactly $m$ of the $p+q$ AR and MA coefficients are \emph{known in advance and fixed to zero} (only the remaining ones, and the innovation variance, are estimated). Give the estimated-parameter count $k$ and write down the resulting AICc in closed form. \hfill(1.5 pts)
+
+\textbf{(c)} A full AR$(4)$ model ($k=p+q+1=5$) is compared with a constrained AR$(4)$ in which $m=2$ coefficients are fixed to zero, on $n=30$ observations. Compute the AICc complexity penalty $2k\,n/(n-k-1)$ for each model, and state by how much the constrained model's $-2\ln L$ is allowed to \emph{exceed} the full model's before AICc would prefer the full model. \hfill(2 pts)
+\statementend
+
 \textbf{(a)} Subtract the two criteria and put the bracket over a common denominator:
 \[
 \begin{aligned}
@@ -85,6 +115,20 @@ i.e.\ when $-2\ln L_{\text{constr}}-(-2\ln L_{\text{full}})>12.5-6.923=5.577$. S
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Portmanteau tests and the degrees of freedom.)} For $n=200$ observations a mean-zero ARMA$(2,1)$ model is fitted, and the residual sample autocorrelations at lags $1$ to $5$ are
+\[
+\hat r_1=0.05,\quad \hat r_2=-0.08,\quad \hat r_3=0.12,\quad \hat r_4=0.04,\quad \hat r_5=-0.10 .
+\]
+Recall the Box--Pierce statistic $Q_m^{\mathrm{BP}}=n\sum_{\tau=1}^m\hat r_\tau^2$ and the Ljung--Box statistic $Q_m=n(n+2)\sum_{\tau=1}^m\hat r_\tau^2/(n-\tau)$, both approximately $\chi^2_{m-p-q}$ under the null that the residuals are white up to lag $m$. Useful upper-$5\%$ quantiles: $\chi^2_{2,0.95}=5.991$, $\chi^2_{3,0.95}=7.815$, $\chi^2_{4,0.95}=9.488$.
+
+\textbf{(a)} Compute the Ljung--Box statistic $Q_5$ (show the term-by-term sum). \hfill(2 pts)
+
+\textbf{(b)} Test $H_0:\acf_1=\cdots=\acf_5=0$ at the $5\%$ level for the ARMA$(2,1)$ fit: state the degrees of freedom, the critical value, and the conclusion. \hfill(1.5 pts)
+
+\textbf{(c)} Suppose the \emph{same} residual autocorrelations had instead come from an AR$(1)$ fit. Redo the test (state the new df, critical value, conclusion) and explain, in one sentence, why getting the degrees of freedom right (df $=m-p-q$, not $m$) is essential. \hfill(1.5 pts)
+\statementend
+
 \textbf{(a)} With $n=200$ we have $n(n+2)=200\cdot202=40400$, and $m=5$. The Ljung--Box statistic is
 \[
 Q_5=40400\left(\frac{0.05^2}{199}+\frac{(-0.08)^2}{198}
@@ -124,6 +168,16 @@ and the critical value rises to $\chi^2_{4,0.95}=9.488$. Now $Q_5\approx7.17<9.4
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Revision of Week 10: forecasting a Gaussian AR(1).)} Let $X_t=\phi X_{t-1}+\eps_t$ be a causal Gaussian AR$(1)$ with $\eps_t\iid\mathcal N(0,\sigma^2)$, and recall that for a causal ARMA process the $h$-step forecast error variance is $\Var(e_n(h))=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$, where $\{\psi_j\}$ are the $\mathrm{MA}(\infty)$ weights.
+
+\textbf{(a)} Give the $\mathrm{MA}(\infty)$ weights $\psi_j$ of the AR$(1)$ and, using that the best linear predictor zeroes future innovations, show that $X^{\,n}_{n+h}=\phi^{\,h}X_n$. \hfill(1.5 pts)
+
+\textbf{(b)} Show that $\Var(e_n(h))=\sigma^2\dfrac{1-\phi^{2h}}{1-\phi^2}$ and verify that, as $h\to\infty$, both the point forecast and the error variance converge to their stationary limits (the mean $0$ and the marginal variance $\acvs_0$ respectively); identify $\acvs_0$. \hfill(1.5 pts)
+
+\textbf{(c)} Take $\phi=0.6$, $\sigma^2=4$ and the last observation $X_n=5$. Compute the two-step forecast $X^{\,n}_{n+2}$, its forecast-error variance, and a $95\%$ Gaussian prediction interval for $X_{n+2}$ (use $z_{0.975}=1.96$, $\sqrt{5.44}\approx2.332$). \hfill(2 pts)
+\statementend
+
 \textbf{(a)} Iterating the causal AR$(1)$ recursion gives the $\mathrm{MA}(\infty)$ representation $X_t=\sum_{j=0}^\infty\phi^{\,j}\eps_{t-j}$, so the weights are
 \[
 \psi_j=\phi^{\,j},\qquad j=0,1,2,\dots

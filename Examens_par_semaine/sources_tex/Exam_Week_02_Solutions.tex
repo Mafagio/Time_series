@@ -6,6 +6,18 @@
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(a)} State the definition of white noise and write down its ACVS $\acvs_\tau$ and ACF $\acf_\tau$. Explain in one sentence why ``uncorrelated'' is weaker than ``independent''. \hfill(1.5 pts)
+
+\textbf{(b)} Consider the MA(2) process
+\[
+X_t=\eps_t-\theta_1\eps_{t-1}-\theta_2\eps_{t-2}.
+\]
+Compute the mean and the autocovariance $\acvs_\tau$ for \emph{all} $\tau\in\Ints$, and write down $\acf_1$ and $\acf_2$. \hfill(2.5 pts)
+
+\textbf{(c)} For which lags $\tau$ does the ACVS of an MA($q$) vanish? State the general rule and explain how it is used to read off the order $q$ from an estimated ACF. \hfill(1 pt)
+\statementend
+
 \textbf{(a)} $\{\eps_t\}$ is \emph{white noise} if it is a sequence of mean-zero, finite-variance, \emph{uncorrelated} random variables: $\E[\eps_t]=0$, $\Var(\eps_t)=\sigma^2<\infty$, and $\Cov(\eps_s,\eps_t)=0$ for $s\ne t$. Its second-order structure is
 \[
 \acvs_\tau=\begin{cases}\sigma^2,&\tau=0,\\ 0,&\tau\ne0,\end{cases}
@@ -34,6 +46,22 @@ Dividing by $\acvs_0$,
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+Consider the AR(1) process $X_t=\phi X_{t-1}+\eps_t$.
+
+\textbf{(a)} State the condition on $\phi$ for the process to be causal, and explain it in terms of the root of the AR polynomial $\Phi(z)=1-\phi z$. \hfill(1 pt)
+
+\textbf{(b)} Assuming $\abs\phi<1$, derive the causal MA($\infty$) representation $X_t=\sum_{k\ge0}\psi_k\eps_{t-k}$ by iterating the recursion. Give the $\psi$-weights and verify $\sum_k\abs{\psi_k}<\infty$. \hfill(2 pts)
+
+\textbf{(c)} Using the representation in (b), show that
+\[
+\acvs_\tau=\frac{\sigma^2}{1-\phi^2}\,\phi^{\abs\tau},
+\qquad
+\acf_\tau=\phi^{\abs\tau}.
+\]
+Why does this ACF \emph{tail off} rather than cut off, and what does that say about identifying $p$ from the ACF? \hfill(2 pts)
+\statementend
+
 \textbf{(a)} The process is \emph{causal} iff $\abs\phi<1$. The AR polynomial $\Phi(z)=1-\phi z$ has its single root at $z=1/\phi$, and the causality condition ``root outside the unit circle'' reads $\abs{1/\phi}>1\iff\abs\phi<1$.
 
 \textbf{(b)} Iterating $X_t=\phi X_{t-1}+\eps_t$, with $X_{t-1}=\phi X_{t-2}+\eps_{t-1}$, etc.:
@@ -67,6 +95,21 @@ The ACF $\phi^{\abs\tau}$ decays geometrically but is never exactly $0$ for $\ab
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(a)} Consider the AR(2) process $X_t=\phi_1 X_{t-1}+\phi_2 X_{t-2}+\eps_t$ with $\phi_1=\tfrac12,\ \phi_2=-\tfrac14$. Using the causality conditions $\phi_1+\phi_2<1,\ \phi_2-\phi_1<1,\ \abs{\phi_2}<1$, verify that the process is causal. \hfill(1 pt)
+
+\textbf{(b)} From the Yule--Walker equations $\acf_\tau=\phi_1\acf_{\tau-1}+\phi_2\acf_{\tau-2}$ (with $\acf_0=1,\ \acf_{-1}=\acf_1$), compute $\acf_1,\acf_2,\acf_3$. \hfill(2 pts)
+
+\textbf{(c)} Using the Durbin--Levinson recursion
+\[
+\pacf_{1,1}=\acf_1,\qquad
+\pacf_{\tau,\tau}=\frac{\acf_\tau-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{\tau-j}}{1-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{j}},
+\qquad
+\pacf_{\tau,j}=\pacf_{\tau-1,j}-\pacf_{\tau,\tau}\,\pacf_{\tau-1,\tau-j},
+\]
+compute $\pacf_1,\pacf_2,\pacf_3$ from the values in (b). Read off the implied model order and state the ACF/PACF identification rule it illustrates. \hfill(2 pts)
+\statementend
+
 \textbf{(a)} With $\phi_1=\tfrac12,\ \phi_2=-\tfrac14$:
 \[
 \phi_1+\phi_2=\tfrac14<1,\qquad
@@ -121,6 +164,20 @@ The PACF cuts off after lag $2$ while the ACF in (b) tails off: this is the \tex
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+Consider the ARMA(1,1) process $X_t=\phi X_{t-1}+\eps_t+\vartheta\eps_{t-1}$ with $\phi=\tfrac12,\ \vartheta=\tfrac14$.
+
+\textbf{(a)} Write the model as $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ and check causality and invertibility from the roots of $\Phi(z)$ and $\Theta(z)$. \hfill(1.5 pts)
+
+\textbf{(b)} Derive the $\psi$-weights of the causal MA($\infty$) representation $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ by matching coefficients in $\Phi(\Bsh)\psi(\Bsh)=\Theta(\Bsh)$. Give $\psi_0,\psi_1,\psi_2$ and the general formula. \hfill(2 pts)
+
+\textbf{(c)} \emph{(Week 1 revision.)} Recall that a candidate sequence $\{\acvs_\tau\}$ is a valid ACVS only if it is positive semi-definite. Decide whether
+\[
+\acvs_0=1,\qquad \acvs_{\pm1}=0.7,\qquad \acvs_\tau=0\ (\abs\tau\ge2)
+\]
+is a valid ACVS of some stationary process, by computing the spectral density $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$ and checking its sign. \hfill(1.5 pts)
+\statementend
+
 \textbf{(a)} In backshift form $X_t-\phi X_{t-1}=\eps_t+\vartheta\eps_{t-1}$ reads $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ with
 \[
 \Phi(z)=1-\phi z=1-\tfrac12 z,

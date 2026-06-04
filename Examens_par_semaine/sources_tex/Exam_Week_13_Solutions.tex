@@ -8,6 +8,20 @@
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(LTI axioms, impulse response and transfer function.)} A digital filter $\filt$ maps an input sequence to an output sequence, $\{Y_t\}=\filt[\{X_t\}]$; we write a single output entry as $Y_u=\filt[\{X_t\}]_u$. Recall that $\filt$ is \emph{linear time-invariant} (LTI) if it is linear and commutes with the backshift, $\filt\Bsh=\Bsh\filt$. The impulse response is $h_m=\filt[\{\delta_{t,-m}\}]_0$ and, for $h\in\ell^1$, the transfer function is $H(f)=\sum_{m\in\Ints}h_m e^{-2\pi i fm}$.
+
+\textbf{(a)} Let $\filt_1,\filt_2$ be LTI filters and $\alpha\in\Comp$. Prove, directly from the two axioms, that the linear combination $\filt=\alpha\filt_1+\filt_2$ is again LTI (check linearity and time invariance separately). \hfill(2 pts)
+
+\textbf{(b)} Consider the concrete one-sided filter
+\[
+\filt[\{X_t\}]_u=X_u-\tfrac12\,X_{u-1},\qquad u\in\Ints .
+\]
+Identify its impulse response $\{h_m\}$, write $\filt$ as a polynomial $\Phi(\Bsh)$ in the backshift, and compute its transfer function $H(f)$ together with the squared gain $\abs{H(f)}^2$ in real form (no complex exponentials). \hfill(2 pts)
+
+\textbf{(c)} At which frequency $f\in[0,\tfrac12]$ is the squared gain $\abs{H(f)}^2$ of part (b) \emph{largest}, and at which is it \emph{smallest}? Give both extreme values of $\abs{H(f)}^2$, and state in one sentence whether this filter is low-pass or high-pass. \hfill(1 pt)
+\statementend
+
 \textbf{(a)} We verify the two axioms on a generic input, using only the linearity and time invariance of $\filt_1,\filt_2$.
 
 \emph{Linearity.} For sequences $\{X_t\},\{Y_t\}$ and $\beta\in\Comp$,
@@ -62,6 +76,24 @@ Since the gain is smallest at low frequency and largest at high frequency, the f
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Differencing, smoothing, and the output spectrum.)} Let $\{X_t\}$ be a zero-mean stationary process with $\acvs^{(X)}\in\ell^1$ and spectral density $\sdf_X(f)$. Recall the output-spectrum theorem: if $\{Y_t\}=\filt[\{X_t\}]$ for an LTI filter with transfer function $H$, then $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$.
+
+\textbf{(a)} Let $\{Y_t\}=(I-\Bsh)[\{X_t\}]$, i.e.\ $Y_t=X_t-X_{t-1}$. Explain briefly why $\{Y_t\}$ is stationary, then prove that
+\[
+\sdf_Y(f)=4\sin^2(\pi f)\,\sdf_X(f).
+\]
+(Show the algebraic step $\abs{1-e^{-2\pi i f}}^2=4\sin^2(\pi f)$.) \hfill(2 pts)
+
+\textbf{(b)} Now cascade the difference with the centred three-point average
+\[
+\filt_2[\{V_t\}]_u=\tfrac13\bigl(V_{u-1}+V_u+V_{u+1}\bigr),
+\]
+forming $\{W_t\}=\filt_2\bigl[(I-\Bsh)[\{X_t\}]\bigr]$. Using the fact that the transfer function of a cascade is the \emph{product} of the two transfer functions, express $\sdf_W(f)$ in terms of $\sdf_X(f)$, and name every frequency in $[0,\tfrac12]$ at which $\sdf_W$ is forced to vanish. \hfill(2 pts)
+
+\textbf{(c)} Specialise to white-noise input, $\sdf_X(f)\equiv\sigma^2$, and evaluate $\sdf_Y(\tfrac14)$ for the differenced series of part (a). \hfill(1 pt)
+\statementend
+
 \textbf{(a)} The filter $I-\Bsh$ has impulse response $h_0=1,\ h_1=-1$ (all others $0$), so $h\in\ell^1$. Filtering a stationary process by an $\ell^1$ filter yields a stationary process (filtering preserves stationarity), hence $\{Y_t\}$ is stationary and has a spectral density. Its transfer function is
 \[
 H(f)=h_0+h_1 e^{-2\pi i f}=1-e^{-2\pi i f}.
@@ -111,6 +143,25 @@ f=0\quad\text{and}\quad f=\tfrac13 .
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(ARMA spectral density and time reversibility of AR$(p)$.)} For a stationary $\mathrm{ARMA}(p,q)$ process $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ the spectral density is
+\[
+\sdf_X(f)=\sigma^2\,\frac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2},
+\qquad
+\Phi(z)=1-\sum_{j=1}^p\phi_j z^j,\quad \Theta(z)=1-\sum_{j=1}^q\theta_j z^j .
+\]
+
+\textbf{(a)} For the AR$(1)$ process $X_t=\phi X_{t-1}+\eps_t$ with $\abs\phi<1$, use the polynomial-filter lemma (the filter $\Phi(\Bsh)$ has transfer function $\Phi(e^{-2\pi i f})$) to derive
+\[
+\sdf_X(f)=\frac{\sigma^2}{1+\phi^2-2\phi\cos(2\pi f)} ,
+\]
+and state, with reason, where $\sdf_X$ peaks when $\phi>0$ and when $\phi<0$. \hfill(2 pts)
+
+\textbf{(b)} Let $\{X_t\}$ be a Gaussian AR$(p)$ process, $X_t=\sum_{j=1}^p\phi_j X_{t-j}+\eps_t$, and define the time-reversed series $Y_t=X_{-t}$. Show that $\acvs^{(Y)}_\tau=\acvs^{(X)}_\tau$ for all $\tau$, hence $\sdf_Y(f)=\sdf_X(f)$. \hfill(1.5 pts)
+
+\textbf{(c)} Put $\phi_0=-1$ and $\tilde\nu_t=\sum_{j=0}^p\phi_j Y_{t-j}=\Phi(\Bsh)[\{Y_t\}]_t$. Using parts (a)--(b), the polynomial-filter lemma and the output-spectrum theorem, prove that $\sdf_{\tilde\nu}(f)\equiv\sigma^2$, and conclude that $\{Y_t\}$ is an AR$(p)$ with the \emph{same} coefficients $\phi_1,\dots,\phi_p$ driven by white noise of variance $\sigma^2$. \hfill(1.5 pts)
+\statementend
+
 \textbf{(a)} Rewrite the AR$(1)$ as $\Phi(\Bsh)X_t=\eps_t$ with $\Phi(z)=1-\phi z$. By the polynomial-filter lemma the filter $\Phi(\Bsh)$ has transfer function $\Phi(e^{-2\pi i f})=1-\phi e^{-2\pi i f}$, so applying the output-spectrum theorem to $\Phi(\Bsh)[\{X_t\}]=\{\eps_t\}$ (with $\sdf_\eps\equiv\sigma^2$),
 \[
 \abs{1-\phi e^{-2\pi i f}}^2\,\sdf_X(f)=\sigma^2 .
@@ -157,6 +208,24 @@ Since $-\tilde\nu_t$ is again white noise of variance $\sigma^2$ with the same d
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Revision of Week 12: ARCH$(1)$ --- moments, white noise, and the ACF of the squares.)} Let $\{r_t\}$ be an $\mathrm{ARCH}(1)$ process,
+\[
+r_t=\sigma_t\eps_t,\qquad \sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2,
+\]
+with $\alpha_0>0$, $0\le\alpha_1<1$, and $\{\eps_t\}$ i.i.d.\ standard Gaussian (mean $0$, variance $1$) independent of $\mathcal F_{t-1}$.
+
+\textbf{(a)} Using that $\sigma_t$ is $\mathcal F_{t-1}$-measurable and iterated expectation, show $\E[r_t]=0$, and (assuming weak stationarity) that
+\[
+\Var(r_t)=\frac{\alpha_0}{1-\alpha_1}.
+\]
+\hfill(1.5 pts)
+
+\textbf{(b)} Prove that $\{r_t\}$ is serially uncorrelated, i.e.\ $\Cov(r_{t+\tau},r_t)=0$ for all $\tau\neq0$, by conditioning on $\mathcal F_{t+\tau-1}$. (This is what makes ARCH a \emph{white noise}.) \hfill(1.5 pts)
+
+\textbf{(c)} Assume in addition $0<\alpha_1<1/\sqrt3$ (so a finite fourth moment exists). Recall $\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau}$ and the kurtosis $\kappa=\dfrac{3(1-\alpha_1^2)}{1-3\alpha_1^2}$. Take $\alpha_1=\tfrac12$ and report the numerical value of $\Corr(r_{t+1}^2,r_t^2)$, of $\Corr(r_{t+2}^2,r_t^2)$, and of the kurtosis $\kappa$; state in one sentence why $\kappa>3$ means fat tails. \hfill(2 pts)
+\statementend
+
 \textbf{(a)} Since $\sigma_t$ is a function of the past (it depends on $r_{t-1}^2$), it is $\mathcal F_{t-1}$-measurable, while $\eps_t$ is independent of $\mathcal F_{t-1}$ with $\E[\eps_t]=0$. Hence
 \[
 \E[r_t\mid\mathcal F_{t-1}]=\E[\sigma_t\eps_t\mid\mathcal F_{t-1}]

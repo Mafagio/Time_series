@@ -6,6 +6,16 @@
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+Consider the signal-plus-noise model $X_t=\mu_t+Y_t$, where $\mu_t$ is a deterministic trend and $\{Y_t\}$ is a zero-mean stationary process with autocovariance sequence $\acvs_\tau$. Recall the difference operator $\diff=I-\Bsh$ and the seasonal difference $\diff_{(s)}=I-\Bsh^{s}$.
+
+\textbf{(a)} Take $\mu_t=a+bt$ (linear trend). Show that $\diff X_t=b+\diff Y_t$, and explain in one sentence why $\diff Y_t$ is stationary while $\{X_t\}$ in general is not. \hfill(1.5 pts)
+
+\textbf{(b)} Now let $\mu_t=a+bt+s_t$ with a \emph{quarterly} season $s_{t+4}=s_t$. Compute $\diff\diff_{(4)}X_t$ \emph{explicitly} as a linear combination of the $Y$'s, and verify that its mean is $0$ and that it is weakly stationary. \hfill(2 pts)
+
+\textbf{(c)} \emph{(A classic trap.)} The operators $\diff_{(s)}=I-\Bsh^{s}$ and $\diff^{s}=(I-\Bsh)^{s}$ are \emph{not} the same. For the deterministic sequence $\mu_t=t^{2}$, compute both $\diff^{2}\mu_t$ and $\diff_{(2)}\mu_t$ and state which kind of structure each operator removes. \hfill(1.5 pts)
+\statementend
+
 \textbf{(a)} With $\mu_t=a+bt$, linearity of $\diff=I-\Bsh$ gives
 \[
 \diff X_t=X_t-X_{t-1}
@@ -58,6 +68,21 @@ which is still linear (not annihilated). The seasonal operator $\diff_{(s)}$ rem
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+Let $\{X_t\}$ be the multiplicative seasonal process $\mathrm{SARMA}(0,1)\times(1,0)_{4}$ (quarterly data), defined by
+\[
+\bigl(1-\Phi\,\Bsh^{4}\bigr)X_t=\bigl(1-\theta\Bsh\bigr)\eps_t,
+\qquad \abs\Phi<1 ,
+\]
+a seasonal autoregression at lag $4$ driven by a non-seasonal $\mathrm{MA}(1)$ input.
+
+\textbf{(a)} Write the explicit one-step recursion for $X_t$, and by inverting the seasonal AR factor obtain the $\mathrm{MA}(\infty)$ weights $\psi_j$ in $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ (give a closed form for $\psi_{4l}$ and $\psi_{4l+1}$, and state that all other $\psi_j=0$). \hfill(2 pts)
+
+\textbf{(b)} Using the white-noise filter rule $\acvs_\tau=\sigma^{2}\sum_{j\ge0}\psi_j\psi_{j+\tau}$, compute $\acvs_0,\acvs_1,\acvs_3,\acvs_4,\acvs_5$ in closed form, and explain why the autocovariance lives in clusters around the seasonal lags $0,4,8,\dots$ \hfill(2 pts)
+
+\textbf{(c)} Evaluate the autocorrelations $\acf_1,\acf_3,\acf_4$ numerically for $\Phi=\tfrac12$, $\theta=\tfrac25$, $\sigma^{2}=1$. \hfill(1 pt)
+\statementend
+
 \textbf{(a)} Expand the seasonal AR factor $(1-\Phi\Bsh^{4})X_t=(1-\theta\Bsh)\eps_t$ and solve for $X_t$:
 \[
 \boxed{\,X_t=\Phi\,X_{t-4}+\eps_t-\theta\eps_{t-1}\,}
@@ -127,6 +152,20 @@ Then
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+This problem studies non-stationary integrated models.
+
+\textbf{(a)} \emph{(Random walk.)} Let $X_t=\sum_{j=1}^{t}\eps_j$ with $X_0=0$ (an $\mathrm{ARIMA}(0,1,0)$). Compute $\E[X_t]$, $\Var(X_t)$ and $\Cov(X_t,X_{t+\tau})$ for $\tau\ge0$, deduce that $\{X_t\}$ is \emph{not} stationary, and show $\diff X_t$ is white noise. Show also that $\Corr(X_t,X_{t+\tau})\to1$ as $t\to\infty$ with $\tau$ fixed. \hfill(2 pts)
+
+\textbf{(b)} \emph{(IMA$(1,1)$.)} Let $Y_t=Y_{t-1}+\eps_t-\theta\eps_{t-1}$ with $Y_0=0$. By unrolling the recursion, show that for $t\ge1$
+\[
+Y_t=\eps_t+(1-\theta)\sum_{j=1}^{t-1}\eps_j-\theta\eps_0 ,
+\]
+and hence compute $\Var(Y_t)$. For $\theta\neq1$, what is the order of growth of $\Var(Y_t)$ in $t$? \hfill(2 pts)
+
+\textbf{(c)} \emph{(Over-differencing.)} What happens to $Y_t$ and to $\Var(Y_t)$ at the boundary $\theta=1$? Show that $\diff Y_t$ is then a \emph{non-invertible} $\mathrm{MA}(1)$, and state the value of its lag-$1$ autocorrelation $\acf_1$. Why is this the warning signature of over-differencing? \hfill(1 pt)
+\statementend
+
 \textbf{(a)} Since $X_t=\sum_{j=1}^{t}\eps_j$ is a sum of mean-zero noise, $\E[X_t]=0$. As the $\eps_j$ are uncorrelated with variance $\sigma^{2}$,
 \[
 \Var(X_t)=\sum_{j=1}^{t}\Var(\eps_j)=t\,\sigma^{2}.
@@ -184,6 +223,19 @@ This is the warning signature of \textbf{over-differencing}: differencing a seri
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Revision of Week 4: Yule--Walker estimation.)} Let $\{X_t\}$ be a mean-zero causal $\mathrm{AR}(2)$ process $X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$ observed at $X_1,\dots,X_n$, with sample autocovariances
+\[
+\hat\acvs_0=10,\qquad \hat\acvs_1=5,\qquad \hat\acvs_2=1 .
+\]
+
+\textbf{(a)} Derive the Yule--Walker equations $\acvs_k=\phi_1\acvs_{k-1}+\phi_2\acvs_{k-2}$ ($k\ge1$) and the variance identity $\acvs_0=\phi_1\acvs_1+\phi_2\acvs_2+\sigma^{2}$, making clear where \emph{causality} is used. \hfill(2 pts)
+
+\textbf{(b)} Set up the $2\times2$ Yule--Walker system, invert it \emph{by hand}, and report the estimates $\hat\phi_1,\hat\phi_2$ and $\hat\sigma^{2}$. \hfill(2 pts)
+
+\textbf{(c)} Verify that the fitted model is causal (stationary), e.g.\ by locating the roots of $\hat\Phi(z)$ or via the $\mathrm{AR}(2)$ stationarity triangle. \hfill(1 pt)
+\statementend
+
 \textbf{(a)} Multiply the model $X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$ by $X_{t-k}$ and take expectations. The process is causal, so $X_{t-k}$ is a one-sided combination of $\eps_{t-k},\eps_{t-k-1},\dots$; hence for $k\ge1$ the noise term is uncorrelated with the past, $\E[\eps_tX_{t-k}]=0$. With mean zero, $\E[X_{t-j}X_{t-k}]=\acvs_{k-j}$, giving for $k\ge1$
 \[
 \acvs_k=\phi_1\acvs_{k-1}+\phi_2\acvs_{k-2}\qquad(\text{using }\acvs_{-1}=\acvs_1).

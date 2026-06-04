@@ -6,6 +6,18 @@
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(a)} Define the \emph{backshift operator} $\Bsh$ and, for an $\mathrm{ARMA}(p,q)$ process written $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$, write down the characteristic polynomials $\Phi(z)$ and $\Theta(z)$. State the \emph{root criteria} (in terms of the unit circle) for (i) stationarity/causality and (ii) invertibility. \hfill(2 pts)
+
+\textbf{(b)} Consider the $\mathrm{AR}(2)$ process
+\[
+X_t=\tfrac23 X_{t-1}-\tfrac16 X_{t-2}+\eps_t .
+\]
+Write its AR polynomial $\Phi(z)$, find the roots, and decide whether the process is stationary. \hfill(2 pts)
+
+\textbf{(c)} Is the process of part (b) invertible? Justify in one sentence (no computation needed). \hfill(1 pt)
+\statementend
+
 \textbf{(a)} The \emph{backshift operator} $\Bsh$ shifts a series one step into the past, $\Bsh X_t=X_{t-1}$, and iterating $\Bsh^k X_t=X_{t-k}$ (with $\Bsh^0=I$). For an $\mathrm{ARMA}(p,q)$ written $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ the characteristic polynomials are
 \[
 \Phi(z)=1-\phi_1 z-\dots-\phi_p z^{p},\qquad
@@ -33,6 +45,17 @@ Both roots have modulus $\sqrt6>1$, i.e.\ lie outside the unit circle, so the pr
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+For the $\mathrm{ARMA}(2,1)$ process
+\[
+(1-0.7\Bsh+0.1\Bsh^2)\,X_t=(1+0.5\Bsh)\,\eps_t,
+\]
+
+\textbf{(a)} factor the AR polynomial $\Phi(z)=1-0.7z+0.1z^2$, locate its roots, and confirm that the process is causal. \hfill(2 pts)
+
+\textbf{(b)} Using a \emph{partial-fraction} expansion of the transfer function $G(z)=\Theta(z)/\Phi(z)$, find a closed form for the $\mathrm{MA}(\infty)$ weights $\psi_j$ in $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$, and report $\psi_0,\psi_1,\psi_2$. \hfill(3 pts)
+\statementend
+
 \textbf{(a)} $\Phi(z)=1-0.7z+0.1z^2=0.1\,(z^2-7z+10)=0.1\,(z-2)(z-5)$, so the AR roots are $z=2$ and $z=5$. Both satisfy $\abs{z}>1$, hence all roots of $\Phi$ are outside the unit circle and the process is \textbf{causal} (stationary). Also $\Theta(z)=1+0.5z$ has root $z=-2$, $\abs{z}=2>1$, so it is invertible as well (not asked, but it guarantees a well-defined $G$).
 
 \textbf{(b)} Write $X_t=G(\Bsh)\eps_t$ with
@@ -86,6 +109,20 @@ which already gives $\psi_0=\tfrac{10}{3}-\tfrac73=1$. In particular
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+Let $\{X_t\}$ be the causal $\mathrm{AR}(2)$ process
+\[
+X_t=\tfrac56 X_{t-1}-\tfrac16 X_{t-2}+\eps_t .
+\]
+
+\textbf{(a)} Show that the autocovariance sequence satisfies the homogeneous recurrence
+$\acvs_\tau=\tfrac56\,\acvs_{\tau-1}-\tfrac16\,\acvs_{\tau-2}$ for $\tau\ge1$, and obtain the boundary relation at $\tau=0$ involving $\sigma^2$. \hfill(2 pts)
+
+\textbf{(b)} Solve for $\acvs_0,\acvs_1$ and hence give the closed-form expression of $\acvs_\tau$ for all $\tau\ge0$. \hfill(3 pts)
+
+\emph{Hint: the right-hand side of the model equation only contributes through $\E[\eps_t X_t]=\sigma^2$ (causality).}
+\statementend
+
 \textbf{(a)} The model is $X_t-\tfrac56 X_{t-1}+\tfrac16 X_{t-2}=\eps_t$, with $\Phi(z)=1-\tfrac56 z+\tfrac16 z^2=\tfrac16(z-2)(z-3)$ (roots $2,3$ outside the unit circle $\Rightarrow$ causal). Multiply the model by $X_{t-\tau}$ and take expectations. Since the process is causal, $X_{t-\tau}$ is a one-sided combination of $\eps_{t-\tau},\eps_{t-\tau-1},\dots$, so $\E[\eps_t X_{t-\tau}]=0$ for $\tau\ge1$ and $\E[\eps_t X_t]=\psi_0\sigma^2=\sigma^2$. Hence, for $\tau\ge1$,
 \[
 \acvs_\tau-\tfrac56\acvs_{\tau-1}+\tfrac16\acvs_{\tau-2}=\E[\eps_t X_{t-\tau}]=0
@@ -127,6 +164,16 @@ and $\acvs_{-\tau}=\acvs_\tau$. (Check: $\tau=0\to\tfrac{48-27}{10}=\tfrac{21}{1
 
 % ---------------------------------------------------------------
 \solproblem{5}
+\statementstart
+\textbf{(Revision of Week 2 + this week.)} Let $X_t=\eps_t-\theta\eps_{t-1}$ be an $\mathrm{MA}(1)$ with $\theta=\tfrac12$.
+
+\textbf{(a)} Compute the autocovariance sequence $\acvs_\tau$ for all $\tau$ and the autocorrelation $\acf_1$. \hfill(1.5 pts)
+
+\textbf{(b)} Prove that \emph{any} $\mathrm{MA}(1)$ of the form $\eps_t-\theta\eps_{t-1}$ satisfies $\abs{\acf_1}\le\tfrac12$, and state qualitatively how the PACF of an $\mathrm{MA}(1)$ behaves (cut off or tail off?). \hfill(1.5 pts)
+
+\textbf{(c)} Is $\{X_t\}$ invertible? Then exhibit a \emph{different} $\mathrm{MA}(1)$ process $Y_t=\eta_t-\vartheta\eta_{t-1}$ (with an appropriately chosen white-noise variance) that has \emph{exactly the same} autocovariance sequence as $\{X_t\}$, and explain which of the two is the invertible representation. \hfill(2 pts)
+\statementend
+
 \textbf{(a)} With $X_t=\eps_t-\tfrac12\eps_{t-1}$, bilinearity and $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$ give
 \[
 \acvs_\tau=\begin{cases}
