@@ -1,0 +1,119 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{07}{2 April 2026}{Spectral Density \& Spectral Representation}{The spectral density $\sdf(f)$ is the Fourier transform of the autocovariance: it distributes the process variance across frequencies (Herglotz, spectral representation).}
+
+So far we described a stationary process in the \emph{time domain} through its ACVS $\{\acvs_\tau\}$. This week we cross into the \emph{frequency domain}: the very same second-order information is re-read as a distribution of the process variance across frequencies. This is the ``second face'' of a stationary process. From now on we fix the sampling interval $\Delta=1$ and work with ordinary frequency $f$ (not angular frequency $\omega=2\pi f$, which only scatters factors of $2\pi$).
+
+\section*{Key definitions}
+
+\begin{defn}{Spectral density function (SDF)}
+For a stationary process $\{X_t\}_{t\in\Ints}$ whose ACVS is \textbf{summable} ($\{\acvs_\tau\}\in\ell^1$), the SDF is the (discrete-time) Fourier transform of the ACVS:
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau\,e^{-2\pi i f\tau},\qquad f\in\Reals .
+\]
+It is inverted back to the ACVS by $\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)\,e^{2\pi i f\tau}\,df$; in particular
+\[
+\acvs_0=\Var(X_t)=\int_{-1/2}^{1/2}\sdf(f)\,df .
+\]
+A valid SDF is \textbf{real}, \textbf{even} ($\sdf(-f)=\sdf(f)$), \textbf{non-negative} ($\sdf\ge0$) and \textbf{$1$-periodic}. (In continuous time, replace the sum by $\sdf(f)=\int_{\Reals}\acvs(\tau)e^{-2\pi i f\tau}\,d\tau$.)
+\end{defn}
+
+\begin{intu}[What $\sdf(f)$ actually says]
+$\sdf(f)\,df$ = amount of variance (``power'') carried by the components with frequency near $f$, averaged over realisations. The SDF slices the total variance $\acvs_0$ frequency by frequency. A \emph{flat} spectrum = white noise (every frequency equally present, hence ``white''); a \emph{peaked} spectrum = a strong oscillation at that frequency.
+\end{intu}
+
+\begin{defn}{Harmonic (sinusoidal) process}
+With $A>0$ and $\Theta\sim\mathrm{Unif}(-\pi,\pi)$ independent, set $X_t=A\cos(\nu t+\Theta)$ with oscillation frequency $\nu$. Then $\E[X_t]=0$ and $\Cov(X_{t+\tau},X_t)=\tfrac12\,\E[A^2]\cos(\nu\tau)$. It is stationary, but its ACVS \textbf{does not decay}: $\{\acvs_\tau\}\notin\ell^1$, so it has \textbf{no ordinary SDF}. Its spectrum is a \emph{pair of lines} (jumps) at $\pm\nu/(2\pi)$.
+\end{defn}
+
+\begin{intu}[Why we need more than the SDF]
+The SDF (Def.~1) assumes $\{\acvs_\tau\}\in\ell^1$. The harmonic process shows that a perfectly legitimate stationary process can violate this. We therefore need a more general object that \emph{always} exists: the integrated spectrum.
+\end{intu}
+
+\begin{defn}{Integrated spectrum $S^{(I)}$}
+A function $S^{(I)}$ on $[-\tfrac12,\tfrac12]$ that is right-continuous, bounded, \textbf{non-decreasing}, with $S^{(I)}(-\tfrac12)=0$ and $S^{(I)}(\tfrac12)=\sigma^2=\acvs_0$. It behaves like a (scaled) cumulative distribution function in frequency and represents the ACVS as
+\[
+\acvs_\tau=\int_{-1/2}^{1/2} e^{2\pi i\tau f}\,dS^{(I)}(f).
+\]
+When $\{\acvs_\tau\}\in\ell^1$, $S^{(I)}$ has a density, which is exactly the SDF: $\sdf=dS^{(I)}/df$, i.e.\ $S^{(I)}(f)=\int_{-1/2}^{f}\sdf(\lambda)\,d\lambda$.
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Theorem --- Aliasing and the Nyquist frequency}
+If a continuous-time process with SDF $\mathcal{S}_c$ is sampled at $\Delta=1$, the discrete SDF folds all higher-frequency content onto $[-\tfrac12,\tfrac12]$:
+\[
+\sdf(f)=\sum_{k\in\Ints}\mathcal{S}_c(f+k).
+\]
+The frequency $\tfrac12$ (i.e.\ $\tfrac1{2\Delta}$) is the \textbf{Nyquist frequency}. If $\mathcal{S}_c$ is essentially zero for $\abs f\ge\tfrac12$, the discrete and continuous spectra agree well; otherwise the high frequencies corrupt the low ones and $\sdf$ tells us nothing about $\mathcal{S}_c$.
+\end{result}
+
+\begin{intu}[Aliasing in one image]
+A high-frequency sinusoid sampled too slowly looks identical to a low-frequency one --- the wagon-wheel effect. Frequencies $f$ and $f+k$ become indistinguishable from the samples; they are ``aliases''. Cure: sample finely (small $\Delta$, large Nyquist) or low-pass filter before sampling.
+\end{intu}
+
+\begin{result}{Theorem --- Herglotz}
+A complex sequence $\{g_t\}_{t\in\Ints}$ is \textbf{non-negative definite} \emph{iff} there is a right-continuous, bounded, non-decreasing $G^{(I)}$ with $G^{(I)}(-\tfrac12)=0$ such that
+\[
+g_t=\int_{-1/2}^{1/2} e^{2\pi i t f}\,dG^{(I)}(f),\qquad t\in\Ints .
+\]
+\textit{Idea:} build $G^{(I)}$ as the weak limit of the non-negative Fej\'er averages of $\sum g_t e^{-2\pi i tf}$.
+\end{result}
+
+Since every ACVS is non-negative definite, applying Herglotz to $\{\acvs_\tau\}$ shows that \textbf{every stationary process has an integrated spectrum} $S^{(I)}$ --- even harmonic processes that have no ordinary SDF. The SDF is just the special, absolutely continuous case $dS^{(I)}=\sdf\,df$.
+
+\begin{result}{Theorem --- Lebesgue decomposition of $S^{(I)}$}
+Every integrated spectrum splits uniquely as $S^{(I)}=S^{(I)}_1+S^{(I)}_2+S^{(I)}_3$, each piece non-negative, non-decreasing, $S^{(I)}_j(-\tfrac12)=0$, where
+\begin{enumerate}
+  \item $S^{(I)}_1$ is \textbf{absolutely continuous}: $S^{(I)}_1(f)=\int_{-1/2}^{f}\sdf(\lambda)\,d\lambda$ (the ordinary SDF);
+  \item $S^{(I)}_2$ is a \textbf{step function} with jumps $\{p_\ell\}$ at frequencies $\{f_\ell\}$ of pure sinusoids (a \emph{line spectrum});
+  \item $S^{(I)}_3$ is \textbf{continuous singular} (pathological, of no practical use).
+\end{enumerate}
+\end{result}
+
+\begin{intu}[Reading the three pieces]
+\textbf{Absolutely continuous} ($S^{(I)}_1$ only): the ACVS damps to zero, $\acvs_\tau\to0$ --- e.g.\ any ARMA process. \textbf{Discrete / line} ($S^{(I)}_2$ only): the ACVS does \emph{not} damp (a sinusoid keeps oscillating) --- e.g.\ the harmonic process. \textbf{Mixed}: a sum of the two, e.g.\ a periodic signal buried in coloured (ARMA) noise.
+\end{intu}
+
+\begin{result}{Theorem --- Spectral representation}
+Let $\{X_t\}$ be real-valued, stationary, mean $\mu$. There is an \textbf{orthogonal-increment process} $\{Z(f)\}$ on $[-\tfrac12,\tfrac12]$ with
+\[
+X_t=\mu+\int_{-1/2}^{1/2} e^{2\pi i f t}\,dZ(f)\qquad\text{(equality in mean square),}
+\]
+where, for $f\ne f'$,
+\[
+\begin{aligned}
+\E[dZ(f)]&=0, & \Var\!\big(dZ(f)\big)&=dS^{(I)}(f), & \Cov\!\big(dZ(f),dZ(f')\big)&=0 .
+\end{aligned}
+\]
+\end{result}
+
+\begin{intu}[The deep structural statement]
+\emph{Every} stationary process is a superposition of uncorrelated random sinusoids $e^{2\pi i f t}\,dZ(f)$, carrying ``amount of variance'' $dS^{(I)}(f)$ at each frequency. This is the precise meaning of the slogan ``$\sdf(f)\,df$ is the power in $[f,f+df]$''. (Recall: for complex variables $\Cov(Z_1,Z_2)=\E[(Z_1-\E Z_1)\conj{(Z_2-\E Z_2)}]$, with the conjugate on the second factor.)
+\end{intu}
+
+\section*{A tiny worked example}
+
+\begin{exmpl}[SDF of white noise]
+Let $\{\eps_t\}$ be white noise with variance $\sigma^2$, so $\acvs_\tau=\sigma^2$ at $\tau=0$ and $0$ otherwise. Only the $\tau=0$ term survives:
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i f\tau}=\sigma^2\quad\text{for all }f .
+\]
+The spectrum is \textbf{flat} --- equal power at every frequency, which is exactly why it is called ``white''. (Check: $\int_{-1/2}^{1/2}\sigma^2\,df=\sigma^2=\acvs_0$.)
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{SDF $=$ Fourier transform of the ACVS} (when $\{\acvs_\tau\}\in\ell^1$). Be able to compute it both ways: $\sdf=\sum\acvs_\tau e^{-2\pi i f\tau}$ and back $\acvs_\tau=\int\sdf\,e^{2\pi i f\tau}df$, with $\acvs_0=\int\sdf=\Var(X_t)$.
+  \item Use the even/real form $\sdf(f)=\acvs_0+2\sum_{\tau\ge1}\acvs_\tau\cos(2\pi f\tau)$. Sanity-check any SDF: real, even, $\ge0$, $1$-periodic, integrates to $\acvs_0$.
+  \item A candidate $\{\acvs_\tau\}$ is a valid ACVS \emph{iff} its transform $\sdf(f)\ge0$ for all $f$; one negative value (often at $f=0$ or $f=\tfrac12$) disqualifies it.
+  \item Harmonic process $\Rightarrow$ no ordinary SDF, but \textbf{Herglotz guarantees an integrated spectrum $S^{(I)}$ always exists}. The SDF is its derivative when it exists.
+  \item Classify a spectrum via Lebesgue: continuous ($\acvs_\tau\to0$, e.g.\ ARMA), line/discrete ($\acvs_\tau$ persists, e.g.\ sinusoid), or mixed.
+  \item Remember Nyquist $=\tfrac12$ and the aliasing fold $\sdf(f)=\sum_k\mathcal{S}_c(f+k)$: sample fast enough or the high frequencies masquerade as low ones.
+\end{itemize}
+\end{retenir}
+
+\end{document}

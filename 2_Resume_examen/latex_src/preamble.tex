@@ -1,0 +1,170 @@
+% ======================================================================
+%  preamble.tex  --  Time Series Final Exam Preparation (MATH-342, EPFL)
+%  Robust preamble: amsmath/amssymb/amsthm, tcolorbox theorem boxes,
+%  math macros, hyperref, geometry.  Compiles with pdflatex.
+% ======================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=teal!70!black,
+  citecolor=teal!70!black,
+  pdftitle={Time Series -- Final Exam Preparation (MATH-342, EPFL)},
+  pdfauthor={Revision document}
+}
+
+% --- robustness against overfull boxes -------------------------------
+\emergencystretch=3em
+\allowdisplaybreaks[1]
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+
+% ======================================================================
+%  MATH MACROS
+% ======================================================================
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\sgn}{sgn}
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\Ints}{\mathbb{Z}}
+\newcommand{\Comp}{\mathbb{C}}
+\newcommand{\Nat}{\mathbb{N}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Tr}{^{\mathsf{T}}}            % transpose
+\newcommand{\Herm}{^{\mathsf{H}}}          % conjugate transpose
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ind}{\mathbf{1}}              % indicator
+\newcommand{\eps}{\varepsilon}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bX}{\mathbf{X}}
+\newcommand{\diff}{\nabla}                  % difference operator
+\newcommand{\acvs}{\gamma}
+\newcommand{\acf}{\rho}
+\newcommand{\pacf}{\alpha}
+\newcommand{\sdf}{\mathcal{S}}              % spectral density function
+\newcommand{\Fej}{\mathcal{F}}             % Fejer kernel
+\newcommand{\Dir}{\mathcal{D}}             % Dirichlet kernel
+\newcommand{\filt}{\mathcal{L}}            % LTI filter operator
+\newcommand{\Bsh}{B}                        % backshift operator
+\newcommand{\ms}{\;\overset{\mathrm{ms}}{=}\;}
+\newcommand{\eqdist}{\overset{d}{=}}
+\newcommand{\todist}{\xrightarrow{d}}
+\newcommand{\toprob}{\xrightarrow{P}}
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}
+\newcommand{\indep}{\overset{\text{ind}}{\sim}}
+
+% ======================================================================
+%  TCOLORBOX THEOREM ENVIRONMENTS
+%  Shared counter (thmcounter) for theory objects -> sequential per
+%  section: Def 1.1, Thm 1.2, Prop 1.3, ...
+%  Separate counters for exercises and key techniques.
+% ======================================================================
+\newcounter{thmcounter}
+\numberwithin{thmcounter}{section}
+\newcounter{exocounter}
+\numberwithin{exocounter}{section}
+\newcounter{ktcounter}
+\numberwithin{ktcounter}{section}
+
+\tcbset{
+  thmbox/.style={
+    enhanced, breakable,
+    fonttitle=\bfseries, coltitle=black,
+    boxrule=0.7pt, arc=1.4mm,
+    left=2.4mm, right=2.4mm, top=3.0mm, bottom=1.4mm,
+    before skip=9pt, after skip=7pt,
+    attach boxed title to top left={yshift=-3.6mm, xshift=2.6mm},
+    boxed title style={boxrule=0pt, arc=0.6mm, colframe=black!0},
+    fonttitle=\bfseries
+  }
+}
+
+\newtcbtheorem[use counter=thmcounter]{definition}{Definition}{%
+  thmbox, colback=blue!4!white, colframe=blue!58!black,
+  colbacktitle=blue!58!black, coltitle=white}{def}
+
+\newtcbtheorem[use counter=thmcounter]{theorem}{Theorem}{%
+  thmbox, colback=red!4!white, colframe=red!62!black,
+  colbacktitle=red!62!black, coltitle=white}{thm}
+
+\newtcbtheorem[use counter=thmcounter]{proposition}{Proposition}{%
+  thmbox, colback=teal!5!white, colframe=teal!62!black,
+  colbacktitle=teal!62!black, coltitle=white}{prop}
+
+\newtcbtheorem[use counter=thmcounter]{lemma}{Lemma}{%
+  thmbox, colback=violet!5!white, colframe=violet!60!black,
+  colbacktitle=violet!60!black, coltitle=white}{lem}
+
+\newtcbtheorem[use counter=thmcounter]{corollary}{Corollary}{%
+  thmbox, colback=violet!4!white, colframe=violet!45!black,
+  colbacktitle=violet!45!black, coltitle=white}{cor}
+
+\newtcbtheorem[use counter=thmcounter]{example}{Example}{%
+  thmbox, colback=black!3!white, colframe=black!55!white,
+  colbacktitle=black!55!white, coltitle=white}{exmp}
+
+\newtcbtheorem[use counter=ktcounter]{keytech}{Key Technique}{%
+  thmbox, colback=orange!7!white, colframe=orange!75!black,
+  colbacktitle=orange!75!black, coltitle=white}{kt}
+
+\newtcbtheorem[use counter=exocounter]{exercise}{Exercise}{%
+  thmbox, colback=cyan!4!white, colframe=cyan!55!black,
+  colbacktitle=cyan!55!black, coltitle=white}{exo}
+
+% --- plain (unnumbered) boxes ----------------------------------------
+\newtcolorbox{solution}{%
+  enhanced, breakable, colback=green!3!white, colframe=green!48!black,
+  title=\textbf{Solution}, coltitle=white, colbacktitle=green!48!black,
+  fonttitle=\bfseries, boxrule=0.6pt, arc=1.2mm,
+  left=2.4mm, right=2.4mm, top=1.2mm, bottom=1.2mm,
+  before skip=4pt, after skip=8pt}
+
+\newtcolorbox{intuition}[1][Intuition / Why it matters]{%
+  enhanced, breakable, colback=yellow!10!white, colframe=orange!70!black,
+  title={\textbf{#1}}, coltitle=black, colbacktitle=yellow!35!white,
+  fonttitle=\bfseries, boxrule=0.5pt, arc=1mm, sharp corners=south,
+  left=2.4mm, right=2.4mm, top=1.2mm, bottom=1.2mm,
+  before skip=6pt, after skip=6pt}
+
+\newtcolorbox{pitfall}{%
+  enhanced, breakable, colback=red!6!white, colframe=red!70!black,
+  title={\textbf{\ding{43}\,Classic Pitfall}}, coltitle=white,
+  colbacktitle=red!70!black, fonttitle=\bfseries,
+  boxrule=0.6pt, arc=1mm,
+  left=2.4mm, right=2.4mm, top=1.2mm, bottom=1.2mm,
+  before skip=6pt, after skip=6pt}
+
+\newtcolorbox{recallbox}[1][Recall]{%
+  enhanced, breakable, colback=blue!3!white, colframe=blue!40!black,
+  title={\textbf{#1}}, coltitle=white, colbacktitle=blue!40!black,
+  fonttitle=\bfseries, boxrule=0.5pt, arc=1mm,
+  left=2.4mm, right=2.4mm, top=1.2mm, bottom=1.2mm,
+  before skip=6pt, after skip=6pt}
+
+% pifont for the dingbat in pitfall title
+\usepackage{pifont}
+
+% nicer enumerate defaults
+\setlist[enumerate]{leftmargin=1.8em, topsep=2pt, itemsep=1pt}
+\setlist[itemize]{leftmargin=1.6em, topsep=2pt, itemsep=1pt}

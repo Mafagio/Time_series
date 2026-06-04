@@ -1,0 +1,78 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\newcommand{\F}{\mathcal{F}}
+\begin{document}
+
+\examheader{Week 12: Non-Linear Time Series --- ARCH \& GARCH}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(ARCH(2): conditional vs.\ unconditional moments and stationarity.)} Let $\{r_t\}$ follow an $\mathrm{ARCH}(2)$ model
+\[
+r_t=\sigma_t\,\eta_t ,\qquad
+\sigma_t^2=\beta_0+\beta_1 r_{t-1}^2+\beta_2 r_{t-2}^2 ,
+\]
+with $\beta_0>0,\ \beta_1,\beta_2\ge0$, where $\{\eta_t\}$ is a white noise of mean $0$ and \emph{unit} variance, independent of $\F_{t-1}$ (the information up to time $t-1$). Here $\sigma_t$ is $\F_{t-1}$-measurable. Take the numerical values $\beta_0=0.2$, $\beta_1=0.3$, $\beta_2=0.5$.
+
+\textbf{(a)} Using the law of iterated expectation (condition on $\F_{t-1}$), show that $\E[r_t\mid\F_{t-1}]=0$ and deduce $\E[r_t]=0$. State also the conditional variance $\Var(r_t\mid\F_{t-1})$. \hfill(1.5 pts)
+
+\textbf{(b)} Assuming $\{r_t\}$ is (weakly) stationary, use the law of total variance to derive the marginal variance $\Var(r_t)$ as a function of $\beta_0,\beta_1,\beta_2$, naming every probability law you use. Then give its numerical value for the parameters above. \hfill(2 pts)
+
+\textbf{(c)} State the necessary condition on $\beta_1,\beta_2$ for a (positive, finite) stationary variance to exist, check it for the given numbers, and explain in one sentence why this is the $p=2,\,q=0$ instance of the general $\sum_j\alpha_j+\sum_j\beta_j<1$ rule. \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(GARCH is mean-zero white noise; stationarity \& long-run variance.)} A $\mathrm{GARCH}(m,r)$ process is
+\[
+r_t=\sigma_t\,\eta_t ,\qquad
+\sigma_t^2=\alpha_0+\sum_{j=1}^{m}\alpha_j r_{t-j}^2+\sum_{j=1}^{r}\beta_j\sigma_{t-j}^2 ,
+\]
+with $\alpha_0>0$, $\alpha_j,\beta_j\ge0$, and $\{\eta_t\}$ white noise of mean $0$ and unit variance, independent of $\F_{t-1}$; $\sigma_t$ is $\F_{t-1}$-measurable.
+
+\textbf{(a)} Prove that $\E[r_t]=0$ and that, for every lag $\tau\neq0$, $\Cov(r_{t+\tau},r_t)=0$, hence $\Corr(r_{t+\tau},r_t)=0$. (\emph{Hint:} for $\tau>0$ condition on $\F_{t+\tau-1}$ and pull out the measurable factors $r_t,\sigma_{t+\tau}$.) Conclude that $\{r_t\}$ is white noise. \hfill(2.5 pts)
+
+\textbf{(b)} For a stationary GARCH, derive the unconditional variance
+$\Var(r_t)=\alpha_0/\bigl(1-\sum_{j}\alpha_j-\sum_{j}\beta_j\bigr)$ by taking unconditional expectations of the $\sigma_t^2$ recursion. State the resulting weak-stationarity condition. (\emph{You may use $\E[r_{t-j}^2]=\E[\sigma_{t-j}^2]=\Var(r_t)$ at stationarity; justify this identity briefly.}) \hfill(1.5 pts)
+
+\textbf{(c)} A $\mathrm{GARCH}(1,1)$ is fitted to daily log-returns with $\alpha_0=2\times10^{-5}$, $\alpha_1=0.10$, $\beta_1=0.85$. Verify weak stationarity, compute the unconditional variance and the implied daily volatility $\sqrt{\Var(r_t)}$, and comment in one sentence on the persistence $\alpha_1+\beta_1$. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(ARCH(1): kurtosis, the ACF of the squares, and a volatility forecast.)} Let $\{r_t\}$ be a stationary $\mathrm{ARCH}(1)$,
+\[
+r_t=\sigma_t\,\eta_t ,\qquad \sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2 ,
+\]
+with $\alpha_0>0$, $0<\alpha_1<1$, and \emph{Gaussian} innovations $\eta_t\sim\mathcal N(0,1)$ independent of $\F_{t-1}$. Recall $\E[r_t]=0$ and $\Var(r_t)=\alpha_0/(1-\alpha_1)$. You may use $\E[\eta_t^4]=3$.
+
+\textbf{(a)} Prove that for $\tau>0$,
+\[
+\Cov\bigl(r_{t+\tau}^2,r_t^2\bigr)=\alpha_1\,\Cov\bigl(r_{t+\tau-1}^2,r_t^2\bigr),
+\]
+by conditioning on $\F_{t+\tau-1}$ and using $\E[\eta^2\mid\F_{t+\tau-1}]=1$; be sure to show the constant terms cancel using $\E[r_t^2]=\alpha_0/(1-\alpha_1)$. Deduce that, provided $0<\alpha_1<1/\sqrt3$, $\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau}$. \hfill(2.5 pts)
+
+\textbf{(b)} The kurtosis of an $\mathrm{ARCH}(1)$ is $\kappa=\dfrac{3(1-\alpha_1^2)}{1-3\alpha_1^2}$ (valid when $\alpha_1^2<1/3$). An estimated model has $\alpha_1=0.5$. Compute $\kappa$, comment on the tails versus the normal, and report $\Corr(r_{t+\tau}^2,r_t^2)$ at lags $\tau=1,2,3$. Why does the constraint for a finite fourth moment ($\alpha_1^2<1/3$) differ from the one for a finite variance ($\alpha_1<1$)? \hfill(1.5 pts)
+
+\textbf{(c)} For the same model take $\alpha_0=4\times10^{-4}$ and $\alpha_1=0.5$, and suppose the latest observed return is $r_t=0.04$. Give the one-step-ahead conditional variance $\sigma_{t+1}^2$ and a $95\%$ predictive interval for $r_{t+1}$ under Gaussian innovations; compare its width with the unconditional $\pm1.96\,\sqrt{\Var(r_t)}$ band and interpret. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 11: diagnostics --- Ljung--Box test and AIC/BIC selection.)} A mean-zero $\mathrm{ARMA}(1,1)$ model is fitted to $n=100$ observations. The residual sample autocorrelations at lags $1$--$5$ are
+\[
+\hat r_1=0.05,\quad \hat r_2=-0.12,\quad \hat r_3=0.08,\quad \hat r_4=-0.10,\quad \hat r_5=0.06 .
+\]
+Recall the Ljung--Box statistic $Q_m=n(n+2)\sum_{\tau=1}^{m}\hat r_\tau^2/(n-\tau)$, which under $H_0:\acf_1=\cdots=\acf_m=0$ is approximately $\chi^2_{m-p-q}$ for an $\mathrm{ARMA}(p,q)$ fit. Useful quantiles: $\chi^2_{2,0.95}=5.991$, $\chi^2_{3,0.95}=7.815$, $\chi^2_{4,0.95}=9.488$.
+
+\textbf{(a)} Compute the Ljung--Box statistic $Q_5$ (show the per-lag terms). \hfill(1.5 pts)
+
+\textbf{(b)} Test $H_0:\acf_1=\cdots=\acf_5=0$ at the $5\%$ level: state the degrees of freedom, the critical value, the decision, and the practical conclusion about model adequacy. Would the decision change had an $\mathrm{AR}(1)$ been fitted instead? \hfill(1.5 pts)
+
+\textbf{(c)} Recall $\mathrm{AIC}=-2\log L+2k$ and $\mathrm{BIC}=-2\log L+k\log n$ with $k=p+q+1$ for an $\mathrm{ARMA}(p,q)$. A competing $\mathrm{AR}(3)$ (i.e.\ $k=4$) is compared with the $\mathrm{ARMA}(1,1)$ (i.e.\ $k=3$) at $n=100$. By how much must $-2\log L$ drop for AIC, respectively BIC, to prefer the larger model, and which criterion is more willing to select it? Why is in-sample $R^2$ a poor tool for this comparison? \hfill(2 pts)
+\answerpage
+
+\end{document}

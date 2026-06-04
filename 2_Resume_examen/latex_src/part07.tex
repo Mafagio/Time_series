@@ -1,0 +1,750 @@
+% ======================================================================
+%  PART 7 -- Multivariate Time Series and Vector Autoregression (VAR)
+% ======================================================================
+\section{Multivariate Time Series and Vector Autoregression (VAR)}
+\label{sec:multivariate}
+
+So far each $X_t$ has been a scalar. Many real systems are
+$d$-dimensional: a basket of normalised stock prices (Apple, Nasdaq-100, S\&P
+500), or the longitude/latitude/temperature of an ocean drifter. We now let
+$\{X_t\}$ take values in $\Reals^d$ and ask two questions: (i) how do we
+\emph{describe} the second-order structure --- now a matrix-valued
+autocovariance and a matrix-valued spectrum, with genuine \textbf{cross}-terms
+between components, and (ii) how do we \emph{model} it. The canonical model is
+the vector autoregression VAR($p$), and the key trick is that
+\emph{every VAR($p$) is a VAR(1)} in disguise (companion form), so its theory
+reduces to that of a single matrix $\Phi_1$ (or $F$).
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Multivariate time series}{p7-mvts}
+A \textbf{multivariate time series} is a real $d$-vector-valued discrete-time
+stochastic process
+\[
+X_t=\big(X_t^{(1)},X_t^{(2)},\dots,X_t^{(d)}\big)\Tr,\qquad t\in\Ints,
+\]
+whose marginal processes $\{X_t^{(1)}\},\dots,\{X_t^{(d)}\}$ are each univariate
+time series. When $d=2$ we call it \textbf{bivariate}.
+\end{definition}
+
+\begin{definition}{Multivariate second-order stationarity}{p7-mvstat}
+$\{X_t\}$ is \textbf{multivariate second-order (weakly) stationary} if for all
+$t,s,\tau\in\Ints$,
+\[
+\E[X_t]=\E[X_s],\qquad
+\Cov(X_{t+\tau},X_t)=\Cov(X_{s+\tau},X_s),\qquad
+\trace\big(\Var(X_t)\big)<\infty .
+\]
+Equivalently: each marginal $\{X_t^{(j)}\}$ is second-order stationary
+\textbf{and} every pair has a shift-invariant cross-covariance,
+$\Cov\!\big(X_{t+\tau}^{(j)},X_t^{(k)}\big)=\Cov\!\big(X_{s+\tau}^{(j)},X_s^{(k)}\big)$
+for all $1\le j,k\le d$. (Here $\Cov(U,V)$ of two vectors is the matrix with
+$(j,k)$ entry $\Cov(U^{(j)},V^{(k)})$.)
+\end{definition}
+
+\begin{definition}{Matrix autocovariance sequence (ACVS)}{p7-acvs}
+For a multivariate second-order stationary $\{X_t\}$, the
+\textbf{(matrix) autocovariance sequence} is the $d\times d$ matrix-valued
+sequence
+\[
+\Gamma_\tau=\Cov(X_{t+\tau},X_t),\qquad \tau\in\Ints ,
+\]
+with $(j,k)$ entry $\acvs_\tau^{(j,k)}=\Cov\!\big(X_{t+\tau}^{(j)},X_t^{(k)}\big)$.
+\begin{itemize}
+  \item \textbf{The lag $\tau$ sits in the FIRST argument.} In the scalar case
+        this is immaterial, but here it determines the convention for
+        $\Gamma_{-\tau}=\Gamma_\tau\Tr$ below.
+  \item When $j=k$, $\acvs_\tau^{(j,j)}$ is the ordinary ACVS of the marginal
+        $\{X_t^{(j)}\}$.
+  \item When $j\ne k$, $\acvs_\tau^{(j,k)}$ is called the
+        \textbf{cross-covariance sequence} (CCS) between components $j$ and $k$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Cross-correlation sequence (CCS)}{p7-ccs}
+The \textbf{cross-correlation sequence} between components $j$ and $k$ is
+\[
+\acf_\tau^{(j,k)}
+=\frac{\acvs_\tau^{(j,k)}}{\sqrt{\acvs_0^{(j,j)}\,\acvs_0^{(k,k)}}} .
+\]
+For $j=k$ this is the ordinary ACF (so $\acf_0^{(j,j)}=1$). For $j\ne k$ it need
+\emph{not} equal $1$ at $\tau=0$ and need \emph{not} be symmetric in $\tau$; it
+satisfies $\acf_\tau^{(j,k)}=\acf_{-\tau}^{(k,j)}$.
+\end{definition}
+
+\begin{definition}{Multivariate white noise $\mathrm{WN}(0,\Sigma)$}{p7-wn}
+A $d$-variate series $\{\eps_t\}$ is \textbf{white noise with mean $0$ and
+covariance matrix $\Sigma$}, written $\{\eps_t\}\sim\mathrm{WN}(0,\Sigma)$, iff
+it is stationary with mean vector $0$ and
+\[
+\Gamma_\tau^{(\eps)}=
+\begin{cases}\Sigma & \tau=0,\\[2pt] 0 & \tau\ne0.\end{cases}
+\]
+\begin{itemize}
+  \item There \emph{can} be correlation between different components at lag $0$
+        (off-diagonal entries of $\Sigma$): the components are uncorrelated
+        \textbf{across time} but possibly correlated \textbf{contemporaneously}.
+  \item Often one further assumes $\Sigma$ \emph{diagonal} (componentwise
+        independent noise), but this is an extra assumption, not part of the
+        definition.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Uncorrelated processes}{p7-uncorr}
+Two jointly second-order stationary processes $\{X_t^{(1)}\}$ and
+$\{X_t^{(2)}\}$ are \textbf{uncorrelated} if their cross-covariance vanishes at
+\emph{every} lag:
+\[
+\acvs_\tau^{(1,2)}=0\qquad\text{for all }\tau\in\Ints .
+\]
+\end{definition}
+
+\begin{definition}{Spectral density matrix function}{p7-sdm}
+Assume $\{\acvs_\tau^{(j,k)}\}_{\tau\in\Ints}\in\ell^1$ for all $1\le j,k\le d$
+(absolutely summable cross-covariances). The \textbf{spectral density matrix}
+is the $d\times d$ matrix-valued function
+\[
+S(f)=\sum_{\tau\in\Ints}\Gamma_\tau\,e^{-2\pi i\tau f},
+\qquad f\in[-\tfrac12,\tfrac12],
+\]
+with inverse $\displaystyle \Gamma_\tau=\int_{-1/2}^{1/2}S(f)\,e^{2\pi if\tau}\,df$.
+\begin{itemize}
+  \item The $(j,k)$ entry is $S_{j,k}(f)$. For $j=k$ it is the ordinary
+        (real-valued) spectral density $\sdf_{j}(f)$.
+  \item For $j\ne k$, $S_{j,k}(f)$ is the \textbf{cross-spectral density}, which
+        is \emph{complex-valued} in general.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Coherence}{p7-coh}
+The \textbf{coherence} between components $j$ and $k$ is
+\[
+r_{j,k}(f)=\frac{S_{j,k}(f)}{\sqrt{S_{j,j}(f)\,S_{k,k}(f)}}\in\Comp ,
+\]
+the frequency-domain analogue of a correlation between the increments $dZ_j$ and
+$dZ_k$. One reports:
+\begin{itemize}
+  \item its \textbf{magnitude} $\abs{r_{j,k}(f)}$ (or magnitude-squared
+        $\abs{r_{j,k}(f)}^2\in[0,1]$), the strength of frequency-by-frequency
+        association;
+  \item its \textbf{phase} $\arg r_{j,k}(f)$, the ``sign'' / lead--lag angle in
+        the complex plane.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Vector autoregression VAR($p$)}{p7-var}
+Let $\{\eps_t\}\sim\mathrm{WN}(0,\Sigma)$ be $d$-variate. A process $\{X_t\}$ is
+a \textbf{vector autoregressive process of order $p$}, VAR($p$), if
+\[
+X_t=\Phi_1 X_{t-1}+\Phi_2 X_{t-2}+\cdots+\Phi_p X_{t-p}+\eps_t ,
+\qquad \Phi_j\in\Reals^{d\times d},\ \Phi_p\ne0 .
+\]
+Defining the matrix polynomial $\Phi(z)=I_d-\sum_{j=1}^p\Phi_j z^j$, this is
+written compactly as
+\[
+\Phi(\Bsh)X_t=\eps_t ,
+\]
+where $\Bsh$ is the backshift operator. The same regressors (past values of
+the \emph{whole} vector $X_t$) appear in every component equation; the
+off-diagonal entries of the $\Phi_j$ are exactly the cross-component dynamics.
+\end{definition}
+
+\begin{definition}{Companion form of a VAR($p$)}{p7-companion}
+Stack the last $p$ vectors into $Y_t=(X_t\Tr,X_{t-1}\Tr,\dots,X_{t-p+1}\Tr)\Tr
+\in\Reals^{dp}$. Then a VAR($p$) is equivalently the VAR(1)
+\[
+\underbrace{Y_t}_{dp\times1}
+=\underbrace{F}_{dp\times dp}\,\underbrace{Y_{t-1}}_{dp\times1}
++\underbrace{U_t}_{dp\times1},
+\qquad
+F=\begin{pmatrix}
+\Phi_1 & \Phi_2 & \cdots & \Phi_{p-1} & \Phi_p\\
+I_d & 0 & \cdots & 0 & 0\\
+0 & I_d & & \vdots & \vdots\\
+\vdots & & \ddots & 0 & 0\\
+0 & \cdots & 0 & I_d & 0
+\end{pmatrix},
+\quad
+U_t=\begin{pmatrix}\eps_t\\0\\\vdots\\0\end{pmatrix}.
+\]
+The top block row reproduces the VAR($p$) equation; the lower rows are
+identities $X_{t-i}=X_{t-i}$ that shift the stack. Recover the original process
+via $X_t=G Y_t$ with $G=(I_d\ \ 0\ \cdots\ 0)\in\Reals^{d\times dp}$.
+\end{definition}
+
+\begin{definition}{Stability of a VAR($p$)}{p7-stable}
+A VAR($p$) is \textbf{stable} if the roots of the \textbf{reverse
+characteristic polynomial}
+\[
+\det\!\big(I_d-\Phi_1 z-\Phi_2 z^2-\cdots-\Phi_p z^p\big)=0
+\]
+all lie \emph{strictly outside} the complex unit circle ($\abs{z}>1$).
+Equivalently, the companion matrix $F$ has all eigenvalues of modulus
+\emph{strictly less than one} ($\abs{\lambda}<1$). Stability $\Rightarrow$
+stationarity (but not conversely in general).
+\end{definition}
+
+\begin{intuition}[Two equivalent stability tests --- and why they are reciprocal]
+The reverse polynomial $\det(I_d-\sum_j\Phi_j z^j)$ uses $z=1/\lambda$, so
+``roots $z$ outside the unit circle'' is exactly ``eigenvalues $\lambda$ of $F$
+inside the unit circle''. For a VAR(1), $\det(I_d-\Phi_1 z)=0$ means $1/z$ is an
+eigenvalue of $\Phi_1$, i.e.\ $z=1/\lambda_i(\Phi_1)$; demanding $\abs{z}>1$ is
+demanding $\abs{\lambda_i(\Phi_1)}<1$. This mirrors the scalar AR causality
+condition ``roots of $\phi(z)$ outside the unit circle''.
+\end{intuition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Symmetry of the matrix ACVS}{p7-gammasym}
+For a multivariate second-order stationary process,
+\[
+\acvs_\tau^{(j,k)}=\acvs_{-\tau}^{(k,j)}
+\qquad\Longleftrightarrow\qquad
+\Gamma_{-\tau}=\Gamma_\tau\Tr .
+\]
+\textit{Proof idea:} $\acvs_\tau^{(j,k)}=\Cov(X_{t+\tau}^{(j)},X_t^{(k)})
+=\Cov(X_t^{(k)},X_{t+\tau}^{(j)})$ (covariance is symmetric in its arguments)
+$=\Cov(X_{s-\tau}^{(k)},X_s^{(j)})$ (stationarity, set $s=t+\tau$)
+$=\acvs_{-\tau}^{(k,j)}$.\\
+\textit{Why:} the cross-covariance need \emph{not} be even in $\tau$
+($\acvs_\tau^{(j,k)}\ne\acvs_{-\tau}^{(j,k)}$ in general); only the
+\emph{transpose} symmetry $\Gamma_{-\tau}=\Gamma_\tau\Tr$ holds. This asymmetry
+is precisely what encodes lead--lag relationships between channels.
+\end{proposition}
+
+\begin{pitfall}
+In the univariate case $\acvs_{-\tau}=\acvs_\tau$ (even). Do \emph{not} carry
+this over: in the multivariate case the diagonal entries are still even, but the
+off-diagonal cross-covariances generally satisfy only
+$\acvs_\tau^{(j,k)}=\acvs_{-\tau}^{(k,j)}$. Forgetting to swap the indices
+$(j,k)\to(k,j)$ when flipping the sign of $\tau$ is the classic error.
+\end{pitfall}
+
+\begin{proposition}{Positive semi-definiteness of the matrix ACVS}{p7-psd}
+The matrix sequence $\{\Gamma_\tau\}$ is positive semi-definite: for every
+$n\in\Nat$ and every $a_1,\dots,a_n\in\Reals^d$,
+\[
+\sum_{j=1}^n\sum_{k=1}^n a_j\Tr\,\Gamma_{k-j}\,a_k\ge0 .
+\]
+\textit{Proof idea:} the left side equals $\Var\!\big(\sum_{j}a_j\Tr X_{t_j}\big)\ge0$
+for suitable times (the scalar random variable $\sum_j a_j\Tr X_{t_j}$ has
+non-negative variance).\\
+\textit{Why:} this is the defining algebraic constraint a valid matrix ACVS must
+satisfy; a candidate matrix sequence violating it cannot be the autocovariance
+of any process.
+\end{proposition}
+
+\begin{proposition}{Contemporaneous correlation induced by shared noise}{p7-contemp}
+Let $X_t=(X_t^{(1)},X_t^{(2)})\Tr$ be second-order stationary with ACVS
+$\Gamma_\tau^{(X)}$, and let $\{\phi_t\}$ be a univariate mean-zero white noise
+(variance $\sigma_\phi^2$) independent of $\{X_t\}$. Define
+$Y_t=X_t+\phi_t\mathbf{1}$ (the \emph{same} scalar noise added to both
+components), where $\mathbf{1}=(1,1)\Tr$. Then
+\[
+\Gamma_\tau^{(Y)}=\Gamma_\tau^{(X)}+\sigma_\phi^2\,\delta_{\tau,0}\,\mathbf 1\mathbf 1\Tr ,
+\qquad
+\mathbf 1\mathbf 1\Tr=\begin{pmatrix}1&1\\1&1\end{pmatrix}.
+\]
+\textit{Proof idea:} $\Gamma_\tau^{(Y)}=\Cov(X_{t+\tau}+\phi_{t+\tau}\mathbf1,
+X_t+\phi_t\mathbf1)$; independence kills the $X$--$\phi$ cross terms, and
+$\Cov(\phi_{t+\tau},\phi_t)=\sigma_\phi^2\delta_{\tau,0}$ contributes
+$\sigma_\phi^2\delta_{\tau,0}$ to \emph{every} entry.\\
+\textit{Why:} adding a common shock creates lag-$0$ correlation between
+$Y^{(1)}$ and $Y^{(2)}$ \emph{regardless} of the correlation in $X$. This is the
+prototypical mechanism behind ``everything moves together'' contemporaneous
+correlation.
+\end{proposition}
+
+\begin{proposition}{Hermitian symmetry of the spectral matrix}{p7-herm}
+For all $f\in[-\tfrac12,\tfrac12]$ and all $1\le j,k\le d$,
+\[
+S_{j,k}(f)=\conj{S_{k,j}(f)},\qquad
+S_{j,k}(f)=\conj{S_{j,k}(-f)},
+\]
+equivalently in matrix form
+\[
+S(f)=S(f)\Herm,\qquad S(f)=S(-f)\Tr ,
+\]
+and $S(f)$ is positive semi-definite for every $f$.
+\textit{Proof idea:} substitute $\Gamma_{-\tau}=\Gamma_\tau\Tr$ into
+$S(f)=\sum_\tau\Gamma_\tau e^{-2\pi i\tau f}$ and relabel $\tau\to-\tau$; the
+conjugate of $e^{-2\pi i\tau f}$ flips the sign in the exponent.\\
+\textit{Why:} $S(f)\Herm=S(f)$ (Hermitian) guarantees real diagonal spectra and
+makes coherence well defined; positive semi-definiteness is the frequency-domain
+counterpart of Proposition~\ref{prop:p7-psd}.
+\end{proposition}
+
+\begin{theorem}{Multivariate spectral representation theorem}{p7-spectral}
+Let $\{X_t\}$ be a vector-valued discrete-time stationary process with mean
+$\mu$. There exists a vector-valued orthogonal-increment process $\{Z(f)\}$ on
+$[-\tfrac12,\tfrac12]$ such that
+\[
+X_t=\mu+\int_{-1/2}^{1/2} e^{2\pi i f t}\,dZ(f).
+\]
+If moreover $\{\acvs_\tau^{(j,k)}\}\in\ell^1$, then for $f,f'\in[-\tfrac12,\tfrac12]$,
+\[
+\E[dZ(f)]=0,\qquad
+\Var\big(dZ(f)\big)=S(f)\,df,\qquad
+\Cov\big(dZ(f),dZ(f')\big)=0\ \ (f\ne f'),
+\]
+where $S(f)$ is the spectral density \emph{matrix} and the $0$ in the last
+identity is the zero matrix.\\
+\textit{Proof idea:} the multivariate analogue of the scalar Cram\'er/spectral
+representation; the increment process $Z(f)$ carries the random ``Fourier
+content'' of each component, with covariance structure given by the spectral
+matrix.\\
+\textit{Why:} it justifies thinking of a multivariate stationary process as a
+superposition of uncorrelated random sinusoids whose (matrix) variance is
+$S(f)\,df$; coherence is then literally the correlation of the increments
+$dZ_j(f),dZ_k(f)$.
+\end{theorem}
+
+\begin{proposition}{Cross-spectrum of a pure delay process}{p7-delayspec}
+Let $\{Y_t\}$ be stationary and $X_t=(Y_t,\,Y_{t-\nu})\Tr$ for fixed
+$\nu\in\Ints$. Then
+\[
+S_{1,1}(f)=S_{2,2}(f)=\sdf_Y(f),\qquad
+S_{1,2}(f)=\sdf_Y(f)\,e^{2\pi i f\nu},
+\]
+so the coherence is $r_{1,2}(f)=e^{2\pi i f\nu}$, of magnitude $1$ and phase
+$2\pi\nu f$.
+\textit{Proof idea:} $\acvs_\tau^{(1,2)}=\Cov(Y_{t+\tau},Y_{t-\nu})
+=\acvs_{\tau+\nu}^{(Y)}$; Fourier-transforming and shifting the summation index
+pulls out $e^{2\pi i f\nu}$.\\
+\textit{Why:} a pure time shift between two channels produces \emph{perfect}
+coherence (magnitude $1$) with a phase that is \emph{linear in $f$} with slope
+$2\pi\nu$ --- the textbook signature of a lead/lag of $\nu$ samples.
+\end{proposition}
+
+\begin{theorem}{Everything is a VAR(1) (companion reduction)}{p7-everyvar1}
+Any VAR($p$) process $\{X_t\}$ admits the VAR(1) representation
+$Y_t=FY_{t-1}+U_t$ of Definition~\ref{def:p7-companion}, with
+$\{U_t\}$ a $dp$-variate white noise whose only nonzero covariance block is the
+top-left $\Sigma$. Hence all VAR($p$) properties (stability, MA($\infty$)
+expansion, covariances) follow from the VAR(1) theory applied to $F$ and then
+projected back by $X_t=GY_t$.\\
+\textit{Proof idea:} write out the stacked vector $Y_t$; its top block equals
+the VAR($p$) recursion and its remaining blocks are trivial identities, giving
+exactly $F$ and $U_t$.\\
+\textit{Why:} it lets us prove one clean VAR(1) result and reuse it for every
+order $p$, e.g.\ the stability test becomes ``eigenvalues of $F$ inside the unit
+circle''.
+\end{theorem}
+
+\begin{proposition}{MA($\infty$) representation of a stable VAR(1)}{p7-mainf}
+If the VAR(1) $X_t=\Phi_1 X_{t-1}+\eps_t$ is stable, then
+\[
+X_t=\sum_{j=0}^{\infty}\Phi_1^{\,j}\,\eps_{t-j}.
+\]
+\textit{Proof idea:} back-substitute repeatedly,
+$X_t=\Phi_1(\Phi_1 X_{t-2}+\eps_{t-1})+\eps_t=\Phi_1^2X_{t-2}+\Phi_1\eps_{t-1}+\eps_t=\cdots$;
+stability ($\Phi_1^j\to0$) makes the remainder term vanish and the series
+converge (in mean square).\\
+\textit{Why:} the matrix geometric series is the multivariate causal linear
+filter of the noise --- it underlies the covariance formula below and all
+forecasting.
+\end{proposition}
+
+\begin{proposition}{Covariance of a stable VAR(1)}{p7-var1cov}
+For a stable VAR(1) with $\{\eps_t\}\sim\mathrm{WN}(0,\Sigma)$ and $\tau\ge0$,
+\[
+\Gamma_\tau=\Cov(X_{t+\tau},X_t)
+=\sum_{k=0}^{\infty}\Phi_1^{\,k+\tau}\,\Sigma\,\big(\Phi_1^{\,k}\big)\Tr .
+\]
+\textit{Proof idea:} substitute the MA($\infty$) form into
+$\Cov\big(\sum_j\Phi_1^{j}\eps_{t+\tau-j},\sum_k\Phi_1^{k}\eps_{t-k}\big)$;
+white noise makes only the terms with $t+\tau-j=t-k$, i.e.\ $j=k+\tau$, survive,
+each contributing $\Phi_1^{k+\tau}\Sigma(\Phi_1^{k})\Tr$.\\
+\textit{Why:} closed-form second-order structure of a VAR(1); for $\tau=0$ it
+gives $\Gamma_0=\sum_k\Phi_1^k\Sigma(\Phi_1^k)\Tr$, the stationary covariance,
+which also solves the discrete Lyapunov equation
+$\Gamma_0=\Phi_1\Gamma_0\Phi_1\Tr+\Sigma$.
+\end{proposition}
+
+\begin{corollary}{Covariance of a VAR($p$) via the companion form}{p7-varpcov}
+For a stable VAR($p$) with companion matrix $F$ and
+$\Sigma_U=\Var(U_t)$ (top-left block $\Sigma$, all else $0$),
+\[
+\Gamma_\tau^{(X)}=\Cov(X_{t+\tau},X_t)
+=G\Big(\sum_{k=0}^{\infty}F^{\,k+\tau}\,\Sigma_U\,\big(F^{\,k}\big)\Tr\Big)G\Tr,
+\qquad G=(I_d\ 0\ \cdots\ 0).
+\]
+\textit{Proof idea:} apply Proposition~\ref{prop:p7-var1cov} to the VAR(1)
+$Y_t=FY_{t-1}+U_t$ to get $\Gamma_\tau^{(Y)}$, then use $X_t=GY_t$ so
+$\Gamma_\tau^{(X)}=G\Gamma_\tau^{(Y)}G\Tr$.\\
+\textit{Why:} reduces the order-$p$ covariance to one VAR(1) computation plus a
+projection.
+\end{corollary}
+
+\begin{theorem}{Yule--Walker equations for a VAR($p$)}{p7-yw}
+For a stable VAR($p$) and $\tau\ge0$,
+\[
+\Gamma_\tau=\Phi_1\Gamma_{\tau-1}+\Phi_2\Gamma_{\tau-2}
++\cdots+\Phi_p\Gamma_{\tau-p}+\delta_{\tau,0}\,\Sigma .
+\]
+In particular for VAR(1): $\Gamma_\tau=\Phi_1\Gamma_{\tau-1}+\delta_{\tau,0}\Sigma$.
+\textit{Proof idea:} multiply the VAR equation on the right by $X_t\Tr$ and take
+expectations: $\Cov(X_{t+\tau},X_t)=\Cov(\sum_i\Phi_i X_{t+\tau-i}+\eps_{t+\tau},X_t)$;
+the noise term $\Cov(\eps_{t+\tau},X_t)$ contributes $\Sigma$ only when
+$\tau=0$ (since $X_t$ depends only on $\eps_s$ for $s\le t$).\\
+\textit{Why:} given $\Sigma$ and the $\Phi_j$, solving the first $p+1$ equations
+yields $\Gamma_0,\dots,\Gamma_p$, and the recursion then generates all
+$\Gamma_\tau$ for $\tau>p$. Run in reverse, it estimates the $\Phi_j$ from sample
+covariances (VAR fitting).
+\end{theorem}
+
+\begin{intuition}[Why the noise term only shows up at $\tau=0$]
+$X_t$ is built from $\eps_t,\eps_{t-1},\dots$ (the causal MA($\infty$)). For
+$\tau>0$, $\eps_{t+\tau}$ is in the \emph{future} of $X_t$, hence uncorrelated
+with it, so $\Cov(\eps_{t+\tau},X_t)=0$. Only at $\tau=0$ does
+$\Cov(\eps_t,X_t)=\Cov(\eps_t,\eps_t)=\Sigma$ appear. This is the exact
+multivariate analogue of the scalar Yule--Walker derivation.
+\end{intuition}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Test VAR stability via the reverse characteristic polynomial}{p7-ktstable}
+Given $\Phi_1,\dots,\Phi_p$:
+\begin{enumerate}
+  \item Form $M(z)=I_d-\Phi_1 z-\cdots-\Phi_p z^p$ (a $d\times d$ matrix whose
+        entries are polynomials in $z$).
+  \item Compute $\det M(z)$ --- a scalar polynomial of degree at most $dp$.
+        \emph{Factor it} if possible (block/triangular structure often factors
+        it cleanly).
+  \item Find all roots $z_i$. The VAR is \textbf{stable} iff $\abs{z_i}>1$ for
+        \emph{every} root.
+\end{enumerate}
+\textbf{Shortcut for VAR(1):} $\det(I_d-\Phi_1 z)=0\iff z=1/\lambda_i(\Phi_1)$,
+so just check $\abs{\lambda_i(\Phi_1)}<1$ (spectral radius of $\Phi_1$ below
+one). For a triangular $\Phi_1$, the eigenvalues are the diagonal entries.
+\emph{Sanity check:} $\det M(0)=\det I_d=1$ always (the constant term is $1$).
+\end{keytech}
+
+\begin{keytech}{Compute a cross-spectrum from a cross-covariance}{p7-ktcrossspec}
+To get $S_{j,k}(f)$:
+\begin{enumerate}
+  \item Find the cross-covariance $\acvs_\tau^{(j,k)}=\Cov(X_{t+\tau}^{(j)},X_t^{(k)})$
+        in closed form, usually a \emph{shift} of a known (auto)covariance, e.g.\
+        $\acvs_\tau^{(j,k)}=\alpha\,\acvs_{\tau-\nu}^{(k,k)}$.
+  \item Fourier transform: $S_{j,k}(f)=\sum_\tau\acvs_\tau^{(j,k)}e^{-2\pi if\tau}$,
+        then \emph{re-index} the sum to extract any $e^{\pm2\pi if\nu}$ factor.
+        A lag-shift $\tau\to\tau-\nu$ produces a phase factor $e^{-2\pi if\nu}$.
+  \item Read off amplitude $\abs{S_{j,k}(f)}$ and phase $\arg S_{j,k}(f)$; divide
+        by $\sqrt{S_{j,j}S_{k,k}}$ for coherence.
+\end{enumerate}
+Mnemonic: \emph{a delay of $\nu$ samples in the time domain $=$ a linear phase
+$\mp2\pi\nu f$ in the frequency domain}.
+\end{keytech}
+
+\begin{keytech}{Derive the VAR(1) MA($\infty$) and its covariance}{p7-ktmainf}
+For a stable VAR(1) $X_t=\Phi_1 X_{t-1}+\eps_t$:
+\begin{enumerate}
+  \item Write $X_t=\sum_{j\ge0}\Phi_1^j\eps_{t-j}$ (matrix geometric filter).
+  \item Plug into $\Cov(X_{t+\tau},X_t)$; keep only index pairs with matching
+        noise times ($j=k+\tau$). Result:
+        $\Gamma_\tau=\sum_{k\ge0}\Phi_1^{k+\tau}\Sigma(\Phi_1^k)\Tr$.
+  \item For a \emph{numerical} $\Gamma_0$, solve the Lyapunov equation
+        $\Gamma_0=\Phi_1\Gamma_0\Phi_1\Tr+\Sigma$ (vectorise:
+        $\mathrm{vec}\,\Gamma_0=(I-\Phi_1\otimes\Phi_1)^{-1}\mathrm{vec}\,\Sigma$),
+        or sum the series until $\Phi_1^k$ is negligible.
+\end{enumerate}
+If $\Phi_1$ and $\Sigma$ are diagonal, everything decouples into $d$ scalar
+AR(1)'s: $\Gamma_0^{(j,j)}=\sigma_j^2/(1-\phi_j^2)$.
+\end{keytech}
+
+\begin{keytech}{Run the VAR Yule--Walker recursion}{p7-ktyw}
+Given $\Phi_1,\dots,\Phi_p,\Sigma$ and known $\Gamma_0,\dots,\Gamma_{p-1}$:
+\begin{itemize}
+  \item For $\tau>0$: $\Gamma_\tau=\sum_{i=1}^p\Phi_i\Gamma_{\tau-i}$, using
+        $\Gamma_{-s}=\Gamma_s\Tr$ whenever a negative-lag matrix appears.
+  \item To \emph{initialise}, write the $\tau=0,\dots,p$ equations as a linear
+        system in $\Gamma_0,\dots,\Gamma_p$ (the $\tau=0$ equation carries the
+        $+\Sigma$ term) and solve once.
+\end{itemize}
+Watch the transpose: a term like $\Phi_2\Gamma_{-1}$ means $\Phi_2\Gamma_1\Tr$.
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{Common-noise cross-correlation \quad\textnormal{[Sheet 9]}}{p7-e1}
+Let $Y_t=(Y_t^{(1)},Y_t^{(2)})\Tr$ with $Y_t^{(j)}=X_t^{(j)}+\eps_t$, $j=1,2$,
+where $X^{(1)},X^{(2)},\eps$ are mutually independent and $\{\eps_t\}$ is white
+noise. Write $\sigma_j^2=\Var(X_t^{(j)})$, $\sigma_\eps^2=\Var(\eps_t)$ and
+$\tilde\acvs_\tau^{(1,2)}=\Cov(X_{t+\tau}^{(1)},X_t^{(2)})$. Find the
+cross-correlation $\acf_\tau^{(1,2)}$ between $\{Y^{(1)}\}$ and $\{Y^{(2)}\}$ at
+all lags.
+\end{exercise}
+\begin{solution}
+The \emph{same} scalar noise $\eps_t$ is added to both channels, so expand
+\[
+\acvs_\tau^{(1,2)}=\Cov(Y_{t+\tau}^{(1)},Y_t^{(2)})
+=\Cov(X_{t+\tau}^{(1)},X_t^{(2)})+\underbrace{\Cov(X_{t+\tau}^{(1)},\eps_t)}_{0}
++\underbrace{\Cov(\eps_{t+\tau},X_t^{(2)})}_{0}+\Cov(\eps_{t+\tau},\eps_t).
+\]
+The two middle terms vanish by independence of $X$ and $\eps$, and
+$\Cov(\eps_{t+\tau},\eps_t)=\sigma_\eps^2\delta_{\tau,0}$. Hence
+\[
+\acvs_\tau^{(1,2)}=
+\begin{cases}\tilde\acvs_0^{(1,2)}+\sigma_\eps^2 & \tau=0,\\[2pt]
+\tilde\acvs_\tau^{(1,2)} & \tau\ne0.\end{cases}
+\]
+For the marginal variances,
+$\acvs_0^{(1,1)}=\Var(X_t^{(1)})+\Var(\eps_t)=\sigma_1^2+\sigma_\eps^2$ and
+likewise $\acvs_0^{(2,2)}=\sigma_2^2+\sigma_\eps^2$. Therefore
+\[
+\acf_\tau^{(1,2)}=\frac{\acvs_\tau^{(1,2)}}{\sqrt{(\sigma_1^2+\sigma_\eps^2)(\sigma_2^2+\sigma_\eps^2)}}
+=
+\begin{cases}
+\dfrac{\tilde\acvs_0^{(1,2)}+\sigma_\eps^2}{\sqrt{(\sigma_1^2+\sigma_\eps^2)(\sigma_2^2+\sigma_\eps^2)}} & \tau=0,\\[10pt]
+\dfrac{\tilde\acvs_\tau^{(1,2)}}{\sqrt{(\sigma_1^2+\sigma_\eps^2)(\sigma_2^2+\sigma_\eps^2)}} & \tau\ne0.
+\end{cases}
+\]
+The shared noise injects extra correlation \emph{only} at lag $0$ (the
+$+\sigma_\eps^2$), exactly Proposition~\ref{prop:p7-contemp} in disguise.
+\end{solution}
+
+\begin{exercise}{Delay process: cross-spectrum amplitude \& phase \quad\textnormal{[Sheet 9]}}{p7-e2}
+For the delay process with $\alpha>0$, $\nu\in\Ints$,
+\[
+X_t^{(1)}=\alpha X_{t-\nu}^{(2)}+\eps_t,\qquad t\in\Ints,
+\]
+where $\{\eps_t\}$ is white noise (variance $\sigma_\eps^2$) and
+$\{X_t^{(2)}\}$ is stationary and uncorrelated with $\{\eps_t\}$ at all lags.
+\textbf{(a)} Find the cross-correlation between $\{X^{(1)}\}$ and $\{X^{(2)}\}$
+at all lags. \textbf{(b)} Find the cross-spectrum $S_{1,2}(f)$ and its amplitude
+and phase.
+\end{exercise}
+\begin{solution}
+\textbf{(a)} Using independence of $X^{(2)}$ and $\eps$,
+\[
+\acvs_\tau^{(1,2)}=\Cov(X_{t+\tau}^{(1)},X_t^{(2)})
+=\alpha\,\Cov(X_{t+\tau-\nu}^{(2)},X_t^{(2)})+\underbrace{\Cov(\eps_{t+\tau},X_t^{(2)})}_{0}
+=\alpha\,\acvs_{\tau-\nu}^{(2,2)} .
+\]
+The marginal variances are
+$\acvs_0^{(1,1)}=\Var(\alpha X_{t-\nu}^{(2)}+\eps_t)=\alpha^2\sigma_2^2+\sigma_\eps^2$
+(with $\sigma_2^2=\acvs_0^{(2,2)}$) and $\acvs_0^{(2,2)}=\sigma_2^2$. Hence
+\[
+\acf_\tau^{(1,2)}=\frac{\alpha\,\acvs_{\tau-\nu}^{(2,2)}}
+{\sqrt{\alpha^2\sigma_2^2+\sigma_\eps^2}\,\sqrt{\sigma_2^2}}
+=\frac{\acf_{\tau-\nu}^{(2,2)}}{\sqrt{1+\sigma_\eps^2/(\alpha\sigma_2)^2}} ,
+\]
+i.e.\ the autocorrelation of $X^{(2)}$ shifted by $\nu$ and shrunk by the noise
+factor.\\[4pt]
+\textbf{(b)} Fourier-transform the cross-covariance and shift the index
+$\tau\to\tau+\nu$:
+\[
+\begin{aligned}
+S_{1,2}(f)
+&=\sum_{\tau=-\infty}^{\infty}\acvs_\tau^{(1,2)}e^{-2\pi if\tau}
+=\alpha\sum_{\tau}\acvs_{\tau-\nu}^{(2,2)}e^{-2\pi if\tau}\\
+&=\alpha\,e^{-2\pi if\nu}\sum_{\tau}\acvs_{\tau}^{(2,2)}e^{-2\pi if\tau}
+=\alpha\,S_{2,2}(f)\,e^{-2\pi if\nu}.
+\end{aligned}
+\]
+Since $S_{2,2}(f)\ge0$ is real (the spectral density of $X^{(2)}$), the
+\textbf{amplitude} is
+$\abs{S_{1,2}(f)}=\alpha\,S_{2,2}(f)$ (the spectrum of $X^{(2)}$ scaled by
+$\alpha$) and the \textbf{phase} is $\arg S_{1,2}(f)=-2\pi\nu f$, linear in $f$
+with slope $-2\pi\nu$ --- the delay signature.
+\end{solution}
+
+\begin{exercise}{Expectation \& variance of the sample cross-covariance \quad\textnormal{[Sheet 9]}}{p7-e3}
+Let $Y_t=(Y_t^{(1)},Y_t^{(2)})\Tr\overset{\text{ind}}{\sim}\mathcal N(0,\Sigma)$
+in $t$, with $\Sigma=\begin{psmallmatrix}\sigma_{11}&\sigma_{12}\\
+\sigma_{21}&\sigma_{22}\end{psmallmatrix}$. With
+$\hat\Gamma_\tau=\frac1N\sum_{t=1}^{N-\abs\tau}Y_{t+\tau}Y_t\Tr$, determine
+$\E[\hat\acvs_\tau^{(1,2)}]$ and $\Var(\hat\acvs_\tau^{(1,2)})$.
+\end{exercise}
+\begin{solution}
+\textbf{Expectation.} By linearity,
+\[
+\E[\hat\acvs_\tau^{(1,2)}]=\frac1N\sum_{t=1}^{N-\abs\tau}\E[Y_{t+\tau}^{(1)}Y_t^{(2)}].
+\]
+Since the $Y_t$ are independent across $t$, $\E[Y_{t+\tau}^{(1)}Y_t^{(2)}]=0$ for
+$\tau\ne0$, and $=\sigma_{12}$ for $\tau=0$. With $N-\abs\tau=N$ terms at
+$\tau=0$,
+\[
+\E[\hat\acvs_\tau^{(1,2)}]=\sigma_{12}\,\delta_{\tau,0}.
+\]
+\textbf{Variance.} Write
+$\Var(\hat\acvs_\tau^{(1,2)})=\E\big[(\hat\acvs_\tau^{(1,2)})^2\big]-\E[\hat\acvs_\tau^{(1,2)}]^2$
+and expand the square:
+\[
+\E\big[(\hat\acvs_\tau^{(1,2)})^2\big]
+=\frac{1}{N^2}\Big(\sum_{t=1}^{N-\abs\tau}\E\big[(Y_{t+\tau}^{(1)})^2(Y_t^{(2)})^2\big]
++\sum_{t\ne s}\E\big[Y_{t+\tau}^{(1)}Y_t^{(2)}Y_{s+\tau}^{(1)}Y_s^{(2)}\big]\Big).
+\]
+For jointly Gaussian zero-mean variables, Isserlis' (Wick's) theorem gives the
+key fourth moment
+\[
+\E\big[(Y_t^{(1)})^2(Y_t^{(2)})^2\big]=\sigma_{11}\sigma_{22}+2\sigma_{12}^2 .
+\]
+\emph{Case $\tau=0$.} The diagonal sum has $N$ identical terms
+$\sigma_{11}\sigma_{22}+2\sigma_{12}^2$. For the off-diagonal ($t\ne s$),
+independence across $t$ factorises the expectation into
+$\E[Y_t^{(1)}Y_t^{(2)}]\,\E[Y_s^{(1)}Y_s^{(2)}]=\sigma_{12}^2$, and there are
+$N(N-1)$ such pairs. Thus
+\[
+\E\big[(\hat\acvs_0^{(1,2)})^2\big]
+=\frac1{N^2}\big[N(\sigma_{11}\sigma_{22}+2\sigma_{12}^2)+N(N-1)\sigma_{12}^2\big]
+=\frac{\sigma_{11}\sigma_{22}+2\sigma_{12}^2}{N}+\frac{N-1}{N}\sigma_{12}^2 .
+\]
+Subtracting $\E[\hat\acvs_0^{(1,2)}]^2=\sigma_{12}^2$,
+\[
+\Var(\hat\acvs_0^{(1,2)})
+=\frac{\sigma_{11}\sigma_{22}+2\sigma_{12}^2}{N}+\frac{N-1}{N}\sigma_{12}^2-\sigma_{12}^2
+=\frac{1}{N}\big(\sigma_{11}\sigma_{22}+\sigma_{12}^2\big).
+\]
+\emph{Case $\tau\ne0$.} Now $\E[\hat\acvs_\tau^{(1,2)}]=0$. The diagonal sum has
+$N-\abs\tau$ terms, but because $Y_{t+\tau}$ and $Y_t$ are \emph{independent}
+(different time indices), the Gaussian fourth moment splits as
+$\E[(Y_{t+\tau}^{(1)})^2]\,\E[(Y_t^{(2)})^2]=\sigma_{11}\sigma_{22}$. Every
+off-diagonal term contains a factor with a unique time index appearing once and
+so vanishes. Hence
+\[
+\Var(\hat\acvs_\tau^{(1,2)})
+=\frac{1}{N^2}\big[(N-\abs\tau)\sigma_{11}\sigma_{22}+0\big]
+=\frac{N-\abs\tau}{N^2}\,\sigma_{11}\sigma_{22}.
+\]
+\textbf{Summary.}
+\[
+\E[\hat\acvs_\tau^{(1,2)}]=\sigma_{12}\,\delta_{\tau,0},\qquad
+\Var(\hat\acvs_\tau^{(1,2)})=\frac{N-\abs\tau}{N^2}\big(\sigma_{11}\sigma_{22}+\sigma_{12}^2\,\delta_{\tau,0}\big).
+\]
+(At $\tau=0$ this reads $\tfrac1N(\sigma_{11}\sigma_{22}+\sigma_{12}^2)$,
+matching the case above.)
+\end{solution}
+
+\begin{exercise}{Stability of a bivariate VAR(2) \quad\textnormal{[New]}}{p7-e4}
+Consider $X_t=\Phi_1 X_{t-1}+\Phi_2 X_{t-2}+\eps_t$ with
+$\Phi_1=\begin{psmallmatrix}0.5&0.1\\0.4&0.5\end{psmallmatrix}$,
+$\Phi_2=\begin{psmallmatrix}0&0\\0.25&0\end{psmallmatrix}$. Form the reverse
+characteristic polynomial, find its roots, and decide whether the VAR(2) is
+stable.
+\end{exercise}
+\begin{solution}
+We need $\det\!\big(I_2-\Phi_1 z-\Phi_2 z^2\big)$. The inner matrix is
+\[
+M(z)=\begin{pmatrix}1-0.5z & -0.1z\\ -0.4z-0.25z^2 & 1-0.5z\end{pmatrix}.
+\]
+Its determinant is
+\[
+\det M(z)=(1-0.5z)^2-(-0.1z)(-0.4z-0.25z^2)
+=(1-z+0.25z^2)-(0.04z^2+0.025z^3),
+\]
+\[
+\det M(z)=1-z+0.21z^2-0.025z^3 .
+\]
+Finding the roots of $1-z+0.21z^2-0.025z^3=0$ gives
+\[
+z_1=1.3,\qquad z_2=3.55+4.26i,\qquad z_3=3.55-4.26i .
+\]
+The moduli are $\abs{z_1}=1.3>1$ and
+$\abs{z_2}=\abs{z_3}=\sqrt{3.55^2+4.26^2}=\sqrt{12.60+18.15}=\sqrt{30.75}\approx5.545>1$.
+All three roots lie strictly outside the unit circle, so the VAR(2) is
+\textbf{stable} (hence stationary). \emph{Check:} $\det M(0)=1$, as it must be
+(the constant term equals $\det I_2=1$).
+\end{solution}
+
+\begin{exercise}{Stability of a triangular trivariate VAR(1) \quad\textnormal{[New]}}{p7-e5}
+Let $X_t=\Phi_1 X_{t-1}+\eps_t$ with
+$\Phi_1=\begin{psmallmatrix}0.5&0&0\\0.1&0.1&0.3\\0&0.2&0.3\end{psmallmatrix}$.
+Factor the reverse characteristic polynomial and decide stability.
+\end{exercise}
+\begin{solution}
+Because the first row of $\Phi_1$ has only its $(1,1)$ entry nonzero, expand
+$\det(I_3-\Phi_1 z)$ along the first row of
+\[
+I_3-\Phi_1 z=\begin{pmatrix}1-0.5z & 0 & 0\\ -0.1z & 1-0.1z & -0.3z\\ 0 & -0.2z & 1-0.3z\end{pmatrix}.
+\]
+This gives
+\[
+\det(I_3-\Phi_1 z)=(1-0.5z)\det\begin{pmatrix}1-0.1z & -0.3z\\ -0.2z & 1-0.3z\end{pmatrix}
+=(1-0.5z)\big[(1-0.1z)(1-0.3z)-0.06z^2\big].
+\]
+The $2\times2$ determinant is $1-0.4z+0.03z^2-0.06z^2=1-0.4z-0.03z^2$, so
+\[
+\det(I_3-\Phi_1 z)=(1-0.5z)\big(1-0.4z-0.03z^2\big).
+\]
+The first factor gives $z_1=2$. The quadratic $1-0.4z-0.03z^2=0$, i.e.\
+$0.03z^2+0.4z-1=0$, has roots
+$z=\dfrac{-0.4\pm\sqrt{0.16+0.12}}{0.06}=\dfrac{-0.4\pm\sqrt{0.28}}{0.06}$,
+giving $z_2\approx2.153$ and $z_3\approx-15.486$. All three roots satisfy
+$\abs{z}>1$, so the VAR(1) is \textbf{stable}. (Equivalently: $\Phi_1$ is block
+lower-triangular with eigenvalues $0.5$ and those of
+$\begin{psmallmatrix}0.1&0.3\\0.2&0.3\end{psmallmatrix}$, namely
+$\approx0.465$ and $\approx-0.065$; all have modulus $<1$.)
+\end{solution}
+
+\begin{exercise}{MA($\infty$) covariance of a diagonal VAR(1) \quad\textnormal{[New]}}{p7-e6}
+Let $X_t=\Phi_1 X_{t-1}+\eps_t$ with
+$\Phi_1=\begin{psmallmatrix}0.5&0\\0&0.3\end{psmallmatrix}$ and
+$\{\eps_t\}\sim\mathrm{WN}(0,I_2)$. (a) Write the MA($\infty$) form. (b) Compute
+the stationary covariance $\Gamma_0$ and the lag-$1$ matrix $\Gamma_1$. (c) What
+is the coherence between the two channels?
+\end{exercise}
+\begin{solution}
+\textbf{(a)} Since $\Phi_1=\diag(0.5,0.3)$ has spectral radius $0.5<1$, the VAR
+is stable and
+\[
+X_t=\sum_{j=0}^\infty\Phi_1^j\eps_{t-j},\qquad
+\Phi_1^j=\diag(0.5^j,\,0.3^j).
+\]
+\textbf{(b)} By the VAR(1) covariance formula with $\Sigma=I_2$,
+\[
+\Gamma_0=\sum_{k=0}^\infty\Phi_1^k(\Phi_1^k)\Tr
+=\sum_{k=0}^\infty\diag(0.25^k,\,0.09^k)
+=\diag\!\Big(\tfrac{1}{1-0.25},\,\tfrac{1}{1-0.09}\Big)
+=\diag\!\Big(\tfrac43,\,\tfrac{100}{91}\Big),
+\]
+i.e.\ $\Gamma_0\approx\diag(1.333,\,1.099)$. (Equivalently solve
+$\Gamma_0=\Phi_1\Gamma_0\Phi_1\Tr+I_2$ componentwise:
+$g_{jj}=\phi_j^2 g_{jj}+1$.) The lag-$1$ matrix is, by Yule--Walker
+$\Gamma_1=\Phi_1\Gamma_0$,
+\[
+\Gamma_1=\diag(0.5,0.3)\,\diag(\tfrac43,\tfrac{100}{91})
+=\diag\!\Big(\tfrac23,\,\tfrac{30}{91}\Big)\approx\diag(0.667,\,0.330).
+\]
+\textbf{(c)} All off-diagonal entries of $\Gamma_\tau$ are $0$ for every $\tau$
+(the channels are independent AR(1)'s), so $S_{1,2}(f)\equiv0$ and the coherence
+$r_{1,2}(f)=0$ at all frequencies: the two series are completely uncoupled. The
+off-diagonal entries of $\Phi_1$ (here zero) are exactly the cross-channel
+dynamics, confirming the decoupling.
+\end{solution}
+
+\begin{exercise}{Reading off a VAR(1) from its Yule--Walker recursion \quad\textnormal{[New]}}{p7-e7}
+A stable bivariate VAR(1) $X_t=\Phi_1 X_{t-1}+\eps_t$ has
+$\Phi_1=\begin{psmallmatrix}0.6&0.2\\0.1&0.5\end{psmallmatrix}$ and
+$\{\eps_t\}\sim\mathrm{WN}(0,I_2)$. (a) Verify stability via the reverse
+characteristic polynomial. (b) Express $\Gamma_2$ in terms of $\Gamma_0$ using
+Yule--Walker. (c) Give $\Gamma_{-1}$ in terms of $\Gamma_1$.
+\end{exercise}
+\begin{solution}
+\textbf{(a)} $\det(I_2-\Phi_1 z)=(1-0.6z)(1-0.5z)-(0.2z)(0.1z)
+=1-1.1z+0.30z^2-0.02z^2=1-1.1z+0.28z^2$. Solving $0.28z^2-1.1z+1=0$,
+\[
+z=\frac{1.1\pm\sqrt{1.21-1.12}}{0.56}=\frac{1.1\pm0.3}{0.56}
+\;\Rightarrow\; z_1=\frac{1.4}{0.56}=2.5,\quad z_2=\frac{0.8}{0.56}=\frac{10}{7}\approx1.43 .
+\]
+Both have modulus $>1$, so the VAR(1) is stable. (Equivalently $\Phi_1$ has
+eigenvalues $0.7$ and $0.4$, both inside the unit circle.)\\
+\textbf{(b)} Yule--Walker for VAR(1) gives $\Gamma_\tau=\Phi_1\Gamma_{\tau-1}$
+for $\tau\ge1$. Iterating,
+\[
+\Gamma_1=\Phi_1\Gamma_0,\qquad
+\Gamma_2=\Phi_1\Gamma_1=\Phi_1^2\,\Gamma_0,
+\qquad \Phi_1^2=\begin{pmatrix}0.38&0.22\\0.11&0.27\end{pmatrix}.
+\]
+\textbf{(c)} By the transpose symmetry $\Gamma_{-\tau}=\Gamma_\tau\Tr$,
+\[
+\Gamma_{-1}=\Gamma_1\Tr=(\Phi_1\Gamma_0)\Tr=\Gamma_0\Phi_1\Tr
+\]
+(using $\Gamma_0=\Gamma_0\Tr$). Note $\Gamma_{-1}\ne\Gamma_1$ in general, since
+$\Phi_1$ is not symmetric --- the multivariate ACVS is \emph{not} even in
+$\tau$.
+\end{solution}

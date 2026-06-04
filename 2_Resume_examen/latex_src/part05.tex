@@ -1,0 +1,672 @@
+% ======================================================================
+%  PART 5 -- Trends, Seasonality and Differencing: SARIMA
+% ======================================================================
+\section{Trends, Seasonality and Differencing: SARIMA}
+\label{sec:sarima}
+
+Real signals rarely look stationary: they drift (a \emph{trend}) and they
+repeat (a \emph{season}). The working model of this chapter is
+$X_t=\mu_t+Y_t$ with $\mu_t$ a deterministic time-dependent mean and $\{Y_t\}$
+stationary. There are two ways to peel off $\mu_t$: \emph{estimate and subtract}
+(regression on $t$ and on seasonal dummies), or \emph{difference it away} with
+the operator $\diff=I-B$. Differencing of order $d$ annihilates a polynomial
+trend of degree $d-1$; a \emph{seasonal} difference $\diff_{(s)}=I-B^{s}$ kills
+a period-$s$ season. Layering autoregressive and moving-average structure onto
+\emph{both} the ordinary lags and the seasonal lags gives the SARMA family, and
+folding the differencing in front gives the (S)ARIMA model
+$\Phi(B)(1-B)^{d}X_t=\Theta(B)\eps_t$ --- the standard Box--Jenkins workhorse.
+Throughout, $\{\eps_t\}$ is mean-zero white noise of variance $\sigma_\eps^2$,
+AR/seasonal-AR coefficients are $\phi_j,\phi^{(s)}_j$ and MA/seasonal-MA
+coefficients are $\theta_k,\theta^{(s)}_k$.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Mean-trend (signal-plus-noise) model}{p5-trendmodel}
+A series with a slowly varying level is modelled as
+\[
+X_t=\mu_t+Y_t,
+\]
+where $\mu_t$ is a deterministic, time-dependent mean (the \textbf{trend}) and
+$\{Y_t\}$ is a zero-mean second-order stationary process. The canonical linear
+case is $\mu_t=a+bt$; more generally $\mu_t$ may be a degree-$(q-1)$ polynomial
+in $t$. When the level instead repeats, $\mu_t=s_t$ with $s_{t+s}=s_t$ is a
+\textbf{periodic} (seasonal) trend of period $s$; the two can coexist,
+$X_t=a+bt+s_t+Y_t$.
+\end{definition}
+
+\begin{definition}{Difference operator $\diff$}{p5-diff}
+The (first-)\textbf{difference operator} is
+\[
+\diff=I-B,\qquad \diff X_t=X_t-X_{t-1},
+\]
+where $B$ is the backshift operator $BX_t=X_{t-1}$. It is \emph{linear}. Its
+$d$-th power is, by the binomial theorem,
+\[
+\diff^{d}=(I-B)^{d}=\sum_{k=0}^{d}\binom{d}{k}(-1)^{k}B^{k},
+\qquad
+\diff^{d}X_t=\sum_{k=0}^{d}\binom{d}{k}(-1)^{k}X_{t-k}.
+\]
+For example $\diff^{2}X_t=X_t-2X_{t-1}+X_{t-2}$.
+\end{definition}
+
+\begin{definition}{Seasonal difference operator $\diff_{(s)}$}{p5-seasdiff}
+The \textbf{seasonal difference} of period $s$ is
+\[
+\diff_{(s)}=I-B^{s},\qquad \diff_{(s)}X_t=X_t-X_{t-s}.
+\]
+It removes a deterministic component of period $s$ (since
+$\diff_{(s)}s_t=s_t-s_{t-s}=0$) and, applied to a linear trend, leaves a
+constant: $\diff_{(s)}(bt)=bs$. The ordinary difference is the case $s=1$,
+$\diff=\diff_{(1)}$. To kill a linear-plus-seasonal trend one composes them,
+$\diff\diff_{(s)}=(I-B)(I-B^{s})$.
+\end{definition}
+
+\begin{definition}{Seasonal moving average $\mathrm{SMA}(Q)_s$}{p5-sma}
+A \textbf{seasonal moving average} of order $Q$ at period $s$ is
+\[
+X_t=\eps_t-\sum_{j=1}^{Q}\theta^{(s)}_j\,\eps_{t-js}
+=\Theta^{(s)}(B)\eps_t,
+\qquad
+\Theta^{(s)}(z)=1-\sum_{j=1}^{Q}\theta^{(s)}_j\,z^{sj}.
+\]
+Only lags that are \emph{multiples of $s$} appear. The basic seasonal MA(1) is
+$X_t=\eps_t-\theta\eps_{t-s}$.
+\end{definition}
+
+\begin{definition}{Seasonal autoregression $\mathrm{SAR}(P)_s$}{p5-sar}
+A \textbf{seasonal autoregression} of order $P$ at period $s$ is
+\[
+X_t=\eps_t+\sum_{j=1}^{P}\phi^{(s)}_j\,X_{t-js},
+\qquad
+\Phi^{(s)}(z)=1-\sum_{j=1}^{P}\phi^{(s)}_j\,z^{sj},
+\qquad
+\Phi^{(s)}(B)X_t=\eps_t .
+\]
+Again only the seasonal lags $s,2s,\dots,Ps$ enter.
+\end{definition}
+
+\begin{definition}{SARMA$(p,q)\times(P,Q)_s$}{p5-sarma}
+Combining an ordinary $\mathrm{ARMA}(p,q)$ with a seasonal
+$\mathrm{ARMA}(P,Q)_s$ gives the \textbf{multiplicative seasonal ARMA}
+\[
+\Phi(B)\,\Phi^{(s)}(B)\,X_t=\Theta(B)\,\Theta^{(s)}(B)\,\eps_t,
+\]
+with the four polynomials
+\(\Phi(z)=1-\sum_{j=1}^p\phi_jz^j\),
+\(\Theta(z)=1-\sum_{k=1}^q\theta_kz^k\),
+\(\Phi^{(s)}(z)=1-\sum_{j=1}^P\phi^{(s)}_jz^{sj}\),
+\(\Theta^{(s)}(z)=1-\sum_{k=1}^Q\theta^{(s)}_kz^{sk}\).
+Special cases: $\mathrm{SMA}(Q)_s$ is $\mathrm{SARMA}(0,0)\times(0,Q)_s$ and
+$\mathrm{SAR}(P)_s$ is $\mathrm{SARMA}(0,0)\times(P,0)_s$. Example, a
+$\mathrm{SARMA}(0,1)\times(0,1)_{12}$:
+\[
+X_t=(1-\theta B)\bigl(1-\theta^{(12)}B^{12}\bigr)\eps_t .
+\]
+\end{definition}
+
+\begin{definition}{ARIMA$(p,d,q)$}{p5-arima}
+$\{X_t\}$ is an \textbf{ARIMA$(p,d,q)$} (``integrated ARMA'') process if its
+$d$-th difference is a (causal, invertible) $\mathrm{ARMA}(p,q)$:
+\[
+\Phi(B)\,(1-B)^{d}X_t=\Theta(B)\,\eps_t .
+\]
+Equivalently, writing $Z_t=\diff^{d}X_t$,
+\[
+Z_t=\sum_{j=1}^{p}\phi_jZ_{t-j}+\eps_t-\sum_{j=1}^{q}\theta_j\eps_{t-j}.
+\]
+The ``I'' stands for \emph{integrated}: $X_t$ is recovered from $Z_t$ by summing
+(the inverse of differencing) $d$ times. ARMA is the case $d=0$.
+\end{definition}
+
+\begin{definition}{SARIMA$(p,d,q)\times(P,D,Q)_s$}{p5-sarima}
+The full \textbf{seasonal ARIMA} folds both an ordinary difference of order $d$
+and a seasonal difference of order $D$ in front of a SARMA:
+\[
+\Phi(B)\,\Phi^{(s)}(B)\,(1-B)^{d}(1-B^{s})^{D}\,X_t
+=\Theta(B)\,\Theta^{(s)}(B)\,\eps_t .
+\]
+Here $d$ removes a polynomial trend, $D$ removes a (possibly stochastic)
+seasonal pattern, and the four polynomials capture the remaining short-range and
+seasonal dependence.
+\end{definition}
+
+\begin{definition}{Random walk and the IMA$(1,1)$/ARI$(1,1)$ models}{p5-rw}
+The \textbf{random walk} is the AR(1) at the boundary $\phi=1$,
+\[
+X_t=X_{t-1}+\eps_t ,
+\]
+which is \emph{not} stationary, but whose first difference $\diff X_t=\eps_t$ is
+white noise: it is an ARIMA$(0,1,0)$. Two minimal one-step-integrated models:
+\begin{itemize}
+\item \textbf{IMA$(1,1)$} $=$ ARIMA$(0,1,1)$: $Z_t=\diff Y_t=\eps_t-\theta\eps_{t-1}$,
+      i.e.\ $Y_t=Y_{t-1}+\eps_t-\theta\eps_{t-1}$;
+\item \textbf{ARI$(1,1)$} $=$ ARIMA$(1,1,0)$: $Z_t=\diff Y_t=\phi Z_{t-1}+\eps_t$
+      with $\abs\phi<1$, i.e.\ $Y_t-Y_{t-1}=\phi(Y_{t-1}-Y_{t-2})+\eps_t$.
+\end{itemize}
+Neither $\{Y_t\}$ is stationary.
+\end{definition}
+
+\begin{intuition}
+``Regress-and-subtract'' versus ``difference'' is the central practical choice.
+Regression on $a+bt$ (or on $\sin/\cos$ harmonics) gives an interpretable,
+deterministic trend but assumes you know its functional form. Differencing is
+model-free and robust --- $\diff$ knocks out any linear drift, $\diff^{q}$ any
+degree-$(q-1)$ polynomial, $\diff_{(s)}$ any period-$s$ season --- at the price
+of slightly distorting the noise ($\diff Y_t$ replaces $Y_t$) and risking
+\emph{over}-differencing (injecting a spurious unit root into the MA part).
+\end{intuition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{$\diff$ removes a linear trend; $\diff Y$ stays stationary}{p5-lintrend}
+Let $X_t=a+bt+Y_t$ with $\{Y_t\}$ stationary. Then
+\[
+\diff X_t=X_t-X_{t-1}=b+\diff Y_t ,
+\]
+so the trend $a+bt$ is reduced to the constant $b$, and the random part
+$\diff Y_t=Y_t-Y_{t-1}$ is again stationary. Differencing once more removes the
+constant too: $\diff^{2}X_t=\diff^{2}Y_t=Y_t-2Y_{t-1}+Y_{t-2}$.\\[2pt]
+\textit{Proof idea:} substitute $a+bt+Y_t$ and cancel:
+$a+bt-(a+b(t-1))=b$. Linearity of $\diff$ gives $\diff Y_t$; a finite linear
+combination of a stationary process is stationary, hence so is $\diff Y_t$.\\
+\textit{Why:} the formal justification for first-differencing a series that
+``looks linear''; it converts a non-stationary level into a stationary
+increment, up to a known constant that the mean estimate then absorbs.
+\end{proposition}
+
+\begin{proposition}{$\diff^{q}$ annihilates a degree-$(q-1)$ polynomial trend}{p5-polytrend}
+Let $X_t=\mu_t+Y_t$ with $\mu_t$ a polynomial of degree $q-1$ in $t$. Then
+$\diff^{q}\mu_t\equiv 0$, so
+\[
+\diff^{q}X_t=\diff^{q}Y_t=\sum_{k=0}^{q}\binom{q}{k}(-1)^{k}Y_{t-k}.
+\]
+\textit{Proof idea:} $\diff$ lowers the degree of a polynomial in $t$ by exactly
+one (the leading $t^{m}$ becomes $t^{m}-(t-1)^{m}=m\,t^{m-1}+\cdots$); applying
+$\diff$ a total of $q$ times to a degree-$(q-1)$ polynomial drives it to the
+zero sequence. Linearity then leaves $\diff^{q}Y_t$, expanded by the binomial
+theorem. (See Exercise~\ref{exo:p5-arimainvar} for the careful induction that
+$\diff^{k}t^{k-1}=0$.)\\
+\textit{Why:} tells you exactly how many differences $d=q$ are needed to flatten
+a polynomial trend of a given degree, which is how one chooses $d$ in
+ARIMA$(p,d,q)$.
+\end{proposition}
+
+\begin{theorem}{Combined $\diff\diff_{(12)}$ yields a stationary process}{p5-combined}
+Let $X_t=a+bt+s_t+Y_t$, where $\{Y_t\}$ is zero-mean stationary with ACVS
+$\acvs_\tau$, $a,b$ are constants and $s_{t+12}=s_t$ has period $12$. Then
+\[
+\diff\diff_{(12)}X_t=\diff\diff_{(12)}Y_t
+=Y_t-Y_{t-1}-Y_{t-12}+Y_{t-13}
+\]
+is weakly stationary, with mean $0$ and
+\[
+\begin{aligned}
+\Cov\bigl(\diff\diff_{(12)}X_t,\ \diff\diff_{(12)}X_{t-\tau}\bigr)
+=\;&\acvs_\tau-\acvs_{\tau+1}-\acvs_{\tau+12}+\acvs_{\tau+13}\\
+&-\acvs_{\tau-1}+\acvs_{\tau}+\acvs_{\tau+11}-\acvs_{\tau+12}\\
+&-\acvs_{\tau-12}+\acvs_{\tau-11}+\acvs_{\tau}-\acvs_{\tau+1}\\
+&+\acvs_{\tau-13}-\acvs_{\tau-12}-\acvs_{\tau-1}+\acvs_{\tau} .
+\end{aligned}
+\]
+\textit{Proof idea:} first $\diff_{(12)}X_t=12b+\diff_{(12)}Y_t$ kills $s_t$ and
+turns $bt$ into the constant $12b$; then $\diff$ kills the constant, leaving the
+fixed linear combination $Y_t-Y_{t-1}-Y_{t-12}+Y_{t-13}$. Its mean is $0$ and
+its covariance, expanded by bilinearity, is a function of $\tau$ \emph{only}
+(the four-by-four table above).\\
+\textit{Why:} the theoretical backing for the standard ``$\diff_{12}$ then
+$\diff$'' pre-processing of monthly data (e.g.\ the Mauna Loa $\mathrm{CO}_2$
+series); it shows no $t$-dependence survives.
+\end{theorem}
+
+\begin{proposition}{Multiplicative-trend variant: $\diff_{(12)}^{2}$}{p5-multtrend}
+If instead $X_t=(a+bt)s_t+Y_t$ with $s_{t+12}=s_t$, then
+\[
+\diff_{(12)}X_t=12b\,s_{t-12}+Y_t-Y_{t-12},
+\qquad
+\diff_{(12)}^{2}X_t=Y_t-2Y_{t-12}+Y_{t-24},
+\]
+which has zero mean and a covariance depending only on $\abs\tau$, hence is
+stationary.\\[2pt]
+\textit{Proof idea:} $\diff_{(12)}$ once turns $(a+bt)s_t$ into $12b\,s_{t-12}$
+(using $s_t=s_{t-12}$); a second $\diff_{(12)}$ removes that periodic term as
+well, leaving a fixed combination of $Y$'s.\\
+\textit{Why:} warns that when trend and season \emph{multiply} (amplitude grows
+with level), a \emph{single seasonal} double-difference --- not
+$\diff\diff_{(12)}$ --- is what flattens the series.
+\end{proposition}
+
+\begin{proposition}{ACVS of the seasonal MA(1)}{p5-smaacvs}
+For $X_t=\eps_t-\theta\eps_{t-s}$ with white-noise variance $\sigma_\eps^2$,
+\[
+\acvs_\tau=\sigma_\eps^2\Bigl[(1+\theta^{2})\delta_\tau-\theta(\delta_{\tau-s}+\delta_{\tau+s})\Bigr]
+=\begin{cases}
+(1+\theta^{2})\sigma_\eps^2, & \tau=0,\\
+-\theta\,\sigma_\eps^2, & \tau=\pm s,\\
+0, &\text{otherwise,}
+\end{cases}
+\]
+so the ACF is $\acf_{\pm s}=-\theta/(1+\theta^{2})$ and zero at every other lag.\\[2pt]
+\textit{Proof idea:} apply the white-noise filter rule
+$\acvs_\tau=\sigma_\eps^2\sum_j a_j a_{j+\abs\tau}$ to the taps
+$a_0=1,\ a_s=-\theta$; only $\tau\in\{0,\pm s\}$ pair surviving noise indices.\\
+\textit{Why:} a single nonzero ACF spike at the seasonal lag $s$ is the
+fingerprint that flags an $\mathrm{SMA}(1)_s$ component in a correlogram.
+\end{proposition}
+
+\begin{proposition}{Random walk is non-stationary; its difference is white noise}{p5-rwprop}
+For the random walk $X_t=\sum_{j=1}^{t}\eps_j$ (with $X_0=0$),
+\[
+\E[X_t]=0,\qquad \Var(X_t)=t\,\sigma_\eps^2,\qquad
+\Cov(X_t,X_{t+\tau})=t\,\sigma_\eps^2\ \ (\tau\ge0),
+\]
+all of which depend on $t$, so $\{X_t\}$ is \textbf{not} stationary; but
+$\diff X_t=\eps_t$ is white noise.\\[2pt]
+\textit{Proof idea:} the variance of a sum of $t$ uncorrelated unit pieces grows
+linearly in $t$; the overlap of $X_t$ and $X_{t+\tau}$ is the first $t$ shared
+terms.\\
+\textit{Why:} the prototype unit-root process --- exactly the ``$\phi=1$
+boundary'' that ARIMA differencing is designed to handle.
+\end{proposition}
+
+\begin{theorem}{Second-order growth of IMA$(1,1)$; correlation $\to 1$}{p5-imagrowth}
+Let $Y_t=Y_{t-1}+\eps_t-\theta\eps_{t-1}$ with $Y_0=0$. Then for $t\ge1$
+\[
+Y_t=\eps_t+(1-\theta)\sum_{j=1}^{t-1}\eps_j-\theta\eps_0 ,
+\]
+hence
+\[
+\Var(Y_t)=\sigma_\eps^2\bigl[\,1+(1-\theta)^{2}(t-1)+\theta^{2}\,\bigr],
+\]
+and for $\tau>0$
+\[
+\Cov(Y_t,Y_{t+\tau})=\sigma_\eps^2\bigl[\,1-\theta+(1-\theta)^{2}(t-1)+\theta^{2}\,\bigr].
+\]
+As $\tau/t\to0$ the correlation $\Corr(Y_t,Y_{t+\tau})\to1$.\\[2pt]
+\textit{Proof idea:} unroll the recursion from $Y_0=0$ to get the explicit
+linear combination of $\eps_0,\dots,\eps_t$; read off $\Var$ and $\Cov$ from the
+shared coefficients (the bulk $(1-\theta)$ terms dominate). Both grow like
+$(1-\theta)^2(t-1)\sigma_\eps^2$, so their ratio $\to1$.\\
+\textit{Why:} shows quantitatively that an integrated series has
+\emph{variance growing linearly in $t$} and \emph{nearby values almost perfectly
+correlated} --- the diagnostic signature of needing a difference.
+\end{theorem}
+
+\begin{theorem}{Second-order growth of ARI$(1,1)$; correlation near unity}{p5-arigrowth}
+Let $Y_t-Y_{t-1}=\phi(Y_{t-1}-Y_{t-2})+\eps_t$ with $\abs\phi<1$ and $Y_0=0$.
+Then
+\[
+Y_t=\sum_{j=1}^{t}\ \sum_{i=0}^{t-j}\phi^{i}\,\eps_j
+=\sum_{j=1}^{t}\frac{1-\phi^{\,t-j+1}}{1-\phi}\,\eps_j ,
+\]
+so that
+\[
+\begin{aligned}
+\Var(Y_t)&=\sigma_\eps^2\sum_{j=1}^{t}\!\left(\frac{1-\phi^{\,t-j+1}}{1-\phi}\right)^{2},\\[2pt]
+\Cov(Y_t,Y_{t+\tau})&=\sigma_\eps^2\sum_{j=1}^{t}
+\frac{1-\phi^{\,t-j+1}}{1-\phi}\cdot\frac{1-\phi^{\,t+\tau-j+1}}{1-\phi}
+\qquad (\tau>0).
+\end{aligned}
+\]
+Again the correlation between nearby times is close to unity.\\[2pt]
+\textit{Proof idea:} the increments $Z_t=\diff Y_t$ form a stationary AR(1),
+$Z_t=\sum_{i\ge0}\phi^{i}\eps_{t-i}$; integrating ($Y_t=\sum_{m\le t}Z_m$ from
+$0$) and summing the inner geometric series gives the closed coefficients
+$(1-\phi^{t-j+1})/(1-\phi)$.\\
+\textit{Why:} confirms that even when the increments are a well-behaved
+stationary AR(1), \emph{integrating} them recreates the random-walk-like
+variance growth and near-unit correlation, so the level $\{Y_t\}$ must be
+differenced before fitting.
+\end{theorem}
+
+\begin{pitfall}
+$\diff_{(s)}=I-B^{s}$ is \emph{not} $\diff^{s}=(I-B)^{s}$. The seasonal
+difference subtracts the value $s$ steps back ($X_t-X_{t-s}$, two terms); the
+$s$-th ordinary difference is an $(s+1)$-term binomial combination. They remove
+different things: $\diff_{(s)}$ a period-$s$ season, $\diff^{s}$ a degree-$(s-1)$
+polynomial. Mixing them up is a classic exam error.
+\end{pitfall}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Choosing the differencing orders $d$ and $D$}{p5-choosed}
+\begin{enumerate}
+  \item \textbf{Trend.} If the level looks like a degree-$(q-1)$ polynomial,
+        take $d=q$ ordinary differences (linear drift $\Rightarrow d=1$;
+        quadratic $\Rightarrow d=2$). Symptoms of a remaining unit root: a
+        slowly decaying sample ACF and near-linear variance growth.
+  \item \textbf{Season.} If a fixed pattern of period $s$ persists, take one
+        seasonal difference $\diff_{(s)}$ ($D=1$); rarely $D=2$.
+  \item \textbf{Order.} Apply $\diff_{(s)}$ first to remove the season, then
+        $\diff^{d}$; for monthly data with linear drift this is
+        $\diff\diff_{(12)}$.
+  \item \textbf{Stop} when the differenced series has a stable mean, constant
+        variance and a quickly decaying ACF. \textbf{Do not over-difference}:
+        an extra $\diff$ injects a spurious MA unit root
+        ($\acf_1\to-\tfrac12$) and inflates variance.
+\end{enumerate}
+\end{keytech}
+
+\begin{keytech}{Expanding a SARMA into explicit lag form}{p5-expandsarma}
+Multiply the polynomials out, treating $B$ as a formal variable:
+\begin{enumerate}
+  \item Write the four factors $\Phi(B),\Phi^{(s)}(B)$ (left) and
+        $\Theta(B),\Theta^{(s)}(B)$ (right).
+  \item Expand each product, e.g.
+        $(1-\theta B)(1-\theta^{(12)}B^{12})
+        =1-\theta B-\theta^{(12)}B^{12}+\theta\theta^{(12)}B^{13}$.
+  \item Read off the surviving lags. The seasonal factor only contributes lags
+        that are multiples of $s$; cross terms give lags like $s\pm1$.
+  \item Translate $B^{k}X_t=X_{t-k}$, $B^{k}\eps_t=\eps_{t-k}$ to get the
+        difference equation, then solve for $X_t$ (move all but $X_t$ to the
+        right) for a one-step recursion.
+\end{enumerate}
+\end{keytech}
+
+\begin{keytech}{Deriving the MA$(\infty)$ ($\psi$-weights) of a SARMA/ARMA}{p5-psiweights}
+To get $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ from $\Phi(B)X_t=\Theta(B)\eps_t$:
+\begin{enumerate}
+  \item Invert the AR factor as a geometric series:
+        $\dfrac{1}{1-\phi B}=\sum_{l\ge0}\phi^{l}B^{l}$ (valid when
+        $\abs\phi<1$).
+  \item Multiply by the full MA numerator and collect the coefficient of
+        $B^{j}$.
+  \item \textbf{Match powers of $B$}: $\Phi(B)\sum_j\psi_jB^{j}=\Theta(B)$ gives
+        the recursion
+        $\psi_j=\theta^{\text{(num)}}_j+\sum_{i=1}^{p}\phi_i\psi_{j-i}$,
+        $\psi_0=1$, with $\theta^{\text{(num)}}_j$ the coefficient of $B^{j}$ in
+        the (expanded) MA numerator. Beyond the highest numerator lag the pure
+        recursion $\psi_j=\sum_i\phi_i\psi_{j-i}$ takes over.
+\end{enumerate}
+Spot the recursion early (e.g.\ $\psi_3=\phi\psi_2$) --- it collapses the
+algebra.
+\end{keytech}
+
+\begin{keytech}{ACVS/ACF of a seasonal MA$(\infty)$ via even/odd lags}{p5-acvsseasonal}
+For a process with only even (or only seasonal) taps,
+$X_t=\sum_j a_j\eps_{t-j}$:
+\begin{enumerate}
+  \item Use $\acvs_\tau=\sigma_\eps^2\sum_{j\ge0}a_j a_{j+\tau}$ and
+        $\acf_\tau=\acvs_\tau/\acvs_0$.
+  \item If the taps vanish at odd lags ($a_{\text{odd}}=0$), then so do
+        $\acvs_\tau$ and $\acf_\tau$ at odd $\tau$ --- only even (seasonal) lags
+        carry correlation.
+  \item Sum the resulting geometric series in $\phi^{2}$ for the closed form;
+        $\Var(X_t)=\acvs_0=\sigma_\eps^2\sum_j a_j^2$.
+\end{enumerate}
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{ARIMA invariance to an added polynomial \quad\textnormal{[Sheet 5]}}{p5-arimainvar}
+Suppose $\{X_t\}$ is an ARIMA$(p,d,q)$ process satisfying
+$\Phi(B)(I-B)^{d}X_t=\Theta(B)Z_t$ with $Z_t$ white noise. Show that the same
+equations are satisfied by $W_t=X_t+A_0+A_1t+\cdots+A_{d-1}t^{d-1}$, where the
+$A_j$ are independent random coefficients.
+\end{exercise}
+\begin{solution}
+Because $\Phi(B)$ and $\Theta(B)$ act on whatever $(I-B)^{d}X_t$ produces, it
+suffices to show that the added polynomial is annihilated by $(I-B)^{d}$, i.e.\
+$(I-B)^{d}W_t=(I-B)^{d}X_t$.
+
+First, $(I-B)\,\mathbf 0=\mathbf 0$ on the zero sequence. By linearity of
+$(I-B)^{d}$,
+\[
+(I-B)^{d}W_t=(I-B)^{d}X_t
++\sum_{k=1}^{d}A_{k-1}\,(I-B)^{d}t^{\,k-1}.
+\]
+So we only need $(I-B)^{d}t^{\,k-1}=\mathbf 0$ for $k=1,\dots,d$; it is enough to
+prove the stronger statement
+\[
+(I-B)^{k}\,t^{\,k-1}=\mathbf 0\qquad\text{for all }k\in\Nat ,
+\]
+by induction on $k$.
+
+\emph{Base case $k=1$:} $(I-B)t^{0}=(I-B)\mathbf 1=\mathbf 1-\mathbf 1=\mathbf 0$
+(here $\mathbf 1$ is the constant-one sequence).
+
+\emph{Inductive step:} assume $(I-B)^{r}t^{\,r-1}=\mathbf 0$ for all $r\le k$.
+Then
+\[
+(I-B)^{k+1}t^{\,k}=(I-B)^{k}(I-B)t^{\,k}
+=(I-B)^{k}\bigl(t^{\,k}-(t-1)^{k}\bigr).
+\]
+By the binomial theorem the top power cancels,
+\[
+t^{\,k}-(t-1)^{k}
+=-\sum_{r=0}^{k-1}\binom{k}{r}(-1)^{\,k-r}t^{\,r},
+\]
+a polynomial of degree $k-1$. Applying $(I-B)^{k}$ and using linearity together
+with the induction hypothesis (each $(I-B)^{r+1}t^{\,r}=\mathbf 0$ for
+$r\le k-1$, and one extra difference of $\mathbf 0$ is still $\mathbf 0$), every
+term vanishes, so $(I-B)^{k+1}t^{\,k}=\mathbf 0$.
+
+By induction the claim holds for all $k$, hence $(I-B)^{d}W_t=(I-B)^{d}X_t$ and
+$\{W_t\}$ satisfies the identical ARIMA equations. \emph{Interpretation:} the
+$d$-fold integration in an ARIMA$(p,d,q)$ leaves the degree-$(d-1)$ polynomial
+``initial conditions'' completely undetermined by the model.
+\end{solution}
+
+\begin{exercise}{$\psi$-weights of a SARMA$(1,2)\times(0,1)_4$ \quad\textnormal{[Sheet 5]}}{p5-sarmapsi}
+$U_t$ follows a $\mathrm{SARMA}(1,2)\times(0,1)_4$ model. Write the defining
+equation and find the weights $\psi_j$ in the MA$(\infty)$ representation
+$U_t=\sum_{j\ge0}\psi_j\eps_{t-j}$.
+\end{exercise}
+\begin{solution}
+With one seasonal MA factor at $s=4$ the model is
+\[
+(1-\phi B)\,U_t=(1-\theta_1B-\theta_2B^{2})(1-\Theta B^{4})\,\eps_t
+\;\Longleftrightarrow\;
+U_t=\phi U_{t-1}+(1-\theta_1B-\theta_2B^{2})(1-\Theta B^{4})\eps_t .
+\]
+Invert the AR factor as a geometric series, $1/(1-\phi B)=\sum_{l\ge0}\phi^{l}B^{l}$:
+\[
+\begin{aligned}
+U_t&=\sum_{l\ge0}(\phi B)^{l}(1-\theta_1B-\theta_2B^{2})(1-\Theta B^{4})\eps_t\\
+&=\sum_{l\ge0}\bigl(\phi^{l}B^{l}-\theta_1\phi^{l}B^{l+1}-\theta_2\phi^{l}B^{l+2}
+-\Theta\{\phi^{l}B^{l+4}-\theta_1\phi^{l}B^{l+5}-\theta_2\phi^{l}B^{l+6}\}\bigr)\eps_t .
+\end{aligned}
+\]
+Collecting the coefficient of $B^{j}$ gives $\psi_j$. For the low lags
+(before the seasonal term enters):
+\[
+\psi_0=1,\quad
+\psi_1=-\theta_1+\phi,\quad
+\psi_2=-\theta_2-\theta_1\phi+\phi^{2},\quad
+\psi_3=-\theta_2\phi-\theta_1\phi^{2}+\phi^{3}=\phi\,\psi_2 .
+\]
+From $j=4$ the seasonal factor contributes:
+\[
+\begin{aligned}
+\psi_4&=-\Theta-\theta_2\phi^{2}-\theta_1\phi^{3}+\phi^{4}=-\Theta+\phi\,\psi_3,\\
+\psi_5&=-\Theta(\phi-\theta_1)-\theta_2\phi^{3}-\theta_1\phi^{4}+\phi^{5},\\
+\psi_6&=-\Theta(\phi^{2}-\theta_1\phi-\theta_2)+(\phi^{6}-\theta_1\phi^{5}-\theta_2\phi^{4}),\\
+\psi_7&=-\Theta(\phi^{3}-\theta_1\phi^{2}-\theta_2\phi)+(\phi^{7}-\theta_1\phi^{6}-\theta_2\phi^{5})=\phi\,\psi_6 .
+\end{aligned}
+\]
+The pattern stabilises: for all $l\ge6$,
+\[
+\boxed{\;\psi_l=\bigl(\phi^{l}-\theta_1\phi^{\,l-1}-\theta_2\phi^{\,l-2}\bigr)
+-\Theta\bigl(\phi^{\,l-4}-\theta_1\phi^{\,l-5}-\theta_2\phi^{\,l-6}\bigr).\;}
+\]
+(The recursion $\psi_l=\phi\psi_{l-1}$ holds once $l$ is past every fixed
+numerator lag, here $l\ge7$, which is the labour-saving shortcut.)
+\end{solution}
+
+\begin{exercise}{Seasonal ARMA $(1-0.7B^{2})X=(1-0.3B^{2})\eps$ \quad\textnormal{[Sheet 5]}}{p5-seasarma}
+Study $(1-0.7B^{2})X_t=(1-0.3B^{2})\eps_t$, $\eps_t$ white noise with unit
+variance.
+(1) Find $\{a_j\}$ in $X_t=\sum_{j\ge0}a_j\eps_{t-j}$.
+(2) Find $\{b_j\}$ in $\eps_t=\sum_{j\ge0}b_jX_{t-j}$.
+(3) Find and describe the autocorrelation $\acf_\tau$.
+\end{exercise}
+\begin{solution}
+Write $\phi=0.7$, $\theta=0.3$, so $(1-\phi B^{2})X_t=(1-\theta B^{2})\eps_t$.
+The AR polynomial $\Phi(z)=1-\phi z^{2}$ has roots $z=\pm\phi^{-1/2}$ with
+modulus $>1$, so the process is stationary (and causal) and we may invert.
+
+\textbf{(1) MA$(\infty)$.} Geometric expansion in $B^{2}$:
+\[
+X_t=\frac{1-\theta B^{2}}{1-\phi B^{2}}\eps_t
+=\sum_{k\ge0}(\phi B^{2})^{k}(1-\theta B^{2})\eps_t .
+\]
+The coefficient of $B^{2k}$ is $\phi^{k}$ and of $B^{2k+2}$ is $-\phi^{k}\theta$,
+so only even lags survive:
+\[
+a_0=1,\quad a_1=0,\quad a_2=\phi-\theta,\quad a_3=0,\quad a_4=\phi^{2}-\phi\theta,
+\dots
+\]
+and in general $a_j=0$ for odd $j$, while for even $j\ge2$
+\[
+\boxed{\,a_j=\phi^{\,j/2}-\phi^{\,(j-2)/2}\theta\,}
+=\phi^{\,(j-2)/2}(\phi-\theta).
+\]
+
+\textbf{(2) AR$(\infty)$ (invertibility).} The MA polynomial
+$1-\theta z^{2}$ has roots $\pm\theta^{-1/2}$, modulus $>1$, so the process is
+invertible. By symmetry, swap the roles of $\phi$ and $\theta$:
+\[
+\eps_t=\frac{1-\phi B^{2}}{1-\theta B^{2}}X_t=\sum_{k\ge0}(\theta B^{2})^{k}(1-\phi B^{2})X_t,
+\]
+hence $b_0=1$, $b_j=0$ for odd $j$, and for even $j\ge2$
+\[
+\boxed{\,b_j=\theta^{\,j/2}-\theta^{\,(j-2)/2}\phi\,.}
+\]
+
+\textbf{(3) Autocorrelation.} Using
+$\acvs_\tau=\sigma_\eps^2\sum_{j\ge0}a_j a_{j+\tau}$ (white noise) and
+$\acf_\tau=\acvs_\tau/\acvs_0$. Since the $a_j$ vanish at odd $j$, $\acf_\tau=0$
+for all odd $\tau$, and $\acf_0=1$.
+
+First the variance. With $a_0=1$ and $a_{2m}=\phi^{m-1}(\phi-\theta)$ for
+$m\ge1$,
+\[
+\Var(X_t)=\acvs_0=\sigma_\eps^2\Bigl(1+(\phi-\theta)^{2}\sum_{m\ge1}\phi^{2(m-1)}\Bigr)
+=\sigma_\eps^2\Bigl(1+\frac{(\phi-\theta)^{2}}{1-\phi^{2}}\Bigr).
+\]
+Writing $(\phi-\theta)^{2}=\phi^{2}(1-2\phi^{-1}\theta+\phi^{-2}\theta^{2})$
+recovers the notes' form
+\[
+\Var(X_t)=\sigma_\eps^2\Bigl\{1+(1-2\phi^{-1}\theta+\phi^{-2}\theta^{2})\tfrac{\phi^{2}}{1-\phi^{2}}\Bigr\}.
+\]
+For even $\tau=2m\ (m\ge1)$,
+\[
+\acvs_\tau=\sigma_\eps^2\Bigl[\,a_0 a_\tau+\sum_{k\ge1}a_{2k}a_{2k+\tau}\Bigr]
+=\sigma_\eps^2\Bigl[(\phi^{m}-\phi^{m-1}\theta)+(\phi-\theta)^{2}\phi^{m}\sum_{k\ge1}\phi^{2(k-1)}\Bigr],
+\]
+where the cross term used
+$a_{2k}a_{2k+2m}=\phi^{k-1}(\phi-\theta)\cdot\phi^{k+m-1}(\phi-\theta)$.
+Summing the geometric series and dividing by $\acvs_0$ (with $m=\tfrac\tau2$),
+\[
+\begin{aligned}
+\acf_\tau
+&=\frac{\phi^{m}-\phi^{m-1}\theta+(\phi-\theta)^{2}\dfrac{\phi^{m}}{1-\phi^{2}}}
+{\,1+\dfrac{(\phi-\theta)^{2}}{1-\phi^{2}}\,}\\[4pt]
+&=\phi^{\,m}\cdot
+\frac{1-\phi^{-1}\theta+(1-2\phi^{-1}\theta+\phi^{-2}\theta^{2})\dfrac{\phi^{2}}{1-\phi^{2}}}
+{\,1+(1-2\phi^{-1}\theta+\phi^{-2}\theta^{2})\dfrac{\phi^{2}}{1-\phi^{2}}\,}.
+\end{aligned}
+\]
+With $\phi=0.7,\ \theta=0.3$: $\Var(X_t)=1+\tfrac{0.16}{0.51}\approx1.3137$, and
+$\acf_2\approx0.472$, $\acf_4\approx0.330$, $\acf_6\approx0.231$,
+$\acf_8\approx0.162$ --- a clean \emph{geometric decay at rate $\phi$ along the
+even lags}, with all odd-lag correlations zero. (Numerically verified.) The
+correlogram therefore shows spikes only at $\tau=2,4,6,\dots$ decaying like
+$0.7^{\tau/2}$.
+\end{solution}
+
+\begin{exercise}{Order of $\diff\diff_{(s)}$ on trend-plus-season \quad\textnormal{[New]}}{p5-newdiff}
+Let $X_t=a+bt+s_t+Y_t$ with $s_{t+4}=s_t$ (quarterly season) and $\{Y_t\}$
+zero-mean stationary. Compute $\diff\diff_{(4)}X_t$ explicitly and verify it is a
+fixed linear combination of $\{Y_t\}$ with zero mean.
+\end{exercise}
+\begin{solution}
+Apply the seasonal difference first:
+\[
+\diff_{(4)}X_t=X_t-X_{t-4}
+=\bigl(a+bt+s_t+Y_t\bigr)-\bigl(a+b(t-4)+s_{t-4}+Y_{t-4}\bigr)
+=4b+(Y_t-Y_{t-4}),
+\]
+using $s_t=s_{t-4}$. The trend has collapsed to the constant $4b$ and the season
+is gone. Now apply $\diff=I-B$:
+\[
+\diff\diff_{(4)}X_t=\bigl(4b+Y_t-Y_{t-4}\bigr)-\bigl(4b+Y_{t-1}-Y_{t-5}\bigr)
+=Y_t-Y_{t-1}-Y_{t-4}+Y_{t-5}.
+\]
+This is a fixed linear combination of the stationary $\{Y_t\}$, so its mean is
+$\E[Y_t-Y_{t-1}-Y_{t-4}+Y_{t-5}]=0$ and, by bilinearity, its covariance depends
+on the lag only; hence $\diff\diff_{(4)}X_t$ is weakly stationary. (Same shape as
+the $\diff\diff_{(12)}$ result with $12\to4$.)
+\end{solution}
+
+\begin{exercise}{Expand and recurse a SARMA$(0,1)\times(1,0)_{12}$ \quad\textnormal{[New]}}{p5-newsarma}
+Write the explicit one-step recursion for a $\mathrm{SARMA}(0,1)\times(1,0)_{12}$
+model $(1-\phi^{(12)}B^{12})X_t=(1-\theta B)\eps_t$, give its MA$(\infty)$
+weights, and find its ACVS at lags $0,1,11,12,13$.
+\end{exercise}
+\begin{solution}
+Expanding the seasonal AR factor and solving for $X_t$:
+\[
+X_t=\phi^{(12)}X_{t-12}+\eps_t-\theta\eps_{t-1}.
+\]
+This is an AR(1) acting only on the seasonal lag $12$, driven by an MA(1) input.
+Its MA$(\infty)$ comes from inverting
+$1/(1-\phi^{(12)}B^{12})=\sum_{l\ge0}(\phi^{(12)})^{l}B^{12l}$:
+\[
+X_t=\sum_{l\ge0}(\phi^{(12)})^{l}\bigl(\eps_{t-12l}-\theta\eps_{t-12l-1}\bigr),
+\qquad
+\psi_{12l}=(\phi^{(12)})^{l},\quad \psi_{12l+1}=-\theta(\phi^{(12)})^{l},
+\]
+all other $\psi_j=0$. By the white-noise filter rule
+$\acvs_\tau=\sigma_\eps^2\sum_{j\ge0}\psi_j\psi_{j+\tau}$:
+\[
+\begin{aligned}
+\acvs_0&=\sigma_\eps^2\,\frac{1+\theta^{2}}{1-(\phi^{(12)})^{2}},
+&\qquad
+\acvs_1&=\sigma_\eps^2\sum_{l\ge0}\psi_{12l}\psi_{12l+1}
+=\frac{-\theta\,\sigma_\eps^2}{1-(\phi^{(12)})^{2}},\\
+\acvs_{11}&=\sigma_\eps^2\sum_{l\ge0}\psi_{12l+1}\psi_{12(l+1)}
+=\frac{-\theta\,\phi^{(12)}\sigma_\eps^2}{1-(\phi^{(12)})^{2}},
+&\qquad
+\acvs_{12}&=\sigma_\eps^2\sum_{l\ge0}\psi_{12l}\psi_{12l+12}
+=\phi^{(12)}\acvs_0,\\
+\acvs_{13}&=\sigma_\eps^2\sum_{l\ge0}\psi_{12l}\psi_{12(l+1)+1}
+=\frac{-\theta\,\phi^{(12)}\sigma_\eps^2}{1-(\phi^{(12)})^{2}}=\acvs_{11}.
+\end{aligned}
+\]
+So correlation appears in clusters around the seasonal lags $0,12,24,\dots$
+(each carrying MA(1) side-lobes at $\pm1$), decaying geometrically in
+$\phi^{(12)}$ --- the textbook shape of a seasonal AR with a non-seasonal MA.
+\end{solution}
+
+\begin{exercise}{IMA$(1,1)$ variance growth and the over-differencing trap \quad\textnormal{[New]}}{p5-newima}
+For $Y_t=Y_{t-1}+\eps_t-\theta\eps_{t-1}$ with $Y_0=0$: (a) confirm
+$\Var(Y_t)$ grows linearly in $t$ for $\theta\ne1$; (b) what happens at the
+boundary $\theta=1$, and why is that the over-differencing warning?
+\end{exercise}
+\begin{solution}
+\textbf{(a)} From $Y_t=\eps_t+(1-\theta)\sum_{j=1}^{t-1}\eps_j-\theta\eps_0$ and
+uncorrelated noise,
+\[
+\Var(Y_t)=\sigma_\eps^2\bigl[1+(1-\theta)^{2}(t-1)+\theta^{2}\bigr],
+\]
+which is \emph{linear} in $t$ with slope $(1-\theta)^{2}\sigma_\eps^2>0$ whenever
+$\theta\ne1$: the series wanders like a (damped) random walk, the hallmark of an
+integrated process. The covariance
+$\Cov(Y_t,Y_{t+\tau})=\sigma_\eps^2[1-\theta+(1-\theta)^{2}(t-1)+\theta^{2}]$
+shares the same leading $(1-\theta)^{2}(t-1)$ term, so the correlation of nearby
+points $\to1$.
+
+\textbf{(b)} At $\theta=1$ the slope vanishes and
+$\Var(Y_t)=\sigma_\eps^2[1+1]=2\sigma_\eps^2$ is \emph{bounded}. In fact
+$Y_t=Y_{t-1}+\eps_t-\eps_{t-1}$ telescopes to $Y_t=\eps_t-\eps_0$, so
+$\diff Y_t=\eps_t-\eps_{t-1}$ is a (non-invertible) MA(1) with an MA unit root
+and lag-1 ACF $\acf_1=-\theta/(1+\theta^{2})=-1/2$. This is exactly the
+signature of \emph{over-differencing}: if you difference a series that was
+already stationary, you create a $(1-B)$ factor in the MA polynomial, i.e.\ a
+non-invertible MA(1) with $\acf_1=-\tfrac12$. Seeing $\acf_1\approx-\tfrac12$
+after differencing is the cue to difference one time fewer.
+\end{solution}

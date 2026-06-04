@@ -1,0 +1,112 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{04}{12 March 2026}{Parametric Estimation: Yule--Walker \& Least Squares}{AR/ARMA parameters are estimated by method-of-moments (Yule--Walker), by least squares (forward/backward), or by recursively reconstructing the innovations.}
+
+We have modelled $\{X_t\}$ as an ARMA process; now we \emph{fit} it. Given data $X_1,\dots,X_n$, estimate the AR coefficients $\phi_1,\dots,\phi_p$, the MA coefficients $\theta_1,\dots,\theta_q$, and the innovation variance $\sigma_\eps^2$. Throughout $\eps_t\iid\mathcal N(0,\sigma_\eps^2)$ is Gaussian white noise and the AR part is \textbf{causal} (roots of $\Phi(z)$ outside the unit circle), so that $\eps_t$ is uncorrelated with the past $X_{t-k}$, $k>0$ --- the one fact that makes everything work.
+
+\begin{intu}[The two big ideas]
+There are two routes. \textbf{(1) Yule--Walker} = match moments: turn the AR recursion into a linear system in the autocovariances and solve once. \textbf{(2) Least squares} = minimise the squared one-step prediction errors $\sum\eps_t^2$. For pure AR these coincide asymptotically; for ARMA, least squares is the only one that generalises, but the innovations must first be rebuilt.
+\end{intu}
+
+\section*{Key definitions}
+
+\begin{defn}{Yule--Walker estimators (AR$(p)$)}
+For a mean-zero causal AR$(p)$, form the sample ACVS (mean known to be $0$)
+\[
+\hat\acvs_\tau=\frac1n\sum_{t=1}^{n-\abs\tau}X_tX_{t+\abs\tau},
+\]
+collect $\hat{\bm\acvs}_p=(\hat\acvs_1,\dots,\hat\acvs_p)\Tr$ and the symmetric Toeplitz matrix $\hat\Gamma_p=(\hat\acvs_{i-j})_{i,j=1}^p$ (diagonal $\hat\acvs_0$). Then
+\[
+\hat{\bm\phi}_p=\hat\Gamma_p^{-1}\hat{\bm\acvs}_p,
+\qquad
+\hat\sigma_\eps^2=\hat\acvs_0-\sum_{j=1}^p\hat\phi_j\,\hat\acvs_j .
+\]
+This is the empirical analogue of the population identities $\bm\acvs=\Gamma\bm\phi$ and $\acvs_0=\sum_j\phi_j\acvs_j+\sigma_\eps^2$.
+\end{defn}
+
+\begin{defn}{Forward least-squares estimator (AR$(p)$)}
+Write the AR equations for the observable times $t=p+1,\dots,n$ as $\mathbf X_F=F\bm\phi+\bm\eps$, where $\mathbf X_F=(X_{p+1},\dots,X_n)\Tr$ and the rows of $F$ are the lagged values $(X_{t-1},\dots,X_{t-p})$. The forward LS estimator minimises
+\[
+\mathrm{SS}_F(\bm\phi)=\norm{\mathbf X_F-F\bm\phi}^2
+=\sum_{t=p+1}^n\Big(X_t-\textstyle\sum_{k=1}^p\phi_kX_{t-k}\Big)^2,
+\]
+giving the OLS solution $\hat{\bm\phi}_F=(F\Tr F)^{-1}F\Tr\mathbf X_F$ and $\hat\sigma_F^2=\norm{\mathbf X_F-F\hat{\bm\phi}_F}^2/(n-2p)$. The first $p$ observations are discarded as conditioning values.
+\end{defn}
+
+\begin{defn}{Backward \& forward--backward LS (AR$(p)$)}
+By \emph{time reversibility}, regress the \emph{first} $n-p$ values on their \emph{future} lags: $X_t=\sum_{j=1}^p\phi_jX_{t+j}+\nu_t$, $t=1,\dots,n-p$, i.e.\ $\mathbf X_B=B\bm\phi+\bm\nu$, giving $\hat{\bm\phi}_B=(B\Tr B)^{-1}B\Tr\mathbf X_B$ with the same $\bm\phi$. The \textbf{forward--backward} estimator $\hat{\bm\phi}_{FB}$ minimises the combined criterion $\mathrm{SS}_F(\bm\phi)+\mathrm{SS}_B(\bm\phi)$ (stack $F,B$ and $\mathbf X_F,\mathbf X_B$, then OLS). Simulations show it usually beats both.
+\end{defn}
+
+\begin{defn}{Least squares for ARMA via residual reconstruction}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ the innovations are \emph{unobserved}. LS chooses parameters minimising $S(\bm\phi,\bm\theta)=\sum_t\hat\eps_t^{\,2}$, where for each candidate value the residuals are \textbf{reconstructed recursively} from the model equation after setting the $q$ pre-sample innovations (and any pre-sample data) to zero, e.g.\ $\eps_0=\eps_{-1}=\dots=0$. Nonlinear in general; closed form only in the pure-AR case (then it is forward LS).
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Proposition --- Yule--Walker equations}
+For a mean-zero causal AR$(p)$ with ACVS $\acvs_\tau$, for every $k\ge1$
+\[
+\acvs_k=\sum_{j=1}^p\phi_j\,\acvs_{k-j},\qquad\text{i.e.}\qquad
+\bm\acvs=\Gamma\bm\phi,\quad \acvs_0=\sum_{j=1}^p\phi_j\acvs_j+\sigma_\eps^2.
+\]
+\textit{Idea:} multiply $X_t=\sum_j\phi_jX_{t-j}+\eps_t$ by $X_{t-k}$ and take expectations; causality kills $\E[\eps_tX_{t-k}]=0$ for $k>0$. Replacing $\acvs$ by $\hat\acvs$ gives the YW estimators.
+\end{result}
+
+\begin{intu}[Why causality is the whole trick]
+``Causal $\Rightarrow\E[\eps_tX_{t-k}]=0$'' is the heart of it. $X_{t-k}$ is built from innovations \emph{strictly before} $\eps_t$, and white noise is uncorrelated, so the cross term vanishes --- leaving a clean linear system in the autocovariances. Without causality the noise leaks into the past and YW fails.
+\end{intu}
+
+\begin{result}{Proposition --- YW = best linear predictor}
+The $\phi_1,\dots,\phi_k$ minimising the one-step MSE $\E\big[(Y_t-\sum_{i=1}^k\phi_iY_{t-i})^2\big]$ satisfy exactly the Yule--Walker equations $\acvs_j=\sum_i\phi_i\acvs_{j-i}$.
+\textit{Idea:} the objective is a positive quadratic $\acvs_0-2\sum_i\phi_i\acvs_i+\sum_{i,j}\phi_i\phi_j\acvs_{i-j}$; setting $\partial/\partial\phi_i=0$ gives YW. So the AR coefficients \emph{are} the optimal linear-prediction weights --- which is why YW and LS agree asymptotically.
+\end{result}
+
+\begin{result}{Proposition --- time reversibility of a Gaussian AR}
+If $\{X_t\}$ is a stationary Gaussian AR$(p)$, then $Y_t=X_{-t}$ is an AR$(p)$ with the \emph{same} coefficients and innovation variance. Equivalently $X_t=\sum_{j=1}^p\phi_jX_{t+j}+\nu_t$.
+\textit{Idea:} a Gaussian process is determined by its ACVS, and $\acvs_{-\tau}=\acvs_\tau$; forward and reversed series have identical second-order structure. This is exactly what \emph{legitimises} the backward regression.
+\end{result}
+
+\begin{result}{Levinson--Durbin \& a caveat}
+\textbf{Levinson--Durbin:} the YW system $\hat\Gamma_p\hat{\bm\phi}_p=\hat{\bm\acvs}_p$ is symmetric Toeplitz; this structure is exploited to solve it recursively in $O(p^2)$ instead of $O(p^3)$, producing as a by-product the PACF $\hat\pacf_k=\hat\phi_{k,k}$ and the error variance at each order.\\
+\textbf{Caveat:} the LS estimators $\hat{\bm\phi}_F,\hat{\bm\phi}_B,\hat{\bm\phi}_{FB}$ are \emph{not} constrained to be stationary ($\hat\Phi(z)$ may have roots inside the unit circle) --- a problem for prediction, but fine for spectral estimation. Yule--Walker, by contrast, \emph{always} yields a stationary fit.
+\end{result}
+
+\textbf{Recipe --- recursive innovation reconstruction (MA/ARMA).} Solve the model equation for $\eps_t$, fix the $q$ pre-sample innovations (and data) to zero, recurse forward, then minimise $S=\sum_t\hat\eps_t^2$:
+\[
+\begin{aligned}
+\text{MA(1):}\quad &\eps_t=X_t+\theta\eps_{t-1},\\
+\text{ARMA(1,1):}\quad &\eps_t=X_t-\phi X_{t-1}+\theta\eps_{t-1}\quad(X_0=\eps_0=0).
+\end{aligned}
+\]
+Each $\hat\eps_t$ is an explicit function of the parameters; because of the $\theta\hat\eps_{t-1}$ feedback, $S$ is generally \emph{not} quadratic and must be minimised numerically.
+
+\begin{intu}[Yule--Walker vs.\ least squares, in practice]
+For large $n$ both give nearly the same AR estimates (e.g.\ $\hat\phi\approx\hat\acf_1$ for AR(1), which is also what method-of-moments gives). The differences are at the margins: YW is one linear solve and always stationary; LS extends cleanly to ARMA and to including a mean, but can stray outside the stationary region.
+\end{intu}
+
+\section*{A tiny worked example}
+
+\begin{exmpl}[AR(1) Yule--Walker, by hand]
+A length-$200$ series gives $\hat\acvs_0=4.0$, $\hat\acvs_1=2.4$. For $p=1$ the YW system is scalar, $\hat\acvs_1=\hat\phi\,\hat\acvs_0$, so
+\[
+\hat\phi=\frac{\hat\acvs_1}{\hat\acvs_0}=\frac{2.4}{4.0}=0.6=\hat\acf_1,
+\qquad
+\hat\sigma_\eps^2=\hat\acvs_0-\hat\phi\,\hat\acvs_1=4.0-0.6(2.4)=2.56.
+\]
+Check: $\hat\acvs_0(1-\hat\phi^2)=4.0(0.64)=2.56$ matches $\acvs_0=\sigma_\eps^2/(1-\phi^2)$. Stationarity: $\Phi(z)=1-0.6z$ has root $z=1.67$, modulus $>1$, so the fit is causal.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+\item \textbf{Fit AR$(p)$ by YW:} estimate $\hat\acvs_0,\dots,\hat\acvs_p$, build the Toeplitz $\hat\Gamma_p$ and vector $\hat{\bm\acvs}_p$, solve $\hat{\bm\phi}_p=\hat\Gamma_p^{-1}\hat{\bm\acvs}_p$, then $\hat\sigma_\eps^2=\hat\acvs_0-\sum_j\hat\phi_j\hat\acvs_j$.
+\item \textbf{ACF shortcut:} dividing the whole system by $\hat\acvs_0$ replaces covariances by correlations, $\hat{\bm\phi}_p=\bar\Gamma_p^{-1}\hat{\bm\acf}_p$ ($\hat\acvs_0$ cancels; needed only for $\hat\sigma_\eps^2$).
+\item \textbf{LS is regression:} forward/backward/forward--backward are all OLS $\hat{\bm\phi}=(A\Tr A)^{-1}A\Tr\mathbf X$. Remember $\hat\sigma^2$ divides by $n-2p$, not $n$.
+\item \textbf{MA/ARMA:} the innovations are latent --- \emph{always} reconstruct them recursively (initial $\eps$'s set to $0$) before squaring; expect a numerical minimisation.
+\item \textbf{Reflexes:} YW $\Rightarrow$ always stationary; LS $\Rightarrow$ flexible (ARMA, mean) but may be non-stationary; don't put $\acvs_0$ in the RHS vector.
+\end{itemize}
+\end{retenir}
+
+\end{document}

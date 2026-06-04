@@ -1,0 +1,61 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\examheader{Week 4: Parametric Estimation --- Yule--Walker \& Least Squares}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+Let $\{X_t\}$ be a mean-zero causal $\mathrm{AR}(2)$ process
+$X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$.
+
+\textbf{(a)} Starting from the model equation, derive the \emph{Yule--Walker equations}: multiply by $X_{t-k}$, take expectations, and explain precisely where \emph{causality} is used to kill the noise cross-term. State the resulting linear system $\boldsymbol\acvs=\Gamma\boldsymbol\phi$ and the variance identity for $\sigma^2$. \hfill(2 pts)
+
+\textbf{(b)} A series gives the sample autocovariances $\hat\acvs_0=5$, $\hat\acvs_1=3$, $\hat\acvs_2=1$. Compute the Yule--Walker estimates $\hat\phi_1,\hat\phi_2$ and $\hat\sigma^2$. \hfill(2 pts)
+
+\textbf{(c)} Verify that the fitted model of part (b) is causal (stationary) by locating the roots of its AR polynomial. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+A series of length $n=150$ is modelled as a mean-zero $\mathrm{AR}(3)$ process
+$X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\phi_3X_{t-3}+\eps_t$. The estimated
+autocorrelations are
+\[
+\hat\acf_1=0.8,\qquad \hat\acf_2=0.6,\qquad \hat\acf_3=0.4,
+\]
+and the sample variance is $\hat\acvs_0=10$.
+
+\textbf{(a)} Explain why the Yule--Walker fit can be written entirely with the \emph{correlation} matrix, $\hat{\boldsymbol\phi}=\bar\Gamma_3^{-1}\hat{\boldsymbol\acf}_3$, i.e.\ why $\hat\acvs_0$ cancels in the system for $\boldsymbol\phi$. Write out the $3\times3$ system explicitly. \hfill(1.5 pts)
+
+\textbf{(b)} Solve the system for $\hat\phi_1,\hat\phi_2,\hat\phi_3$ (e.g.\ by Gaussian elimination) and verify your solution by substituting it back into the three equations. \hfill(2.5 pts)
+
+\textbf{(c)} Compute the innovation-variance estimate $\hat\sigma^2$ using $\hat\acvs_0=10$. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+This problem treats the two faces of least squares.
+
+\textbf{(a)} \emph{(MA via residual reconstruction.)} A mean-zero $\mathrm{MA}(1)$ process $X_t=\eps_t-\theta\eps_{t-1}$ is observed at $X_1=0$, $X_2=2$, $X_3=-1$. Reconstruct the innovations $\hat\eps_1,\hat\eps_2,\hat\eps_3$ as functions of $\theta$ (state your initialisation), write the least-squares criterion $S(\theta)$, and find $\hat\theta$. Is the fit invertible? \hfill(2.5 pts)
+
+\textbf{(b)} \emph{(Forward least squares for $\mathrm{AR}(2)$.)} For the five observations $x_1,\dots,x_5=1,\,2,\,0,\,-1,\,-2$ (already mean-zero), write the forward design $\mathbf X_F=F\boldsymbol\phi+\boldsymbol\eps$ for an $\mathrm{AR}(2)$ fit, form the normal equations $F\Tr F\,\hat{\boldsymbol\phi}_F=F\Tr\mathbf X_F$, and solve for $\hat{\boldsymbol\phi}_F$. Then report $\hat\sigma_F^2$ using the correct degrees of freedom. \hfill(2 pts)
+
+\textbf{(c)} State, in one sentence each, (i) why the \emph{backward} least-squares estimator $\hat{\boldsymbol\phi}_B$ estimates the \emph{same} coefficients $\boldsymbol\phi$, and (ii) whether a least-squares AR fit is guaranteed to be stationary. \hfill(0.5 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 3.)} Consider the $\mathrm{ARMA}(2,1)$ process
+\[
+\Big(1-\tfrac34\Bsh+\tfrac18\Bsh^2\Big)X_t=\Big(1+\tfrac13\Bsh\Big)\eps_t .
+\]
+
+\textbf{(a)} Factor the AR polynomial $\Phi(z)=1-\tfrac34 z+\tfrac18 z^2$, locate its roots, and confirm the process is causal. Then check invertibility from $\Theta(z)=1+\tfrac13 z$. \hfill(2 pts)
+
+\textbf{(b)} Using a \emph{partial-fraction} expansion of $G(z)=\Theta(z)/\Phi(z)$, find a closed form for the $\mathrm{MA}(\infty)$ weights $\psi_j$ in $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$, and report $\psi_0,\psi_1,\psi_2$. \hfill(3 pts)
+\answerpage
+
+\end{document}

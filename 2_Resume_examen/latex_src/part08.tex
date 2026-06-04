@@ -1,0 +1,708 @@
+% ======================================================================
+%  PART 8 -- Forecasting
+% ======================================================================
+\section{Forecasting}
+\label{sec:forecasting}
+
+The purpose of time series analysis is often to \emph{forecast} future values
+from the data observed up to now. The recipe has three steps: (1) assume the
+form of the model; (2) estimate its parameters; (3) use the assumed structure
+and the estimated parameters to form predictions. In this part we take the
+model structure and the parameters as \textbf{known} and predict $h$ lags
+ahead, i.e.\ we want $X_{n+h}$ from $X_1,\dots,X_n$. The integer $h>0$ is the
+\textbf{lead} (or \textbf{horizon}) and $n$ is the \textbf{origin}. The central
+theme is that, for the second-order theory we use, the optimal predictor depends
+\emph{only} on the covariance structure $\{\acvs_\tau\}$, and for causal ARMA
+models it is computed cleanly by setting future innovations to zero.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Prediction mean square error}{p8-pmse}
+Let $g(X_1,\dots,X_n)$ be any estimator (predictor) of $X_{n+h}$ based on the
+observations $X_1,\dots,X_n$. Its performance is measured by the
+\textbf{prediction mean square error}
+\[
+P^{\,n}_{n+h}\;:=\;\E\!\left[\big(X_{n+h}-g(X_1,\dots,X_n)\big)^2\right].
+\]
+Smaller $P^{\,n}_{n+h}$ means a better forecast; minimising it over a class of
+predictors defines the ``best'' predictor in that class.
+\end{definition}
+
+\begin{definition}{Best linear predictor}{p8-blp}
+The \textbf{best linear predictor} of $X_{n+h}$ based on $X_1,\dots,X_n$ is the
+linear function
+\[
+X^{\,n}_{n+h}\;=\;P_{X_1,\dots,X_n}(X_{n+h})\;=\;\sum_{j=1}^{n}\beta_j X_j
+\]
+that minimises the prediction mean square error among all linear combinations of
+$X_1,\dots,X_n$. We write $P_{X_1,\dots,X_n}(\cdot)$ for the projection onto the
+linear span of the data.
+\begin{itemize}
+  \item For \textbf{Gaussian} time series the conditional expectation
+        $\E[X_{n+h}\mid X_1,\dots,X_n]$ is itself linear in the data, so the best
+        linear predictor coincides with the (overall) best predictor.
+  \item In general the conditional expectation is a \emph{nonlinear} function of
+        the data; for tractability one restricts attention to linear predictors,
+        which need only second-order information.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{$h$-step forecast error and its variance}{p8-ferr}
+For the best linear predictor $X^{\,n}_{n+h}$ define the \textbf{$h$-step ahead
+forecast error}
+\[
+e_n(h)\;:=\;X_{n+h}-X^{\,n}_{n+h}.
+\]
+It is unbiased, $\E[e_n(h)]=0$, and its variance equals the prediction MSE,
+$\Var\big(e_n(h)\big)=P^{\,n}_{n+h}$. For a causal ARMA process with
+$MA(\infty)$ weights $\{\psi_j\}$ one has
+$e_n(h)=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}$ and
+$\Var\big(e_n(h)\big)=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$.
+\end{definition}
+
+\begin{definition}{Sources of prediction uncertainty}{p8-srcunc}
+There are \textbf{three} components of uncertainty in a forecast:
+\begin{enumerate}
+  \item \textbf{model uncertainty} --- the assumed model form may be wrong;
+  \item \textbf{estimation uncertainty} --- the parameters are estimated, not known;
+  \item \textbf{innovation uncertainty} --- the inherent randomness of the future
+        innovations $\eps_{n+1},\dots,\eps_{n+h}$.
+\end{enumerate}
+Throughout we assume the model is \emph{known} and the parameters are estimated
+\emph{without error}, which removes the first two sources and leaves only
+innovation uncertainty. (Bootstrap methods can incorporate the first two, but
+are not covered here.)
+\end{definition}
+
+\begin{definition}{Gaussian prediction interval}{p8-pint}
+For a \textbf{Gaussian} process the $h$-step error $e_n(h)$ is normal with mean
+$0$ and variance $\Var(e_n(h))$, so a $(1-\alpha)$ \textbf{prediction interval}
+for $X_{n+h}$ based on $X_1,\dots,X_n$ is
+\[
+X^{\,n}_{n+h}\;\pm\;z_{1-\alpha/2}\,\sqrt{\Var\big(e_n(h)\big)},
+\]
+where $z_{1-\alpha/2}$ is the $(1-\alpha/2)$ quantile of the standard normal
+distribution (e.g.\ $z_{0.975}\approx1.96$ for a $95\%$ interval).
+\end{definition}
+
+\begin{intuition}
+A point forecast alone is almost useless without a measure of its spread. The
+interval widens with $h$ because more unknown innovations
+$\eps_{n+1},\dots,\eps_{n+h}$ accumulate in the error. For a stationary ARMA
+model the width saturates: as $h\to\infty$, $\Var(e_n(h))\to\acvs_0$, i.e.\ the
+interval converges to ``mean $\pm$ a multiple of the marginal standard
+deviation'' --- forecasting far ahead is no better than quoting the
+unconditional distribution. For integrated (ARIMA) processes the interval grows
+\emph{without bound}.
+\end{intuition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{lemma}{Conditional expectation minimises the prediction MSE}{p8-condexp}
+The conditional expectation
+\[
+g(X_1,\dots,X_n)=\E\big[X_{n+h}\mid X_1,\dots,X_n\big]
+\]
+minimises the prediction mean square error for $X_{n+h}$ based on
+$X_1,\dots,X_n$.\\[3pt]
+\textit{Proof idea:} For any real random variable $Y$ with $\mu=\E[Y]$ and any
+constant $c$,
+\[
+\MSE(c)=\E\big[(Y-c)^2\big]=\E\big[(Y-\mu+\mu-c)^2\big]
+=\E\big[(Y-\mu)^2\big]+(\mu-c)^2=\Var(Y)+(\mu-c)^2,
+\]
+which is minimised at $c=\mu=\E[Y]$ (the cross term vanishes because
+$\E[Y-\mu]=0$). Applying this \emph{conditionally on} $X_1,\dots,X_n$ and using
+the tower property
+$\E[(X_{n+h}-g)^2]=\E\big[\E[(X_{n+h}-g)^2\mid X_1,\dots,X_n]\big]$, the inner
+MSE is minimised pointwise by taking $g=\E[X_{n+h}\mid X_1,\dots,X_n]$.\\[2pt]
+\textit{Why:} this is the theoretical gold standard for forecasting. For
+Gaussian processes the conditional expectation is linear, so the best predictor
+\emph{is} the best linear predictor; in general it motivates restricting to
+linear predictors, which only need the ACVS.
+\end{lemma}
+
+\begin{example}{Gaussian AR(1) predictor --- mean reversion}{p8-ar1}
+Let $X_t=\phi X_{t-1}+\eps_t$ with $\eps_t\iid\mathcal N(0,\sigma^2)$ and
+$\abs\phi<1$ (stationary). Because the process is Gaussian, the best linear
+predictor equals the conditional expectation, and iterating the recursion,
+\[
+X^{\,n}_{n+h}=\E[X_{n+h}\mid X_1,\dots,X_n]
+=\E[\phi X_{n+h-1}+\eps_{n+h}\mid X_1,\dots,X_n]
+=\phi^{\,h}X_n .
+\]
+Since $\abs\phi<1$, $X^{\,n}_{n+h}=\phi^{\,h}X_n\to0$ (the process mean) as
+$h\to\infty$: the forecast \textbf{reverts to the mean}. This is a general
+property of stationary ARMA models. (A worked figure in the notes uses
+$\phi=0.8$, $\sigma^2=1$.)
+\end{example}
+
+\begin{example}{Gaussian MA(1) predictor}{p8-ma1}
+Let $X_t=\mu+\eps_t-\theta\eps_{t-1}$ with $\eps_t\iid\mathcal N(0,\sigma^2)$.
+For $h>0$,
+\[
+X^{\,n}_{n+h}=\mu+\E[\eps_{n+h}\mid X_1,\dots,X_n]-\theta\,\E[\eps_{n+h-1}\mid X_1,\dots,X_n]
+=\mu-\theta\,\E[\eps_{n+h-1}\mid X_1,\dots,X_n],
+\]
+because $\eps_t$ for $t>n$ is uncorrelated with $X_1,\dots,X_n$ (so its
+conditional expectation is $0$). Hence:
+\begin{itemize}
+  \item $h=1$: $\;X^{\,n}_{n+1}=\mu-\theta\,\hat\eps_n$ (the one observable
+        innovation $\eps_n$ remains);
+  \item $h>1$: $\;X^{\,n}_{n+h}=\mu$ --- the forecast hits the mean immediately,
+        consistent with an MA(1) having memory only of length $1$.
+\end{itemize}
+\end{example}
+
+\begin{theorem}{Prediction equations (zero-mean stationary process)}{p8-predeq}
+For a zero-mean stationary process $\{X_t\}$, the best linear predictor
+$X^{\,n}_{n+h}=\sum_{j=1}^n\beta_j X_j$ is found by solving for
+$\beta_1,\dots,\beta_n$ the \textbf{prediction equations}
+\[
+\E\!\big[(X_{n+h}-X^{\,n}_{n+h})\,X_k\big]=0,\qquad k=1,\dots,n,
+\]
+i.e.\ the forecast error is orthogonal to every observation. Equivalently, in
+matrix form $\Gamma_n\beta=\acvs_{[h]}$:
+\[
+\begin{pmatrix}
+\acvs_0 & \acvs_1 & \cdots & \acvs_{n-1}\\
+\acvs_1 & \acvs_0 & \cdots & \acvs_{n-2}\\
+\vdots & \vdots & \ddots & \vdots\\
+\acvs_{n-1} & \acvs_{n-2} & \cdots & \acvs_0
+\end{pmatrix}
+\begin{pmatrix}\beta_1\\ \beta_2\\ \vdots\\ \beta_n\end{pmatrix}
+=\begin{pmatrix}\acvs_{n+h-1}\\ \acvs_{n+h-2}\\ \vdots\\ \acvs_{h}\end{pmatrix}.
+\]
+\textit{Proof idea:} the best linear predictor is the orthogonal projection of
+$X_{n+h}$ onto $\mathrm{span}\{X_1,\dots,X_n\}$; the residual
+$X_{n+h}-X^{\,n}_{n+h}$ must be orthogonal (uncorrelated) to each $X_k$.
+Expanding $\E[(X_{n+h}-\sum_j\beta_jX_j)X_k]=0$ gives
+$\acvs_{n+h-k}=\sum_{j=1}^n\beta_j\acvs_{j-k}$, which is row $k$ of
+$\Gamma_n\beta=\acvs_{[h]}$.\\[2pt]
+\textit{Why:} this is the master equation for linear prediction of \emph{any}
+stationary process --- it shows the optimal forecast uses only the ACVS.
+\end{theorem}
+
+\begin{corollary}{Matrix solution and prediction MSE}{p8-matsol}
+If $\Gamma_n$ is invertible, then with $X=(X_1,\dots,X_n)\Tr$ the best linear
+predictor and its MSE are
+\[
+X^{\,n}_{n+h}=\acvs_{[h]}\Tr\,\Gamma_n^{-1}\,X,
+\qquad
+P^{\,n}_{n+h}=\acvs_0-\acvs_{[h]}\Tr\,\Gamma_n^{-1}\,\acvs_{[h]} .
+\]
+\textit{Proof idea:} solve $\Gamma_n\beta=\acvs_{[h]}$ for
+$\beta=\Gamma_n^{-1}\acvs_{[h]}$ and substitute into
+$X^{\,n}_{n+h}=\beta\Tr X$ and into
+$P^{\,n}_{n+h}=\acvs_0-2\beta\Tr\acvs_{[h]}+\beta\Tr\Gamma_n\beta$; the last
+two terms collapse using $\Gamma_n\beta=\acvs_{[h]}$.\\[2pt]
+\textit{Why:} gives the closed-form forecast for short series.
+\begin{itemize}
+  \item $\Gamma_n$ is invertible for \emph{invertible} ARMA models (and not in
+        all other cases), but the best prediction $X^{\,n}_{n+h}$ is
+        \textbf{always unique} even when $\Gamma_n$ is singular.
+  \item Computing $\acvs_{[h]}\Tr\Gamma_n^{-1}X$ is inefficient for large $n$
+        because the $n\times n$ matrix must be inverted; the Durbin--Levinson
+        and innovations algorithms avoid this (Shumway \& Stoffer, \S3.5).
+\end{itemize}
+\end{corollary}
+
+\begin{theorem}{Prediction equations with non-zero mean (and intercept $\beta_0$)}{p8-predeqmean}
+For a stationary process with $\mu=\E[X_t]$, write
+$X^{\,n}_{n+h}=\beta_0+\sum_{j=1}^n\beta_j X_j$. The coefficients solve the
+prediction equations $\E[(X_{n+h}-X^{\,n}_{n+h})X_k]=0$ for $k=0,1,\dots,n$
+(with the convention $X_0\equiv1$), which give
+\[
+\Gamma_n\beta=\acvs_{[h]},
+\qquad
+\beta_0=\mu\big(1-\beta\Tr\mathbf 1_n\big),
+\]
+and, when $\Gamma_n$ is invertible,
+\[
+X^{\,n}_{n+h}=\mu+\acvs_{[h]}\Tr\,\Gamma_n^{-1}(X-\mu\mathbf 1_n),
+\qquad
+P^{\,n}_{n+h}=\acvs_0-\acvs_{[h]}\Tr\,\Gamma_n^{-1}\,\acvs_{[h]} .
+\]
+\textit{Proof idea:} the predictor has the form
+$X^{\,n}_{n+h}=\mu+\beta\Tr(X-\mu\mathbf 1_n)$, so centring removes the mean and
+reduces the problem to the zero-mean case --- there is no loss of generality in
+assuming $\mu=0$, where $\beta_0=0$. The MSE is \emph{identical} to the
+zero-mean case because the constant shift does not affect the error variance.\\[2pt]
+\textit{Why:} real data are rarely centred; this is the version actually used in
+practice. (Proved as Exercise~\ref{exo:p8-ex2}.)
+\end{theorem}
+
+\begin{theorem}{Best linear predictor of a causal ARMA via $\psi$-weights}{p8-armapred}
+For a causal ARMA process with $MA(\infty)$ representation
+$X_t=\sum_{j=0}^\infty\psi_j\eps_{t-j}$, the best linear predictor of $X_{n+h}$
+based on $X_1,\dots,X_n$ is
+\[
+X^{\,n}_{n+h}=\sum_{j=h}^{\infty}\psi_j\,\eps_{n+h-j}
+=\psi_h\eps_n+\psi_{h+1}\eps_{n-1}+\cdots,
+\]
+with prediction mean square error
+\[
+P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2 .
+\]
+\textit{Proof idea:} write the predictor as a linear filter of the past
+innovations, $X^{\,n}_{n+h}=\sum_{j=0}^\infty c_j\eps_{n-j}$. Then
+\[
+\E\big[(X_{n+h}-X^{\,n}_{n+h})^2\big]
+=\sigma^2\Big(\sum_{j=0}^{h-1}\psi_j^2+\sum_{j=h}^\infty(\psi_j-c_{j-h})^2\Big),
+\]
+which is minimised by matching $c_{j}=\psi_{j+h}$, killing the second sum and
+leaving $\sigma^2\sum_{j=0}^{h-1}\psi_j^2$. Practically:
+\textbf{set the unrealised future innovations $\eps_{n+1},\dots,\eps_{n+h}$ to
+zero} in $X_{n+h}=\sum_{j=0}^\infty\psi_j\eps_{n+h-j}$.\\[2pt]
+\textit{Why:} this is the engine of all ARMA forecasting. It also shows that for
+a causal ARMA, $\psi_j\to0$ exponentially so $X^{\,n}_{n+h}\to\mu$, and
+$P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2\uparrow\sigma^2\sum_{j=0}^\infty\psi_j^2=\acvs_0$
+as $h\to\infty$. (Proved as Exercise~\ref{exo:p8-ex3}.)
+\end{theorem}
+
+\begin{intuition}
+The two ARMA forecasting theorems (prediction equations vs.\ $\psi$-weights) are
+the same projection viewed differently. The prediction equations project onto
+$\mathrm{span}\{X_1,\dots,X_n\}$ using the ACVS; the $\psi$-weight formula
+projects onto $\mathrm{span}\{\eps_s:s\le n\}$, the \emph{innovation} space.
+Because for an invertible ARMA these two spans coincide, the answers agree --- but
+the innovation view is far easier to compute: ``write the future, erase the
+future innovations.''
+\end{intuition}
+
+\begin{proposition}{Limiting behaviour of ARMA forecasts}{p8-armalimit}
+For a causal ARMA model with mean $\mu$,
+$X^{\,n}_{n+h}=\mu+\sum_{j=h}^\infty\psi_j\eps_{n+h-j}$ with $\psi_j\to0$
+exponentially fast, hence
+\[
+X^{\,n}_{n+h}\longrightarrow\mu,
+\qquad
+\Var\big(e_n(h)\big)=\sigma^2\sum_{j=0}^{h-1}\psi_j^2\longrightarrow\acvs_0,
+\qquad h\to\infty .
+\]
+\textit{Proof idea:} immediate from the $\psi$-weight theorem and exponential
+decay of $\psi_j$ (a consequence of causality, roots of $\Phi$ outside the unit
+circle).\\[2pt]
+\textit{Why:} quantifies ``the distant future is the unconditional
+distribution'' --- the point forecast converges to the mean and the error
+variance converges to the marginal variance $\acvs_0$.
+\end{proposition}
+
+\begin{proposition}{Forecasts for integrated (ARIMA) processes}{p8-arimapred}
+Let $\{X_t\}$ be ARIMA$(p,d,q)$, $\Phi(B)(1-B)^dX_t=\Theta(B)\eps_t$. Then
+$Z_t=\diff^{\,d}X_t$ is the ARMA$(p,q)$ process
+$Z_t=\sum_{j=1}^p\phi_jZ_{t-j}+\eps_t-\sum_{j=1}^q\theta_j\eps_{t-j}$, and one
+forecasts $X$ by undoing the differencing,
+\[
+\diff^{\,d}X^{\,n}_{n+h}=Z^{\,n}_{n+h}.
+\]
+For $d=1$ (so $X_{n+h}-X_{n+h-1}=Z_{n+h}$),
+\[
+X^{\,n}_{n+h}=X_n+\sum_{j=0}^{h-1}Z^{\,n}_{n+h-j},\qquad h\ge1 .
+\]
+If $\{Z_t\}$ has mean $\alpha\ne0$ then $Z^{\,n}_{n+h}\to\alpha$ and
+$X^{\,n}_{n+h}\approx X_n+\alpha h$ for large $h$ (a deterministic drift line).\\[2pt]
+\textit{Proof idea:} apply the linear projection operator $P_{X_1,\dots,X_n}$,
+which is linear, to $\diff^{\,d}X_{n+h}=Z_{n+h}$; since differencing is a fixed
+linear filter it commutes with the projection, giving
+$\diff^{\,d}X^{\,n}_{n+h}=Z^{\,n}_{n+h}$. Telescoping the $d=1$ identity
+$X_{n+h}=X_{n+h-1}+Z_{n+h}$ down to the last observation $X_n$ yields
+$X^{\,n}_{n+h}=X_n+\sum_{j=0}^{h-1}Z^{\,n}_{n+h-j}$.\\[2pt]
+\textit{Why:} reduces ARIMA forecasting to ARMA forecasting on the differenced
+series, then ``re-integrates''.
+\begin{itemize}
+  \item For ARIMA models the prediction MSE \textbf{diverges}:
+        $P^{\,n}_{n+h}\to\infty$ as $h\to\infty$ (no mean reversion --- the
+        process is non-stationary).
+  \item For SARIMA models with $d=D=1$ and $\alpha=0$ the forecast is linear and
+        seasonal in $h$.
+\end{itemize}
+\end{proposition}
+
+\begin{pitfall}
+After expanding an ARIMA$(p,1,q)$ into the form
+$X_t=(1+\phi_1)X_{t-1}-(\phi_1-\phi_2)X_{t-2}-\cdots$, the equation \emph{looks}
+like an ARMA$(p{+}1,0,q)$, but it is \textbf{not} a stationary ARMA: its AR
+coefficients do not satisfy the causality/stationarity conditions (there is a
+unit root). Treat it only as a convenient recursion for forecasting, never as a
+stationary model. This is exactly why $P^{\,n}_{n+h}\to\infty$.
+\end{pitfall}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Solving the prediction equations}{p8-ktpredeq}
+To get the best linear predictor of a zero-mean stationary process:
+\begin{enumerate}
+  \item Build $\Gamma_n=[\acvs_{i-j}]_{i,j=1}^n$ (Toeplitz, from the ACVS).
+  \item Build the right-hand side
+        $\acvs_{[h]}=(\acvs_{n+h-1},\acvs_{n+h-2},\dots,\acvs_h)\Tr$.
+  \item Solve $\Gamma_n\beta=\acvs_{[h]}$ for $\beta$, set
+        $X^{\,n}_{n+h}=\sum_j\beta_jX_j=\acvs_{[h]}\Tr\Gamma_n^{-1}X$.
+  \item Report the MSE
+        $P^{\,n}_{n+h}=\acvs_0-\acvs_{[h]}\Tr\Gamma_n^{-1}\acvs_{[h]}$.
+\end{enumerate}
+For \textbf{non-zero mean} $\mu$, centre first: use $X-\mu\mathbf1_n$ in place of
+$X$ and add $\mu$ back,
+$X^{\,n}_{n+h}=\mu+\acvs_{[h]}\Tr\Gamma_n^{-1}(X-\mu\mathbf1_n)$; the MSE is
+unchanged. \emph{Shortcut for AR(p):} for $h=1$ and $n\ge p$ the answer is just
+$X^{\,n}_{n+1}=\sum_{i=1}^p\phi_iX_{n+1-i}$ --- no inversion needed (the next
+technique explains why).
+\end{keytech}
+
+\begin{keytech}{Causal-ARMA forecast by zeroing future innovations}{p8-ktpsi}
+The fast route for any causal ARMA:
+\begin{enumerate}
+  \item Write $X_{n+h}=\sum_{j=0}^\infty\psi_j\eps_{n+h-j}$ (the $MA(\infty)$
+        form), or just the ARMA equation rearranged for $X_{n+h}$.
+  \item Take conditional expectation given the data: every future innovation
+        $\eps_{n+1},\dots,\eps_{n+h}$ becomes $0$; every past/present
+        innovation $\eps_s$ ($s\le n$) stays (replace by its residual
+        $\hat\eps_s$); every past observation $X_s$ ($s\le n$) stays; every
+        future observation $X_s$ ($s>n$) is replaced by its forecast
+        $X^{\,n}_s$.
+  \item The MSE is $P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$ --- obtain the
+        first $h$ $\psi$-weights from $\Theta(B)/\Phi(B)=\sum_j\psi_jB^j$ by
+        matching powers of $B$.
+\end{enumerate}
+\end{keytech}
+
+\begin{keytech}{Recursive truncated forecasting recipe (ARMA \& ARIMA)}{p8-ktrec}
+The general-purpose hand-computation method. \textbf{Three steps:}
+\begin{enumerate}
+  \item \textbf{Isolate $y_t$:} expand the (ARI)MA equation so that $y_t$ is
+        alone on the left and \emph{everything else} (past $y$'s, present/past
+        $\eps$'s) is on the right.
+  \item \textbf{Shift to $n+h$:} replace $t$ by $n+h$ throughout.
+  \item \textbf{Substitute:} on the right-hand side replace
+        \begin{itemize}
+          \item future observations $y_{s}$ ($s>n$) by their forecasts
+                $\hat y_{s\mid n}=X^{\,n}_s$;
+          \item future errors $\eps_s$ ($s>n$) by $0$;
+          \item past errors $\eps_s$ ($s\le n$) by the corresponding residuals
+                $\hat\eps_s$ (and any $\eps_s$ with $s\le0$ by $0$).
+        \end{itemize}
+\end{enumerate}
+Run $h=1,2,3,\dots$ in order; each forecast feeds the next. The residuals are
+themselves built recursively (for $t=1,\dots,n$, and $0$ otherwise) via
+\[
+\hat\eps_t=\Big(\tilde X^{\,n}_t-\sum_{i=1}^p\phi_i\tilde X^{\,n}_{t-i}\Big)
++\sum_{k=1}^q\theta_k\hat\eps_{t-k}.
+\]
+The truncation (setting pre-sample terms to $0$) makes $\tilde X^{\,n}_t$ an
+\emph{approximation}; the forecast error is estimated by
+$\sigma^2\sum_{j=0}^{h-1}\psi_j^2$.
+\end{keytech}
+
+\begin{keytech}{Re-integrating ARIMA forecasts}{p8-ktint}
+For ARIMA$(p,d,q)$: difference $d$ times to get the ARMA series
+$Z_t=\diff^{\,d}X_t$, forecast $Z^{\,n}_{n+h}$ by the ARMA technique, then undo
+the differencing. For $d=1$,
+\[
+X^{\,n}_{n+1}=X_n+Z^{\,n}_{n+1},\qquad
+X^{\,n}_{n+h}=X_n+\sum_{j=0}^{h-1}Z^{\,n}_{n+h-j}\ (h\ge1).
+\]
+Equivalently, expand $\Phi(B)(1-B)^d$ as a single (unit-root) AR polynomial in
+$X$ and apply the recursive recipe directly (often easier in practice). Remember
+the MSE \emph{grows without bound}.
+\end{keytech}
+
+\begin{keytech}{Building Gaussian prediction intervals}{p8-ktpi}
+\begin{enumerate}
+  \item Get the point forecast $X^{\,n}_{n+h}$.
+  \item Get the $\psi$-weights $\psi_0=1,\psi_1,\dots,\psi_{h-1}$ from
+        $\Theta(B)/\Phi(B)$.
+  \item Forecast-error variance: $\Var(e_n(h))=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$.
+  \item Interval: $X^{\,n}_{n+h}\pm z_{1-\alpha/2}\sqrt{\Var(e_n(h))}$ (use
+        $1.96$ for $95\%$).
+\end{enumerate}
+Sanity check: for stationary ARMA the half-width increases in $h$ toward
+$z_{1-\alpha/2}\sqrt{\acvs_0}$; for ARIMA it keeps growing.
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{One-step AR(2) predictors from 1 and 2 observations \quad\textnormal{[Sheet 10]}}{p8-ex1}
+Let $\eps_t$ be white noise. For the causal AR(2) process
+$X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$, show that the best one-step-ahead
+linear predictors based on one observation $X_1$ and on two observations
+$X_1,X_2$ are
+\[
+X^{\,1}_2=\frac{\acvs_1}{\acvs_0}X_1=\acf_1X_1,
+\qquad
+X^{\,2}_3=\phi_1X_2+\phi_2X_1 .
+\]
+\end{exercise}
+\begin{solution}
+\textbf{Based on $X_1$ (so $n=1$, $h=1$).} The prediction equation
+$\Gamma_1\beta=\acvs_{[1]}$ is the scalar equation $\acvs_0\beta_1=\acvs_1$, so
+$\beta_1=\acvs_1/\acvs_0=\acf_1$ and
+\[
+X^{\,1}_2=\beta_1X_1=\frac{\acvs_1}{\acvs_0}X_1=\acf_1X_1 .
+\]
+\textbf{Based on $X_1,X_2$ (so $n=2$, $h=1$).} We could build $\Gamma_2$ and
+solve, but it is quicker to use the model directly. Since
+$X_3=\phi_1X_2+\phi_2X_1+\eps_3$ we have
+$X_3-(\phi_1X_2+\phi_2X_1)=\eps_3$, and $\eps_3$ (white noise, future) is
+uncorrelated with $X_1$ and $X_2$:
+\[
+\E\big[(X_3-\phi_1X_2-\phi_2X_1)X_1\big]=\E[\eps_3X_1]=0,
+\qquad
+\E\big[(X_3-\phi_1X_2-\phi_2X_1)X_2\big]=\E[\eps_3X_2]=0 .
+\]
+Thus the candidate $\phi_1X_2+\phi_2X_1$ has error orthogonal to both
+observations, so by the prediction-equations theorem it \emph{is} the best
+linear predictor: $X^{\,2}_3=\phi_1X_2+\phi_2X_1$. (This is the general fact: for
+an AR$(p)$ with $n\ge p$ observations, the one-step forecast is simply
+$\sum_{i=1}^p\phi_iX_{n+1-i}$.)
+\end{solution}
+
+\begin{exercise}{Prediction equations with non-zero mean \quad\textnormal{[Sheet 10]}}{p8-ex2}
+For a stationary process with $\mu=\E[X_t]$ and predictor
+$X^{\,n}_{n+h}=\beta_0+\sum_{j=1}^n\beta_jX_j$ (set $X_0\equiv1$), prove that the
+prediction equations $\E[(X_{n+h}-X^{\,n}_{n+h})X_k]=0$, $k=0,\dots,n$, give
+$\Gamma_n\beta=\acvs_{[h]}$ and $\beta_0=\mu(1-\beta\Tr\mathbf1_n)$, and that
+when $\Gamma_n$ is invertible
+$X^{\,n}_{n+h}=\mu+\acvs_{[h]}\Tr\Gamma_n^{-1}(X-\mu\mathbf1_n)$ with MSE
+$\acvs_0-\acvs_{[h]}\Tr\Gamma_n^{-1}\acvs_{[h]}$.
+\end{exercise}
+\begin{solution}
+\textbf{(a) MSE in matrix form.} With $X=(X_1,\dots,X_n)\Tr$ and
+$\mathbf1_n$ the all-ones vector,
+\[
+\begin{aligned}
+S(\beta_0,\dots,\beta_n)
+&=\E\Big[\big(X_{n+h}-\beta_0-\beta\Tr X\big)^2\Big]\\
+&=\Var\big(X_{n+h}-\beta\Tr X\big)+\big(\E[X_{n+h}-\beta_0-\beta\Tr X]\big)^2\\
+&=\acvs_0-2\beta\Tr\Cov(X_{n+h},X)+\beta\Tr\Var(X)\beta+\big(\mu-\beta_0-\mu\beta\Tr\mathbf1_n\big)^2,
+\end{aligned}
+\]
+a quadratic bounded below by $0$, hence minimised where all
+$\partial S/\partial\beta_r=0$.\\
+\textbf{(b) Solve for $\beta_0$.} Only the last term depends on $\beta_0$:
+\[
+\frac{\partial S}{\partial\beta_0}=2\big(\mu-\beta_0-\mu\beta\Tr\mathbf1_n\big)(-1)
+=0
+\;\Longrightarrow\;
+\beta_0=\mu\big(1-\beta\Tr\mathbf1_n\big).
+\]
+\textbf{(c) Reduce to zero mean.} Substituting $\beta_0$ back,
+\[
+X^{\,n}_{n+h}=\beta_0+\beta\Tr X=\mu+\beta\Tr(X-\mu\mathbf1_n),
+\]
+so the predictor depends on the data only through the \emph{centred} vector
+$X-\mu\mathbf1_n$. Hence there is no loss of generality in taking $\mu=0$, in
+which case $\beta_0=0$ and $X^{\,n}_{n+h}=\beta\Tr X$.\\
+\textbf{(d) Normal equations.} For $\mu=0$,
+$S(\beta)=\acvs_0-2\beta\Tr\Cov(X_{n+h},X)+\beta\Tr\Var(X)\beta$; setting
+$\nabla_\beta S=0$ gives
+\[
+\Var(X)\,\beta=\Cov(X_{n+h},X),\quad\text{i.e.}\quad \Gamma_n\beta=\acvs_{[h]}.
+\]
+\textbf{(e) Equivalence to the orthogonality form.} Row $k$ of
+$\Gamma_n\beta=\acvs_{[h]}$ reads $\sum_{j=1}^n\beta_j\acvs_{j-k}=\acvs_{n+h-k}$,
+which is exactly $\E[(X_{n+h}-\sum_j\beta_jX_j)X_k]=0$ for $k=1,\dots,n$. The
+$k=0$ equation (with $X_0=1$) gives $\mu-\beta_0-\sum_j\beta_j\mu=0$, recovering
+$\beta_0=\mu(1-\beta\Tr\mathbf1_n)$ from part (b).\\
+\textbf{(2a) Closed form.} If $\Gamma_n$ is invertible,
+$\beta=\Gamma_n^{-1}\acvs_{[h]}$, so
+\[
+X^{\,n}_{n+h}=\mu+\acvs_{[h]}\Tr\Gamma_n^{-1}(X-\mu\mathbf1_n),
+\]
+differing from the lecture's zero-mean formula only by the centring/shift by
+$\mu$.\\
+\textbf{(2b) MSE.} Since $\E[X_{n+h}-X^{\,n}_{n+h}]=0$,
+\[
+P^{\,n}_{n+h}=\Var\big(X_{n+h}-\beta\Tr X\big)
+=\acvs_0-2\beta\Tr\acvs_{[h]}+\beta\Tr\Gamma_n\beta
+=\acvs_0-\acvs_{[h]}\Tr\Gamma_n^{-1}\acvs_{[h]},
+\]
+identical to the zero-mean case (the mean does not affect forecast accuracy).
+\end{solution}
+
+\begin{exercise}{Causal-ARMA predictor via $\psi$-weights \quad\textnormal{[Sheet 10]}}{p8-ex3}
+Prove that the best linear predictor $X^{\,n}_{n+h}$ for $X_{n+h}$ in a causal
+ARMA process with linear representation
+$X_t=\sum_{j=0}^\infty\psi_j\eps_{t-j}$ is
+$X^{\,n}_{n+h}=\sum_{j=h}^\infty\psi_j\eps_{n+h-j}$, with MSE
+$\sigma^2\sum_{j=0}^{h-1}\psi_j^2$.
+\end{exercise}
+\begin{solution}
+Consider a linear predictor $X^{\,n}_{n+h}=\sum_{i=1}^n\beta_iX_i$. Substituting
+the linear representation $X_i=\sum_{j=0}^\infty\psi_j\eps_{i-j}$,
+\[
+X^{\,n}_{n+h}=\sum_{i=1}^n\beta_i\sum_{j=0}^\infty\psi_j\eps_{i-j}
+=\sum_{j=0}^\infty c_j\,\eps_{n-j}
+\]
+for some coefficients $c_j$; i.e.\ \emph{any} linear predictor based on
+$X_1,\dots,X_n$ is a linear combination of innovations up to time $n$ (it
+``starts at $\eps_n$''). Now compute the MSE, using
+$X_{n+h}=\sum_{j=0}^\infty\psi_j\eps_{n+h-j}$ and splitting the future
+innovations $\eps_{n+1},\dots,\eps_{n+h}$ (indices $j=0,\dots,h-1$) from the
+rest:
+\[
+\begin{aligned}
+\E\Big[\big(X_{n+h}-X^{\,n}_{n+h}\big)^2\Big]
+&=\E\Big[\Big(\sum_{j=0}^\infty\psi_j\eps_{n+h-j}-\sum_{j=0}^\infty c_j\eps_{n-j}\Big)^2\Big]\\
+&=\sigma^2\Big(\sum_{j=0}^{h-1}\psi_j^2+\sum_{j=h}^\infty(\psi_j-c_{j-h})^2\Big),
+\end{aligned}
+\]
+where the first sum collects the future innovations (which no past-based
+predictor can touch) and the second matches $\psi_j$ against $c_{j-h}$ for the
+observable innovations (cross terms vanish because the $\eps$'s are
+uncorrelated). The first sum is fixed; the second is minimised --- to zero --- by
+choosing $c_{j-h}=\psi_j$, i.e.\ $c_j=\psi_{j+h}$ for $j=0,1,\dots$. The
+predictor is then
+\[
+X^{\,n}_{n+h}=\sum_{j=0}^\infty c_j\eps_{n-j}=\sum_{j=0}^\infty\psi_{j+h}\eps_{n-j}
+=\sum_{j=h}^\infty\psi_j\eps_{n+h-j},
+\]
+and the residual is $X_{n+h}-X^{\,n}_{n+h}=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}$,
+giving
+\[
+P^{\,n}_{n+h}=\E\Big[\big(X_{n+h}-X^{\,n}_{n+h}\big)^2\Big]=\sigma^2\sum_{j=0}^{h-1}\psi_j^2 .
+\]
+\end{solution}
+
+\begin{exercise}{ARIMA(3,1,1) worked truncated forecast \quad\textnormal{[Lecture]}}{p8-ex4}
+For the fitted model $(1-\phi_1B-\phi_2B^2-\phi_3B^3)(1-B)y_t=(1+\theta_1B)\eps_t$
+(the convention used in the lecture's worked example, with the MA polynomial
+written $\Theta(B)=1+\theta_1B$), derive the one-, two- and general $h$-step
+truncated forecasts. Then plug in the fitted values $\hat\phi_1=0.0044$,
+$\hat\phi_2=0.0916$, $\hat\phi_3=0.3698$, $\hat\theta_1=-0.3921$ and write the
+explicit $\hat y_{T+1\mid T}$ and $\hat y_{T+2\mid T}$.
+\end{exercise}
+\begin{solution}
+\textbf{Step 1 --- isolate $y_t$.} Multiply out the AR$\times$difference factor
+$(1-\phi_1B-\phi_2B^2-\phi_3B^3)(1-B)$:
+\[
+1-(1+\phi_1)B+(\phi_1-\phi_2)B^2+(\phi_2-\phi_3)B^3+\phi_3B^4,
+\]
+so the model is
+\[
+y_t-(1+\phi_1)y_{t-1}+(\phi_1-\phi_2)y_{t-2}+(\phi_2-\phi_3)y_{t-3}+\phi_3y_{t-4}
+=\eps_t+\theta_1\eps_{t-1}.
+\]
+Moving everything except $y_t$ to the right,
+\[
+y_t=\underbrace{(1+\phi_1)y_{t-1}-(\phi_1-\phi_2)y_{t-2}-(\phi_2-\phi_3)y_{t-3}-\phi_3y_{t-4}}_{\text{AR part}}
++\underbrace{\eps_t+\theta_1\eps_{t-1}}_{\text{MA part}} .
+\]
+(We use the lecture's convention $\Theta(B)=1+\theta_1B$, so the MA term is
+$\eps_t+\theta_1\eps_{t-1}$ and the forecast picks up $+\theta_1\hat\eps$.
+Beware: in the earlier general theory the MA polynomial was written
+$\Theta(B)=1-\theta_1B$; that sign convention would replace every $+\theta_1$
+below by $-\theta_1$. We follow the worked example exactly so the numbers match.)
+\\[3pt]
+\textbf{Step 2--3 --- shift and substitute.} For $h=1$ (replace $t$ by $n+1$):
+the only error terms are $\eps_{n+1}\to0$ and $\eps_n\to\hat\eps_n$ (last
+residual). Hence
+\[
+y^{\,n}_{n+1}=(1+\phi_1)y_n-(\phi_1-\phi_2)y_{n-1}-(\phi_2-\phi_3)y_{n-2}-\phi_3y_{n-3}+\theta_1\hat\eps_n .
+\]
+For $h>1$ all error terms are future ($\to0$) and the future observations are
+replaced by forecasts:
+\[
+y^{\,n}_{n+h}=(1+\phi_1)y^{\,n}_{n+h-1}-(\phi_1-\phi_2)y^{\,n}_{n+h-2}-(\phi_2-\phi_3)y^{\,n}_{n+h-3}-\phi_3y^{\,n}_{n+h-4},
+\]
+with the convention $y^{\,n}_s=y_s$ for $s\le n$.\\[3pt]
+\textbf{Numbers.} Using
+$1+\hat\phi_1=1.0044$, $\hat\phi_1-\hat\phi_2=0.0044-0.0916=-0.0872$,
+$\hat\phi_2-\hat\phi_3=0.0916-0.3698=-0.2782$, $\hat\phi_3=0.3698$,
+$\hat\theta_1=-0.3921$, the one-step forecast (writing $e_T$ for the last
+residual) is
+\[
+\hat y_{T+1\mid T}=1.0044\,y_T+0.0872\,y_{T-1}+0.2782\,y_{T-2}-0.3698\,y_{T-3}+\hat\theta_1\,e_T,
+\]
+i.e.\ with $\hat\theta_1=-0.3921$,
+\[
+\hat y_{T+1\mid T}=1.0044\,y_T+0.0872\,y_{T-1}+0.2782\,y_{T-2}-0.3698\,y_{T-3}-0.3921\,e_T .
+\]
+(The two middle signs are positive because $-(\hat\phi_1-\hat\phi_2)=+0.0872$ and
+$-(\hat\phi_2-\hat\phi_3)=+0.2782$.) The two-step forecast replaces $y_{T+1}$ by
+$\hat y_{T+1\mid T}$ and sets all errors to $0$:
+\[
+\hat y_{T+2\mid T}=1.0044\,\hat y_{T+1\mid T}+0.0872\,y_T+0.2782\,y_{T-1}-0.3698\,y_{T-2}.
+\]
+Continue likewise for $h=3,4,\dots$; each step uses previously computed
+forecasts. Because $d=1$, the prediction MSE grows without bound as $h$
+increases.
+\end{solution}
+
+\begin{exercise}{One- and two-step forecast of an MA(2) with interval \quad\textnormal{[New]}}{p8-ex5}
+Let $X_t=\eps_t-\theta_1\eps_{t-1}-\theta_2\eps_{t-2}$ with
+$\eps_t\iid\mathcal N(0,\sigma^2)$ (invertible, zero mean). Give
+$X^{\,n}_{n+1}$, $X^{\,n}_{n+2}$, $X^{\,n}_{n+3}$, their forecast-error
+variances, and a $95\%$ interval for $X_{n+2}$.
+\end{exercise}
+\begin{solution}
+Here $\psi_0=1,\ \psi_1=-\theta_1,\ \psi_2=-\theta_2$ and $\psi_j=0$ for
+$j\ge3$. By the $\psi$-weight theorem, set future innovations to $0$ in
+$X_{n+h}=\eps_{n+h}-\theta_1\eps_{n+h-1}-\theta_2\eps_{n+h-2}$:
+\[
+\begin{aligned}
+X^{\,n}_{n+1}&=-\theta_1\hat\eps_n-\theta_2\hat\eps_{n-1},\\
+X^{\,n}_{n+2}&=-\theta_2\hat\eps_n,\\
+X^{\,n}_{n+3}&=0\quad(=\mu,\ \text{the mean; an MA(2) is forecast as the mean for }h>2).
+\end{aligned}
+\]
+Forecast-error variances $\Var(e_n(h))=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$:
+\[
+\Var(e_n(1))=\sigma^2,\quad
+\Var(e_n(2))=\sigma^2(1+\theta_1^2),\quad
+\Var(e_n(3))=\sigma^2(1+\theta_1^2+\theta_2^2)=\acvs_0 .
+\]
+For $h\ge3$ the variance saturates at $\acvs_0$, as it must. A $95\%$ interval
+for $X_{n+2}$ is
+\[
+-\theta_2\hat\eps_n\;\pm\;1.96\,\sigma\sqrt{1+\theta_1^2}.
+\]
+\end{solution}
+
+\begin{exercise}{Two-step AR(1) forecast variance and interval \quad\textnormal{[New]}}{p8-ex6}
+For the Gaussian AR(1) $X_t=\phi X_{t-1}+\eps_t$ ($\abs\phi<1$,
+$\eps_t\iid\mathcal N(0,\sigma^2)$), compute $X^{\,n}_{n+1},X^{\,n}_{n+2}$,
+their error variances, and verify $\Var(e_n(h))\to\acvs_0$.
+\end{exercise}
+\begin{solution}
+The $MA(\infty)$ weights of a causal AR(1) are $\psi_j=\phi^j$. Point forecasts
+(Example~\ref{exmp:p8-ar1}): $X^{\,n}_{n+1}=\phi X_n$,
+$X^{\,n}_{n+2}=\phi^2X_n$, and generally $X^{\,n}_{n+h}=\phi^hX_n$.
+Forecast-error variances:
+\[
+\Var(e_n(1))=\sigma^2\psi_0^2=\sigma^2,
+\qquad
+\Var(e_n(2))=\sigma^2(\psi_0^2+\psi_1^2)=\sigma^2(1+\phi^2),
+\]
+and in general
+$\Var(e_n(h))=\sigma^2\sum_{j=0}^{h-1}\phi^{2j}=\sigma^2\dfrac{1-\phi^{2h}}{1-\phi^2}$.
+As $h\to\infty$ this tends to $\dfrac{\sigma^2}{1-\phi^2}=\acvs_0$, the marginal
+variance of an AR(1) --- confirming the saturation. A $95\%$ interval for
+$X_{n+2}$ is $\phi^2X_n\pm1.96\,\sigma\sqrt{1+\phi^2}$.
+\end{solution}
+
+\begin{exercise}{Re-integrating a random walk with drift \quad\textnormal{[New]}}{p8-ex7}
+Let $X_t$ be ARIMA$(0,1,0)$ with drift: $Z_t=X_t-X_{t-1}=\alpha+\eps_t$,
+$\eps_t\iid\mathcal N(0,\sigma^2)$. Find $X^{\,n}_{n+h}$ and $\Var(e_n(h))$, and
+show the MSE diverges.
+\end{exercise}
+\begin{solution}
+The differenced series $Z_t$ is white noise plus a constant mean
+$\E[Z_t]=\alpha$, so $Z^{\,n}_{n+h}=\alpha$ for all $h$. Re-integrating
+(Proposition on integrated processes),
+\[
+X^{\,n}_{n+h}=X_n+\sum_{j=0}^{h-1}Z^{\,n}_{n+h-j}=X_n+\alpha h,
+\]
+a straight drift line from the last observation. The forecast error is
+$e_n(h)=X_{n+h}-X^{\,n}_{n+h}=\sum_{j=1}^h\eps_{n+j}$ (the accumulated future
+innovations), so
+\[
+\Var(e_n(h))=h\,\sigma^2\;\xrightarrow[h\to\infty]{}\;\infty .
+\]
+Thus $P^{\,n}_{n+h}=h\sigma^2$ grows linearly and the prediction interval
+$X_n+\alpha h\pm1.96\,\sigma\sqrt h$ fans out without bound --- the hallmark of an
+integrated process (no mean reversion).
+\end{solution}

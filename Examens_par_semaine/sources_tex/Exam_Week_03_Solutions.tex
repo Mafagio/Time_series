@@ -1,0 +1,167 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 3: Backshift, Wold Decomposition, Causality \& Invertibility}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The \emph{backshift operator} $\Bsh$ shifts a series one step into the past, $\Bsh X_t=X_{t-1}$, and iterating $\Bsh^k X_t=X_{t-k}$ (with $\Bsh^0=I$). For an $\mathrm{ARMA}(p,q)$ written $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ the characteristic polynomials are
+\[
+\Phi(z)=1-\phi_1 z-\dots-\phi_p z^{p},\qquad
+\Theta(z)=1+\theta_1 z+\dots+\theta_q z^{q}
+\]
+(coefficients matching the chosen sign convention). The root criteria are:
+\begin{itemize}
+  \item \textbf{Stationarity / causality:} all roots of $\Phi(z)$ lie \emph{outside} the unit circle, $\abs{z}>1$;
+  \item \textbf{Invertibility:} all roots of $\Theta(z)$ lie \emph{outside} the unit circle, $\abs{z}>1$.
+\end{itemize}
+
+\textbf{(b)} In backshift form $\big(1-\tfrac23\Bsh+\tfrac16\Bsh^2\big)X_t=\eps_t$, so
+\[
+\Phi(z)=1-\tfrac23 z+\tfrac16 z^2 .
+\]
+Solve $\Phi(z)=0$. Multiplying by $6$ gives $z^2-4z+6=0$, hence
+\[
+z=\frac{4\pm\sqrt{16-24}}{2}=2\pm\sqrt{-2}=2\pm\sqrt2\,i,
+\qquad
+\abs{z}=\sqrt{2^2+(\sqrt2)^2}=\sqrt{4+2}=\sqrt6\approx2.449 .
+\]
+Both roots have modulus $\sqrt6>1$, i.e.\ lie outside the unit circle, so the process is \textbf{stationary} (causal). (One may also check the $\mathrm{AR}(2)$ triangle with $\phi_1=\tfrac23,\ \phi_2=-\tfrac16$: $\phi_1+\phi_2=\tfrac12<1$, $\phi_2-\phi_1=-\tfrac56<1$, $\abs{\phi_2}=\tfrac16<1$.)
+
+\textbf{(c)} \textbf{Yes, invertible.} It is a pure $\mathrm{AR}$ process ($\Theta\equiv1$, a finite polynomial with no roots to test), so $\eps_t=\Phi(\Bsh)X_t$ is already a finite expression in present and past $X$: every $\mathrm{AR}$ is automatically invertible.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} $\Phi(z)=1-0.7z+0.1z^2=0.1\,(z^2-7z+10)=0.1\,(z-2)(z-5)$, so the AR roots are $z=2$ and $z=5$. Both satisfy $\abs{z}>1$, hence all roots of $\Phi$ are outside the unit circle and the process is \textbf{causal} (stationary). Also $\Theta(z)=1+0.5z$ has root $z=-2$, $\abs{z}=2>1$, so it is invertible as well (not asked, but it guarantees a well-defined $G$).
+
+\textbf{(b)} Write $X_t=G(\Bsh)\eps_t$ with
+\[
+G(z)=\frac{1+0.5z}{0.1\,(z-2)(z-5)} .
+\]
+Partial-fraction the rational factor:
+\[
+\frac{1}{(z-2)(z-5)}=\frac{A}{z-2}+\frac{B}{z-5},\qquad
+A=\frac{1}{2-5}=-\frac13,\quad B=\frac{1}{5-2}=\frac13 .
+\]
+Convert each pole to a power series convergent on (and inside) the unit disk, using $\abs{z}<2<5$:
+\[
+\begin{aligned}
+\frac{-1}{z-2}&=\frac{1}{2}\,\frac{1}{1-z/2}=\frac12\sum_{j\ge0}\Big(\tfrac12\Big)^{j}z^{j}
+=\sum_{j\ge0}\Big(\tfrac12\Big)^{j+1}z^{j},\\
+\frac{1}{z-5}&=-\frac{1}{5}\,\frac{1}{1-z/5}=-\frac15\sum_{j\ge0}\Big(\tfrac15\Big)^{j}z^{j}
+=-\sum_{j\ge0}\Big(\tfrac15\Big)^{j+1}z^{j}.
+\end{aligned}
+\]
+Hence, collecting $\dfrac{1}{(z-2)(z-5)}=\dfrac{A(-1)}{2-z}\cdots$ explicitly,
+\[
+\frac{1}{(z-2)(z-5)}
+=\Big(-\tfrac13\Big)\frac{1}{z-2}+\tfrac13\,\frac{1}{z-5}
+=\sum_{j\ge0}\Big[\tfrac13\Big(\tfrac12\Big)^{j+1}-\tfrac13\Big(\tfrac15\Big)^{j+1}\Big]z^{j}.
+\]
+Now multiply by $\dfrac{1+0.5z}{0.1}=10\,(1+\tfrac12 z)$. Write $H(z)=\sum_{j\ge0}h_j z^j$ with
+\[
+h_j=10\Big[\tfrac13\Big(\tfrac12\Big)^{j+1}-\tfrac13\Big(\tfrac15\Big)^{j+1}\Big]
+=\frac{5}{3}\Big(\tfrac12\Big)^{j}-\frac{2}{3}\Big(\tfrac15\Big)^{j},
+\]
+so that $G(z)=(1+\tfrac12 z)H(z)$ gives $\psi_0=h_0$ and $\psi_j=h_j+\tfrac12 h_{j-1}$ for $j\ge1$. Computing the coefficients of $(1/2)^j$ and $(1/5)^j$:
+\[
+\begin{aligned}
+\text{coeff of }(\tfrac12)^j:&\quad \tfrac53+\tfrac12\cdot\tfrac53\cdot 2=\tfrac53+\tfrac53=\tfrac{10}{3},\\
+\text{coeff of }(\tfrac15)^j:&\quad -\tfrac23+\tfrac12\cdot\big(-\tfrac23\big)\cdot 5=-\tfrac23-\tfrac53=-\tfrac73,
+\end{aligned}
+\]
+(using $(\tfrac12)^{j-1}=2(\tfrac12)^j$ and $(\tfrac15)^{j-1}=5(\tfrac15)^j$). Therefore
+\[
+\boxed{\;\psi_j=\frac{10}{3}\Big(\tfrac12\Big)^{j}-\frac{7}{3}\Big(\tfrac15\Big)^{j},\qquad j\ge0\;}
+\]
+which already gives $\psi_0=\tfrac{10}{3}-\tfrac73=1$. In particular
+\[
+\psi_0=1,\qquad
+\psi_1=\tfrac{10}{3}\cdot\tfrac12-\tfrac73\cdot\tfrac15=\tfrac53-\tfrac{7}{15}=\tfrac{6}{5}=1.2,
+\qquad
+\psi_2=\tfrac{10}{3}\cdot\tfrac14-\tfrac73\cdot\tfrac1{25}=\tfrac56-\tfrac{7}{75}=\tfrac{37}{50}=0.74 .
+\]
+\textit{Check (coefficient matching).} From $(1-0.7z+0.1z^2)\sum_j\psi_j z^j=1+0.5z$: $\psi_0=1$; $\psi_1-0.7\psi_0=0.5\Rightarrow\psi_1=1.2$; and $\psi_j=0.7\psi_{j-1}-0.1\psi_{j-2}$ for $j\ge2$, giving $\psi_2=0.7(1.2)-0.1(1)=0.74$, matching exactly.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The model is $X_t-\tfrac56 X_{t-1}+\tfrac16 X_{t-2}=\eps_t$, with $\Phi(z)=1-\tfrac56 z+\tfrac16 z^2=\tfrac16(z-2)(z-3)$ (roots $2,3$ outside the unit circle $\Rightarrow$ causal). Multiply the model by $X_{t-\tau}$ and take expectations. Since the process is causal, $X_{t-\tau}$ is a one-sided combination of $\eps_{t-\tau},\eps_{t-\tau-1},\dots$, so $\E[\eps_t X_{t-\tau}]=0$ for $\tau\ge1$ and $\E[\eps_t X_t]=\psi_0\sigma^2=\sigma^2$. Hence, for $\tau\ge1$,
+\[
+\acvs_\tau-\tfrac56\acvs_{\tau-1}+\tfrac16\acvs_{\tau-2}=\E[\eps_t X_{t-\tau}]=0
+\quad\Longrightarrow\quad
+\acvs_\tau=\tfrac56\,\acvs_{\tau-1}-\tfrac16\,\acvs_{\tau-2},
+\]
+(using $\acvs_{-1}=\acvs_1$ when $\tau=1$). The boundary relation at $\tau=0$ keeps the noise term:
+\[
+\acvs_0-\tfrac56\acvs_{1}+\tfrac16\acvs_{2}=\E[\eps_t X_t]=\sigma^2 .
+\]
+
+\textbf{(b)} The recurrence at $\tau=1,2$ (with $\acvs_{-1}=\acvs_1$) gives the autocorrelations via Yule--Walker:
+\[
+\acf_1=\frac{\phi_1}{1-\phi_2}=\frac{5/6}{1+1/6}=\frac{5/6}{7/6}=\frac57,
+\qquad
+\acf_2=\phi_1\acf_1+\phi_2=\tfrac56\cdot\tfrac57-\tfrac16=\tfrac{25}{42}-\tfrac{7}{42}=\tfrac{18}{42}=\tfrac37 .
+\]
+Plug into the $\tau=0$ relation, $\acvs_0\big(1-\phi_1\acf_1-\phi_2\acf_2\big)=\sigma^2$:
+\[
+1-\tfrac56\cdot\tfrac57-\big(-\tfrac16\big)\tfrac37=1-\tfrac{25}{42}+\tfrac{3}{42}=1-\tfrac{22}{42}=\tfrac{20}{42}=\tfrac{10}{21},
+\qquad
+\acvs_0=\frac{21}{10}\sigma^2 .
+\]
+Therefore $\acvs_1=\acf_1\acvs_0=\tfrac57\cdot\tfrac{21}{10}\sigma^2=\tfrac32\sigma^2$ and $\acvs_2=\acf_2\acvs_0=\tfrac37\cdot\tfrac{21}{10}\sigma^2=\tfrac9{10}\sigma^2$.
+
+The homogeneous recurrence has characteristic equation $\Phi$, whose roots correspond to the reciprocal roots $\tfrac12,\tfrac13$, so the general solution is $\acvs_\tau=c_1\big(\tfrac12\big)^{\tau}+c_2\big(\tfrac13\big)^{\tau}$. Match $\acvs_0=\tfrac{21}{10}\sigma^2$ and $\acvs_1=\tfrac32\sigma^2$:
+\[
+\begin{aligned}
+c_1+c_2&=\tfrac{21}{10}\sigma^2,\\
+\tfrac12 c_1+\tfrac13 c_2&=\tfrac32\sigma^2 .
+\end{aligned}
+\]
+Subtracting $\tfrac13\times$(first) from the second, $\tfrac16 c_1=\big(\tfrac32-\tfrac{21}{30}\big)\sigma^2=\tfrac{45-21}{30}\sigma^2=\tfrac{24}{30}\sigma^2$, so $c_1=\tfrac{24}{5}\sigma^2$ and $c_2=\tfrac{21}{10}\sigma^2-\tfrac{24}{5}\sigma^2=-\tfrac{27}{10}\sigma^2$. Hence
+\[
+\boxed{\;\acvs_\tau=\Big[\tfrac{24}{5}\big(\tfrac12\big)^{\tau}-\tfrac{27}{10}\big(\tfrac13\big)^{\tau}\Big]\sigma^2,\qquad \tau\ge0\;}
+\]
+and $\acvs_{-\tau}=\acvs_\tau$. (Check: $\tau=0\to\tfrac{48-27}{10}=\tfrac{21}{10}$; $\tau=1\to\tfrac{24}{10}-\tfrac{27}{30}=\tfrac{72-27}{30}=\tfrac{45}{30}=\tfrac32$; $\tau=2\to\tfrac{24}{20}-\tfrac{27}{90}=\tfrac{6}{5}-\tfrac{3}{10}=\tfrac{9}{10}$, all matching.)\\
+\textit{Independent check (via $\psi$-weights):} $\psi_j=2\big(\tfrac12\big)^j-\big(\tfrac13\big)^j$ solves $\psi_j=\tfrac56\psi_{j-1}-\tfrac16\psi_{j-2}$ with $\psi_0=1,\psi_1=\tfrac56$, and $\sigma^2\sum_{j\ge0}\psi_j\psi_{j+\tau}$ reproduces $\tfrac{21}{10},\tfrac32,\tfrac9{10}\dots$ exactly.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} With $X_t=\eps_t-\tfrac12\eps_{t-1}$, bilinearity and $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$ give
+\[
+\acvs_\tau=\begin{cases}
+(1+\theta^2)\sigma^2=\big(1+\tfrac14\big)\sigma^2=\tfrac54\sigma^2,&\tau=0,\\[2pt]
+-\theta\,\sigma^2=-\tfrac12\sigma^2,&\tau=\pm1,\\[2pt]
+0,&\abs\tau\ge2,
+\end{cases}
+\qquad
+\acf_1=\frac{-\theta}{1+\theta^2}=\frac{-1/2}{5/4}=-\tfrac25 .
+\]
+
+\textbf{(b)} For a general $\mathrm{MA}(1)$, $\acf_1=\dfrac{-\theta}{1+\theta^2}$, so
+\[
+\abs{\acf_1}=\frac{\abs\theta}{1+\theta^2}\le\frac12
+\quad\Longleftrightarrow\quad
+2\abs\theta\le 1+\theta^2
+\quad\Longleftrightarrow\quad
+0\le\theta^2-2\abs\theta+1=(\abs\theta-1)^2,
+\]
+which always holds (equality iff $\abs\theta=1$). Equivalently, by AM--GM $\abs\theta\le\tfrac12(1+\theta^2)$. So $\abs{\acf_1}\le\tfrac12$.
+
+\emph{PACF behaviour:} for an $\mathrm{MA}(1)$ the \textbf{PACF tails off} (decays geometrically in magnitude with alternating sign, never cutting to exactly $0$), while it is the ACF that cuts off after lag $1$. (This is the diagnostic mirror of the $\mathrm{AR}(1)$, whose PACF cuts off after lag $1$ and ACF tails off.)
+
+\textbf{(c)} \textbf{Invertible:} $\Theta(z)=1-\tfrac12 z$ has root $z=1/\theta=2$ with $\abs{2}>1$ (outside the unit circle), so $\{X_t\}$ is invertible.
+
+A different $\mathrm{MA}(1)$ with the same ACVS is the \emph{reciprocal-root twin}: take coefficient $\vartheta=1/\theta=2$ and white-noise variance $\sigma_\eta^2=\theta^2\sigma^2=\tfrac14\sigma^2$, i.e.
+\[
+Y_t=\eta_t-2\eta_{t-1},\qquad \Var(\eta_t)=\tfrac14\sigma^2 .
+\]
+Its autocovariances are
+\[
+\acvs^Y_0=(1+\vartheta^2)\sigma_\eta^2=(1+4)\cdot\tfrac14\sigma^2=\tfrac54\sigma^2,
+\qquad
+\acvs^Y_{\pm1}=-\vartheta\,\sigma_\eta^2=-2\cdot\tfrac14\sigma^2=-\tfrac12\sigma^2,
+\]
+and $\acvs^Y_\tau=0$ for $\abs\tau\ge2$ --- \emph{identical} to $\{X_t\}$ in part (a). So the two are indistinguishable from second-order structure alone (MA non-identifiability). The \textbf{invertible} representation is $\{X_t\}$, whose MA root $z=2$ lies \emph{outside} the unit circle; the twin $\{Y_t\}$ has root $z=\vartheta^{-1}=\tfrac12$ \emph{inside} the circle and is therefore \emph{not} invertible. Imposing invertibility selects $\{X_t\}$ as the unique model.
+
+\end{document}

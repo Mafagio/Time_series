@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fiches de révision — Séries Temporelles</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#F2EEE3;
+  --card:#FCFAF4;
+  --ink:#231F18;
+  --muted:#8A8170;
+  --line:#E2DBC9;
+  --green:#2E6B4C;
+  --green-soft:#E6EFE8;
+  --red:#A8493A;
+  --red-soft:#F4E7E2;
+  --shadow: 0 1px 1px rgba(35,31,24,.04), 0 18px 40px -22px rgba(35,31,24,.30);
+  --shadow-sm: 0 1px 1px rgba(35,31,24,.04), 0 8px 20px -14px rgba(35,31,24,.28);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Spectral",Georgia,serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #FBF8F0 0%, rgba(251,248,240,0) 60%),
+    var(--paper);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:28px 20px 60px;
+  min-height:100%;
+  position:relative;
+}
+/* grain overlay */
+body::after{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.wrap{width:100%;max-width:760px;position:relative;z-index:1}
+
+header{
+  text-align:center;
+  margin-bottom:30px;
+  animation:rise .6s ease both;
+}
+.eyebrow{
+  font-family:"Fraunces",serif;
+  font-size:.74rem;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;
+}
+h1{
+  font-family:"Fraunces",serif;
+  font-weight:500;
+  font-size:2.5rem;
+  line-height:1.05;
+  margin:.18em 0 .12em;
+  letter-spacing:-.01em;
+}
+.sub{color:var(--muted);font-size:1.02rem;font-style:italic}
+
+/* ---- menu ---- */
+.menu{display:grid;gap:18px;animation:rise .6s .08s ease both}
+.choice{
+  width:100%;text-align:left;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:26px 28px;display:flex;gap:22px;align-items:flex-start;
+  box-shadow:var(--shadow-sm);
+  transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s, border-color .22s;
+}
+.choice:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#D2C9B2}
+.choice .mark{
+  flex:none;width:46px;height:46px;border-radius:12px;
+  display:grid;place-items:center;
+  font-family:"Fraunces",serif;font-size:1.4rem;
+  background:var(--ink);color:var(--paper);
+}
+.choice.test .mark{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.choice h3{font-family:"Fraunces",serif;font-weight:500;font-size:1.35rem;margin-bottom:.18em}
+.choice p{color:var(--muted);font-size:.98rem;line-height:1.5}
+
+/* ---- top bar (during sessions) ---- */
+.bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;animation:rise .4s ease both;
+}
+.back{
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-family:"Spectral",serif;font-size:.95rem;font-style:italic;
+  display:inline-flex;align-items:center;gap:6px;padding:4px 0;
+}
+.back:hover{color:var(--ink)}
+.count{font-family:"Fraunces",serif;font-size:.82rem;letter-spacing:.06em;color:var(--muted)}
+.progress{height:5px;background:#E5DECD;border-radius:99px;overflow:hidden;margin-bottom:22px}
+.progress > i{display:block;height:100%;background:var(--ink);border-radius:99px;transition:width .35s ease;width:0}
+
+/* ---- card ---- */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);padding:34px 36px;min-height:300px;
+  display:flex;flex-direction:column;
+  animation:cardIn .38s cubic-bezier(.2,.8,.2,1) both;
+}
+.tag{
+  align-self:flex-start;
+  font-family:"Fraunces",serif;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--green);background:var(--green-soft);
+  padding:5px 11px;border-radius:99px;margin-bottom:20px;font-weight:600;
+}
+.side-label{
+  font-family:"Fraunces",serif;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;
+}
+.content{font-size:1.16rem;line-height:1.62}
+.content strong{font-weight:600}
+.content .katex{font-size:1.06em}
+.content br{content:"";display:block;margin:.35em 0}
+.divider{height:1px;background:var(--line);margin:26px 0}
+.answer{animation:rise .3s ease both}
+
+/* ---- buttons ---- */
+.actions{margin-top:auto;padding-top:26px;display:flex;gap:12px}
+.btn{
+  flex:1;cursor:pointer;border:1px solid transparent;border-radius:13px;
+  padding:15px 18px;font-family:"Fraunces",serif;font-size:1rem;font-weight:500;
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  transition:transform .12s ease, filter .15s ease, background .15s;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-ink{background:var(--ink);color:var(--paper)}
+.btn-ink:hover{filter:brightness(1.12)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{filter:brightness(1.07)}
+.btn-red{background:var(--red-soft);color:var(--red);border-color:#E7CFC7}
+.btn-red:hover{background:#EEDBD4}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:#F0EBDD}
+.reveal-wrap{margin-top:auto;padding-top:26px}
+.reveal-wrap .btn{width:100%}
+
+/* ---- done screens ---- */
+.done{
+  background:var(--card);border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow);padding:44px 38px;text-align:center;
+  animation:cardIn .4s cubic-bezier(.2,.8,.2,1) both;
+}
+.done h2{font-family:"Fraunces",serif;font-weight:500;font-size:1.9rem;margin-bottom:.3em}
+.score{font-family:"Fraunces",serif;font-size:4.2rem;line-height:1;margin:.1em 0 .05em}
+.score small{font-size:1.6rem;color:var(--muted)}
+.pct{color:var(--muted);font-style:italic;margin-bottom:8px}
+.recap{color:var(--muted);margin:14px auto 4px;max-width:460px;line-height:1.55}
+.missed{
+  text-align:left;margin:24px auto 6px;max-width:520px;
+  display:grid;gap:10px;
+}
+.missed .m-title{font-family:"Fraunces",serif;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.missed .m-item{
+  background:#F7F2E6;border:1px solid var(--line);border-radius:11px;
+  padding:11px 14px;font-size:.97rem;line-height:1.4;
+}
+.missed .m-item .m-cat{font-family:"Fraunces",serif;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:3px;font-weight:600}
+.done .actions{margin-top:30px;padding-top:0}
+.done .actions .btn{flex:1}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+
+@media (max-width:560px){
+  h1{font-size:2rem}
+  .card,.done{padding:26px 22px}
+  .choice{padding:20px}
+  .actions{flex-direction:column}
+  .score{font-size:3.4rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="stage"></div>
+
+<!-- Deck content lives in an external file (works on GitHub Pages and via file://). -->
+<script src="deck-series-temporelles.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+/* ---------- parse deck ---------- */
+const cards = window.DECK || [];
+const N = cards.length;
+const stage = document.getElementById('stage');
+
+/* ---------- persistence (localStorage) — Phase 5 ---------- */
+const SUBJECT='series-temporelles';
+const LSKEY='fiches:'+SUBJECT;
+function cardKey(c){var t=(c.cat||'')+'|'+(c.recto||''),h=5381;for(var i=0;i<t.length;i++){h=((h<<5)+h+t.charCodeAt(i))|0;}return 'c'+(h>>>0).toString(36);}
+function loadProgress(){try{var p=JSON.parse(localStorage.getItem(LSKEY));if(p&&p.cards)return p;}catch(e){}return {cards:{},lastScore:null};}
+let progress=loadProgress();
+function saveProgress(){try{localStorage.setItem(LSKEY,JSON.stringify(progress));}catch(e){}}
+function cardState(c){var k=cardKey(c);return progress.cards[k]||(progress.cards[k]={mastered:false,lastTest:null});}
+function setMastered(c,v){cardState(c).mastered=v;saveProgress();}
+function setLastTest(c,ok){cardState(c).lastTest=ok?'ok':'ko';saveProgress();}
+function masteredCount(){return cards.filter(function(c){return (progress.cards[cardKey(c)]||{}).mastered;}).length;}
+function resetProgress(){if(confirm('Réinitialiser toute la progression sauvegardée ?')){progress={cards:{},lastScore:null};saveProgress();goMenu();}}
+function lsSummaryHTML(){
+  var m=masteredCount(), ls=progress.lastScore, parts=[];
+  parts.push('<strong>'+m+'</strong> / '+N+' maîtrisées');
+  if(ls) parts.push('dernier test : <strong>'+ls.correct+' / '+ls.total+'</strong>'+(ls.when?' ('+ls.when+')':''));
+  return '<div style="margin-top:22px;text-align:center;color:var(--muted);font-size:.95rem;font-style:italic">'
+    + parts.join(' · ')
+    + '<br><button onclick="resetProgress()" style="margin-top:10px;cursor:pointer;background:transparent;border:1px solid var(--line);border-radius:10px;padding:7px 14px;color:var(--muted);font-family:Spectral,serif;font-style:italic;font-size:.9rem">réinitialiser la progression</button></div>';
+}
+
+/* ---------- helpers ---------- */
+function fmt(t){
+  return t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+}
+function renderMath(el){
+  if(window.renderMathInElement){
+    renderMathInElement(el,{
+      delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],
+      throwOnError:false
+    });
+  }
+}
+function plain(t){
+  return t.replace(/\$\$(.+?)\$\$/g,'…').replace(/\$(.+?)\$/g,'…')
+          .replace(/\*\*(.+?)\*\*/g,'$1').replace(/\n/g,' ').trim();
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function headerHTML(){
+  return `<header>
+    <div class="eyebrow">Fiches de révision</div>
+    <h1>Séries Temporelles</h1>
+    <div class="sub">${N} fiches · formules rendues, deux modes</div>
+  </header>`;
+}
+
+/* ---------- MENU ---------- */
+function goMenu(){
+  stage.innerHTML = headerHTML() + `
+    <div class="menu">
+      <button class="choice" onclick="startLearn()">
+        <span class="mark">A</span>
+        <span>
+          <h3>Apprendre</h3>
+          <p>Parcours les fiches à ton rythme. Les cartes que tu ne maîtrises pas reviennent jusqu’à ce qu’elles soient acquises.</p>
+        </span>
+      </button>
+      <button class="choice test" onclick="startTest()">
+        <span class="mark">T</span>
+        <span>
+          <h3>Tester</h3>
+          <p>Toutes les fiches une fois, sans filet. Note à la fin, et rejoue uniquement les ratées.</p>
+        </span>
+      </button>
+    </div>` + lsSummaryHTML();
+}
+
+/* ---------- LEARN (répétition espacée en session) ---------- */
+let lQueue=[], lRevealed=false, lMastered=0, lFirstTry=0;
+function startLearn(){
+  cards.forEach(c=>c._wrong=false);
+  lQueue = shuffle(cards.map((_,i)=>i));
+  lMastered=0; lFirstTry=0; lRevealed=false;
+  renderLearn();
+}
+function renderLearn(){
+  if(lQueue.length===0) return learnDone();
+  const c = cards[lQueue[0]];
+  const pct = Math.round(lMastered/N*100);
+  stage.innerHTML = `
+    <div class="bar">
+      <button class="back" onclick="goMenu()">‹ Menu</button>
+      <span class="count">Maîtrisées ${lMastered} / ${N}</span>
+    </div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="card" id="card">
+      <span class="tag">${c.cat}</span>
+      <div class="side-label">Question</div>
+      <div class="content">${fmt(c.recto)}</div>
+      ${ lRevealed ? `
+        <div class="divider"></div>
+        <div class="answer">
+          <div class="side-label">Réponse</div>
+          <div class="content">${fmt(c.verso)}</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-red" onclick="lAgain()">✕ &nbsp;Je continue à apprendre</button>
+          <button class="btn btn-green" onclick="lKnown()">✓ &nbsp;Je le savais</button>
+        </div>`
+      : `
+        <div class="reveal-wrap"><button class="btn btn-ink" onclick="lReveal()">Révéler la réponse</button></div>` }
+    </div>`;
+  renderMath(document.getElementById('card'));
+}
+function lReveal(){ lRevealed=true; renderLearn(); }
+function lKnown(){
+  const idx=lQueue[0];
+  if(!cards[idx]._wrong) lFirstTry++;
+  setMastered(cards[idx], true);
+  lMastered++; lQueue.shift(); lRevealed=false; renderLearn();
+}
+function lAgain(){
+  const idx=lQueue.shift();
+  cards[idx]._wrong=true;
+  setMastered(cards[idx], false);
+  lQueue.splice(Math.min(3,lQueue.length),0,idx); // revient ~3 cartes plus loin
+  lRevealed=false; renderLearn();
+}
+function learnDone(){
+  const reprises = N - lFirstTry;
+  stage.innerHTML = headerHTML() + `
+    <div class="done">
+      <h2>Session terminée</h2>
+      <div class="recap">
+        ${lFirstTry} / ${N} fiches sues <strong>du premier coup</strong>.<br>
+        ${reprises>0 ? `${reprises} ont demandé une ou plusieurs reprises avant d’être acquises.` : `Sans-faute — tout était maîtrisé immédiatement.`}
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="goMenu()">Menu</button>
+        <button class="btn btn-ink" onclick="startLearn()">Recommencer</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- TEST (parcours noté) ---------- */
+let tQueue=[], tPos=0, tRevealed=false, tCorrect=0, tMissed=[];
+function startTest(subset){
+  tQueue = shuffle(subset && subset.length ? subset : cards.map((_,i)=>i));
+  tPos=0; tCorrect=0; tMissed=[]; tRevealed=false;
+  renderTest();
+}
+function renderTest(){
+  if(tPos>=tQueue.length) return testDone();
+  const c = cards[tQueue[tPos]];
+  const pct = Math.round(tPos/tQueue.length*100);
+  stage.innerHTML = `
+    <div class="bar">
+      <button class="back" onclick="goMenu()">‹ Menu</button>
+      <span class="count">Question ${tPos+1} / ${tQueue.length}</span>
+    </div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="card" id="card">
+      <span class="tag">${c.cat}</span>
+      <div class="side-label">Question</div>
+      <div class="content">${fmt(c.recto)}</div>
+      ${ tRevealed ? `
+        <div class="divider"></div>
+        <div class="answer">
+          <div class="side-label">Réponse</div>
+          <div class="content">${fmt(c.verso)}</div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-red" onclick="tMark(false)">✕ &nbsp;Raté</button>
+          <button class="btn btn-green" onclick="tMark(true)">✓ &nbsp;Juste</button>
+        </div>`
+      : `
+        <div class="reveal-wrap"><button class="btn btn-ink" onclick="tReveal()">Révéler la réponse</button></div>` }
+    </div>`;
+  renderMath(document.getElementById('card'));
+}
+function tReveal(){ tRevealed=true; renderTest(); }
+function tMark(ok){
+  if(ok) tCorrect++; else tMissed.push(tQueue[tPos]);
+  setLastTest(cards[tQueue[tPos]], ok);
+  tPos++; tRevealed=false; renderTest();
+}
+function testDone(){
+  const total=tQueue.length;
+  const pct=Math.round(tCorrect/total*100);
+  progress.lastScore={correct:tCorrect,total:total,when:new Date().toISOString().slice(0,10)}; saveProgress();
+  let missedHTML='';
+  if(tMissed.length){
+    missedHTML = `<div class="missed">
+      <div class="m-title">À retravailler (${tMissed.length})</div>
+      ${tMissed.map(i=>`<div class="m-item"><span class="m-cat">${cards[i].cat}</span>${plain(cards[i].recto)}</div>`).join('')}
+    </div>`;
+  }
+  stage.innerHTML = headerHTML() + `
+    <div class="done">
+      <h2>${pct===100?'Parfait !':pct>=70?'Bien joué':'Continue'}</h2>
+      <div class="score">${tCorrect}<small> / ${total}</small></div>
+      <div class="pct">${pct}% de réussite</div>
+      ${missedHTML}
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="goMenu()">Menu</button>
+        ${tMissed.length?`<button class="btn btn-red" onclick="startTest([${tMissed.join(',')}])">Rejouer les ratées (${tMissed.length})</button>`:''}
+        <button class="btn btn-ink" onclick="startTest()">Tout recommencer</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- go ---------- */
+goMenu();
+</script>
+</body>
+</html>

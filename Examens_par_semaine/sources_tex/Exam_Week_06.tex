@@ -1,0 +1,85 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\examheader{Week 6: Fourier Theory}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+Throughout this problem $g\in L^1$ has continuous-time Fourier transform
+\[
+G(f)=\int_{-\infty}^{\infty} g(t)\,e^{-2\pi i f t}\,dt ,
+\]
+and for a derived function $h$ we write $H$ for its transform. We use the four elementary Fourier-transform properties (conjugation, scaling, shift, linearity).
+
+\textbf{(a)} Prove the \emph{conjugation} and \emph{time-shift} rules: if $h(t)=\conj{g(t)}$ then $H(f)=\conj{G(-f)}$, and if $h(t)=g(t+\tau)$ then $H(f)=G(f)\,e^{2\pi i f\tau}$. \hfill(2 pts)
+
+\textbf{(b)} Combining scaling and shifting, show that the \emph{modulated} signal $h(t)=g(\alpha t)\,e^{2\pi i f_0 t}$ (with $\alpha\neq0$, $f_0\in\Reals$ fixed) has transform
+\[
+H(f)=\frac{1}{\abs\alpha}\,G\!\left(\frac{f-f_0}{\alpha}\right).
+\]
+State in one sentence what each of the two operations (scaling by $\alpha$, modulation by $e^{2\pi i f_0 t}$) does to the spectrum. \hfill(2 pts)
+
+\textbf{(c)} Use part (a) to show that if $g$ is \emph{real and even} (so $g(t)=\conj{g(t)}=g(-t)$), then its transform $G$ is real and even. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+Recall the continuous-time convolution of $g,h\in L^1$,
+\[
+(g*h)(t)=\int_{-\infty}^{\infty} g(t-y)\,h(y)\,dy ,
+\]
+and that upper-case letters denote Fourier transforms.
+
+\textbf{(a)} Prove the \emph{convolution theorem}: if $u=g*h$ then $U=G\cdot H$. State explicitly the Fubini step and why the hypotheses $g,h\in L^1$ justify it. \hfill(3 pts)
+
+\textbf{(b)} \emph{(Filtering.)} A signal $x\in L^1$ is passed through a linear filter with impulse response $a\in L^1$, producing $y=a*x$. Using part (a), give $Y$ in terms of $X$ and the transfer function $A$. If the filter is the running-average kernel $a(t)=\tfrac1{2T}\,\ind_{\{\abs t\le T\}}$, compute $A(f)$ in closed form and verify $A(0)=1$. \hfill(2 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+This problem concerns the finite-data Fourier transform, the Dirichlet kernel, and aliasing. Take sampling interval $\Delta=1$ and observation times $t=0,1,\dots,n-1$.
+
+\textbf{(a)} The transform of the finite rectangular window is the \textbf{Dirichlet kernel}
+\[
+D_n(f)=\sum_{t=0}^{n-1} e^{-2\pi i f t}.
+\]
+Sum this finite geometric series and show that
+\[
+D_n(f)=\frac{\sin(n\pi f)}{\sin(\pi f)}\;e^{-\pi i (n-1) f},
+\qquad\text{so}\qquad
+\abs{D_n(f)}=\left\lvert\frac{\sin(n\pi f)}{\sin(\pi f)}\right\rvert .
+\]
+\hfill(2 pts)
+
+\textbf{(b)} Show that $\abs{D_n(f)}$ vanishes exactly at the nonzero \textbf{Fourier frequencies} $f_k=k/n$, $k=1,\dots,n-1$, while $D_n(0)=n$. (This is why the periodogram of a pure sinusoid at a Fourier frequency does not leak onto the other Fourier frequencies.) \hfill(1.5 pts)
+
+\textbf{(c)} \emph{(Aliasing / Nyquist.)} Let $\{X_t\}$ be obtained by sampling a continuous-time process at interval $\Delta$, and recall the aliasing identity for the sampled spectral density,
+\[
+\sdf(f)=\sum_{k\in\Ints}\sdf_{\mathrm{c}}\!\left(f+\frac{k}{\Delta}\right),
+\qquad \abs f\le \frac{1}{2\Delta}.
+\]
+Suppose the continuous SDF is band-limited triangular,
+$\sdf_{\mathrm{c}}(f)=(1-\abs f)\,\ind_{\{\abs f\le 1\}}$.
+For $\Delta=1$ (Nyquist frequency $\tfrac12$) compute the aliased SDF $\sdf(f)$ on $\abs f\le\tfrac12$, and state whether aliasing has occurred and why. \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 5: differencing \& SARIMA.)} Consider the signal-plus-noise model $X_t=\mu_t+Y_t$, where $\mu_t$ is a deterministic component and $\{Y_t\}$ is a zero-mean stationary process with autocovariance sequence $\acvs_\tau$. Recall $\diff=I-\Bsh$, $\diff_{(s)}=I-\Bsh^{s}$.
+
+\textbf{(a)} Let $\mu_t=a+bt+s_t$ with a \emph{monthly} season $s_{t+12}=s_t$. Compute $\diff\,\diff_{(12)}X_t$ explicitly as a linear combination of the $Y$'s, verify its mean is $0$, and explain in one sentence why it is weakly stationary. \hfill(2 pts)
+
+\textbf{(b)} Now let $\{X_t\}$ be the multiplicative seasonal process $\mathrm{SARMA}(0,1)\times(1,0)_{12}$,
+\[
+\bigl(1-\Phi\,\Bsh^{12}\bigr)X_t=\bigl(1-\theta\Bsh\bigr)\eps_t,
+\qquad \abs\Phi<1 .
+\]
+By inverting the seasonal AR factor, obtain the $\mathrm{MA}(\infty)$ weights $\psi_j$ in $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ (closed form for $\psi_{12l}$ and $\psi_{12l+1}$; all other $\psi_j=0$). \hfill(2 pts)
+
+\textbf{(c)} Using $\acvs_\tau=\sigma^{2}\sum_{j\ge0}\psi_j\psi_{j+\tau}$, compute $\acvs_0$ and $\acvs_1$ in closed form, and evaluate $\acf_1=\acvs_1/\acvs_0$ for $\theta=\tfrac12$. \hfill(1 pt)
+\answerpage
+
+\end{document}

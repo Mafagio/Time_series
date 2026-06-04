@@ -1,0 +1,57 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\examheader{Week 7: Spectral Density \& Spectral Representation}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+For a discrete-time stationary process $\{X_t\}_{t\in\Ints}$ with summable ACVS $\{\acvs_\tau\}\in\ell^1$ (sampling interval $\Delta=1$), the spectral density function (SDF) is $\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau\,e^{-2\pi i f\tau}$, with inverse $\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)\,e^{2\pi i f\tau}\,df$.
+
+\textbf{(a)} Prove from the definition that any SDF is real-valued and even, $\sdf(-f)=\sdf(f)$, and write it in the cosine form $\sdf(f)=\acvs_0+2\sum_{\tau\ge1}\acvs_\tau\cos(2\pi f\tau)$. \hfill(1.5 pts)
+
+\textbf{(b)} Show that $\acvs_0=\Var(X_t)=\int_{-1/2}^{1/2}\sdf(f)\,df$, and use this to interpret $\sdf(f)$ as a distribution of power across frequency. \hfill(1.5 pts)
+
+\textbf{(c)} Take $\{X_t\}=\{\eps_t\}$ (white noise of variance $\sigma^2$). Compute $\sdf(f)$ directly from its ACVS and explain in one sentence why the result earns the name ``white''. \hfill(2 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+This problem tests whether a candidate sequence is a valid autocovariance.
+
+\textbf{(a)} \emph{(The validity criterion.)} State the criterion that decides whether a summable symmetric sequence $\{\acvs_\tau\}$ is the ACVS of \emph{some} stationary process, expressed through its Fourier transform $\sdf$. Why is non-negativity of $\sdf$ the right test? \hfill(1 pt)
+
+\textbf{(b)} \emph{(A truncated ACVS.)} Let $\acvs_\tau=1$ for $\abs\tau\le K$ and $\acvs_\tau=0$ for $\abs\tau>K$, where $K$ is a positive integer. Compute $\sdf(f)$ in closed form (a Dirichlet kernel), then evaluate it at the Nyquist endpoint $f=\tfrac12$ to decide for which $K$ the sequence \emph{fails} to be a valid ACVS. \hfill(2 pts)
+
+\textbf{(c)} \emph{(MA(1)-shape ACVS.)} Let $\acvs_0=1$, $\acvs_{\pm1}=\rho$, and $\acvs_\tau=0$ for $\abs\tau\ge2$, with $\rho\in\Reals$. Compute $\sdf(f)$ and determine the exact set of $\rho$ for which $\{\acvs_\tau\}$ is a valid ACVS. Relate the answer to the largest possible lag-$1$ autocorrelation of an MA(1). \hfill(2 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+Let $\{X_t\}$ be the MA($q$) process $X_t=\sum_{j=0}^{q}\theta_j\eps_{t-j}$ with $\theta_0=1$ and $\eps_t$ white noise of variance $\sigma^2$.
+
+\textbf{(a)} Recall (or derive) the ACVS $\acvs_\tau=\sigma^2\sum_{j=0}^{q}\theta_j\theta_{j+\abs\tau}$ for $\abs\tau\le q$ (and $0$ otherwise), writing it in the double-sum form $\acvs_\tau=\sigma^2\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k\,\ind_{\{\tau=k-j\}}$. \hfill(1.5 pts)
+
+\textbf{(b)} Starting from this double sum, derive the factored SDF
+\[
+\sdf(f)=\sigma^2\Bigl|\,\textstyle\sum_{j=0}^{q}\theta_j e^{-2\pi i j f}\,\Bigr|^2,
+\]
+and explain in one sentence why this form makes $\sdf(f)\ge0$ automatic. \hfill(2 pts)
+
+\textbf{(c)} Specialise to the MA(1) $X_t=\eps_t-\theta\eps_{t-1}$. Give $\sdf(f)=\sigma^2\bigl(1+\theta^2-2\theta\cos(2\pi f)\bigr)$, and for $\theta>0$ locate the frequency of the maximum and of the minimum of $\sdf$, giving the two extreme values. \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 6: Fourier theory --- convolution \& aliasing.)} Work with the continuous-time Fourier transform $G(f)=\int_{-\infty}^{\infty}g(t)e^{-2\pi i f t}\,dt$ and convolution $(g*h)(t)=\int_{-\infty}^{\infty}g(t-y)h(y)\,dy$ ($g,h\in L^1$).
+
+\textbf{(a)} \emph{(Convolution theorem.)} Prove that if $u=g*h$ then $U(f)=G(f)\,H(f)$, justifying carefully the interchange of integration (state the Fubini hypothesis you use). \hfill(2 pts)
+
+\textbf{(b)} \emph{(Aliasing.)} Let $g\in L^1$ be continuous with transform $\mathcal G$, and let $G$ denote the transform of the sampled sequence $\{g(t)\}_{t\in\Delta\Ints}$. Show the aliasing identity $G(f)=\sum_{k\in\Ints}\mathcal G(f+k/\Delta)$, and define the Nyquist frequency. \hfill(2 pts)
+
+\textbf{(c)} \emph{(A concrete alias.)} A pure cosine of frequency $f_0=0.8$ Hz is sampled at rate $1/\Delta=1$ Hz (so $\Delta=1$ s). To which frequency in the principal Nyquist band $[-\tfrac12,\tfrac12]$ does $f_0$ fold, and what is the lowest sampling rate that would resolve $f_0$ without aliasing? \hfill(1 pt)
+\answerpage
+
+\end{document}

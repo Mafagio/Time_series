@@ -1,0 +1,100 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\DeclareMathOperator{\diag}{diag}
+\begin{document}
+
+\examheader{Week 10: Forecasting}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Forecasting a causal AR(1): point forecast, error variance, interval.)}
+Let $\{X_t\}$ be the zero-mean Gaussian AR(1) process
+\[
+X_t=\phi X_{t-1}+\eps_t,\qquad \abs\phi<1,\quad \eps_t\iid\mathcal N(0,\sigma^2),
+\]
+and write $X^{\,n}_{n+h}$ for the best linear predictor of $X_{n+h}$ based on
+$X_1,\dots,X_n$, with $h$-step forecast error $e_n(h)=X_{n+h}-X^{\,n}_{n+h}$.
+
+\textbf{(a)} Give the $\mathrm{MA}(\infty)$ weights $\{\psi_j\}$ of the process. Using that the process is Gaussian (so the best linear predictor equals the conditional expectation), show that the point forecast is $X^{\,n}_{n+h}=\phi^{\,h}X_n$, and state its limit as $h\to\infty$. \hfill(1.5 pts)
+
+\textbf{(b)} Show that the $h$-step forecast-error variance is
+\[
+\Var\bigl(e_n(h)\bigr)=\sigma^2\,\frac{1-\phi^{2h}}{1-\phi^2},
+\]
+and verify that $\Var(e_n(h))\to\acvs_0$ (the marginal variance) as $h\to\infty$. \hfill(2 pts)
+
+\textbf{(c)} Now fix $\phi=0.6$ and $\sigma^2=4$. Report $X^{\,n}_{n+2}$ and the numerical forecast-error variances $\Var(e_n(1)),\Var(e_n(2))$, then give the $95\%$ Gaussian prediction interval for $X_{n+2}$ (use $z_{0.975}=1.96$). \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(The prediction equations, and one-step AR(2) forecasts.)} Let $\{X_t\}$ be a zero-mean second-order stationary process with autocovariance $\{\acvs_\tau\}$, and let
+\[
+X^{\,n}_{n+h}=\sum_{j=1}^{n}\beta_j X_j
+\]
+be its best linear predictor of $X_{n+h}$ based on $X=(X_1,\dots,X_n)\Tr$.
+
+\textbf{(a)} Starting from the prediction mean square error $S(\beta)=\E\bigl[(X_{n+h}-\beta\Tr X)^2\bigr]$, derive the \emph{prediction equations} $\Gamma_n\beta=\acvs_{[h]}$, where $\Gamma_n=[\acvs_{i-j}]_{i,j=1}^n$ and $\acvs_{[h]}=(\acvs_{n+h-1},\dots,\acvs_h)\Tr$, and show that this is equivalent to the orthogonality condition $\E[(X_{n+h}-X^{\,n}_{n+h})X_k]=0$ for $k=1,\dots,n$. \hfill(2 pts)
+
+\textbf{(b)} Assuming $\Gamma_n$ invertible, deduce the closed forms
+\[
+X^{\,n}_{n+h}=\acvs_{[h]}\Tr\,\Gamma_n^{-1}X,
+\qquad
+P^{\,n}_{n+h}=\acvs_0-\acvs_{[h]}\Tr\,\Gamma_n^{-1}\acvs_{[h]} . \hfill(1.5\text{ pts})
+\]
+
+\textbf{(c)} Let $\{X_t\}$ be the causal AR(2) process $X_t=\phi_1 X_{t-1}+\phi_2 X_{t-2}+\eps_t$. Use the result of part (a) to show that the best one-step predictors based on $X_1$ and on $X_1,X_2$ are
+\[
+X^{\,1}_2=\frac{\acvs_1}{\acvs_0}X_1=\acf_1 X_1,
+\qquad
+X^{\,2}_3=\phi_1 X_2+\phi_2 X_1 .
+\]
+(For the second, you need \emph{not} invert $\Gamma_2$.) \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(The causal-ARMA predictor via $\psi$-weights, and a worked ARMA(1,1).)}
+
+\textbf{(a)} For a causal ARMA process with linear representation $X_t=\sum_{j=0}^\infty\psi_j\eps_{t-j}$, prove that the best linear predictor of $X_{n+h}$ based on $X_1,\dots,X_n$ is
+\[
+X^{\,n}_{n+h}=\sum_{j=h}^{\infty}\psi_j\,\eps_{n+h-j},
+\qquad\text{with}\qquad
+P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2 .
+\]
+(\emph{Hint:} any linear predictor based on $X_1,\dots,X_n$ can be written $\sum_{j\ge0}c_j\eps_{n-j}$; expand the MSE and minimise over the $c_j$.) \hfill(2 pts)
+
+\textbf{(b)} Consider the causal, invertible ARMA(1,1) process
+\[
+X_t=\tfrac12 X_{t-1}+\eps_t+\tfrac{3}{10}\eps_{t-1},\qquad \sigma^2=2 .
+\]
+Compute the first three $\psi$-weights $\psi_0,\psi_1,\psi_2$ (from $\Theta(B)/\Phi(B)$), and give the point forecasts $X^{\,n}_{n+1}$ and $X^{\,n}_{n+2}$ in terms of $X_n$ and the residual $\hat\eps_n$. \hfill(1.5 pts)
+
+\textbf{(c)} Report the forecast-error variances $P^{\,n}_{n+1},P^{\,n}_{n+2},P^{\,n}_{n+3}$ as exact numbers, and explain in one sentence the value $\acvs_0$ they approach as $h\to\infty$ (you may use $\acvs_0=\sigma^2(1+2\phi\theta+\theta^2)/(1-\phi^2)$ for an ARMA(1,1)). \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 9: VAR stability and the diagonal VAR(1) covariance.)}
+
+\textbf{(a)} Consider the bivariate $\mathrm{VAR}(2)$ process $X_t=\Phi_1X_{t-1}+\Phi_2X_{t-2}+\eps_t$ with
+\[
+\Phi_1=\begin{pmatrix}0.4 & 0\\[2pt] 0.5 & 0.9\end{pmatrix},\qquad
+\Phi_2=\begin{pmatrix}0 & 0\\[2pt] 0.3 & -0.2\end{pmatrix}.
+\]
+Form the reverse characteristic polynomial $\det\bigl(I_2-\Phi_1 z-\Phi_2 z^2\bigr)$, exploit the lower-triangular structure to factor it, find all its roots, and decide whether the VAR(2) is stable. State the companion-matrix ($F$) form of the stability test and explain why it gives the same conclusion. \hfill(3 pts)
+
+\textbf{(b)} Now take the \emph{diagonal} $\mathrm{VAR}(1)$ process $X_t=\Phi\,X_{t-1}+\eps_t$ with
+\[
+\Phi=\diag\!\bigl(\tfrac12,\tfrac14\bigr),\qquad
+\{\eps_t\}\sim\mathrm{WN}(0,I_2).
+\]
+Write its $\mathrm{MA}(\infty)$ representation and compute the stationary covariance $\Gamma_0$ and the lag-$1$ matrix $\Gamma_1$ in closed form (exact fractions). \hfill(1.5 pts)
+
+\textbf{(c)} For the process of part (b), what is the coherence $r_{1,2}(f)$ between the two channels at every frequency, and why? \hfill(0.5 pts)
+\answerpage
+
+\end{document}

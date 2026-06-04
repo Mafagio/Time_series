@@ -1,0 +1,294 @@
+
+===== PAGE 1/4 =====
+Time Series Exercise Sheet 4
+Sofia Olhede
+March 12, 2026
+Exercise 4.1
+Determine the sample autocovariances for the Wolfer sunspot numbers posted on Moodle for lags 0, 1, 2, 3.
+Determine the Yule-Walker estimators of φ1, φ2 and σ2 in the model
+Yt = φ1Yt−1 + φ2Yt−2 + εt
+where Yt is the mean corrected series, and εt is assumed to be mean-zero white noise.
+Solution 4.1
+We compute the autocovariances with the acf function in R (you will need to set the working directory to the
+directory of the data to run this):
+sunspot <- read.table("sunspot.txt", header = TRUE)
+acvs_sunspot <- acf(x=sunspot$sunspot , type = "covariance", plot = FALSE)
+cat("the ACVs from lags zero to three is: ", acvs_sunspot$acf[1:4], "\n")
+Running this will output:
+the ACVs from lags zero to three is:
+1382.185 1114.378 591.7208 96.21545
+So we obtain: ˆγ(0) = 1382.18510, ˆγ1 = 1114.37835, ˆγ2 = 591.72080, and ˆγ3 = 96.21545.
+Using the estimator
+ˆφ = ˆΓ−1ˆγ
+where the matrix ˆΓ =
+ˆγ0
+ˆγ1
+ˆγ1
+ˆγ0
+
+, and ˆγ = (ˆγ1, ˆγ2) we have
+ˆφ1
+ˆφ2
+
+=
+1382.2
+1114.4
+1114.4
+1382.2
+−1 1114.4
+591.72
+
+≈
+ 1.3175
+−0.6341
+
+Additionally,
+ˆσ2
+ε = ˆγ0 −ˆφ1ˆγ1 −ˆφ2ˆγ2 = 289.2139.
+Exercise 4.2
+Let {Yt} be a mean-zero stationary process with autocovariance γ.
+Show that the values φ1, . . . , φk which
+minimise
+E
+h
+(Yt −φ1Yt−1 −· · · −φkYt−k)2i
+satisfy the Yule-Walker equations
+γj = φ1γj−1 + · · · + φkγj−k
+for j = 1, . . . , k.
+1
+
+===== PAGE 2/4 =====
+Solution 4.2
+Expanding terms, we compute:
+E
+
+
+ 
+Yt −
+k
+X
+i=1
+φiYt−i
+!2
+= Var
+ 
+Yt −
+k
+X
+i=1
+φiYt−i
+!
++ E
+"
+Yt −
+k
+X
+i=1
+φiYt−i
+#2
+= Var
+ 
+Yt −
+k
+X
+i=1
+φiYt−i
+!
++
+ 
+1 −
+k
+X
+i=1
+φi
+!2
+E [Yt]2
+(Yt stationary)
+= Var
+ 
+Yt −
+k
+X
+i=1
+φiYt−i
+!
+(Yt mean-zero)
+= Cov
+
+Yt −
+k
+X
+i=1
+φiYt−i, Yt −
+k
+X
+j=1
+φjYt−j
+
+
+= Cov (Yt, Yt) −2
+k
+X
+i=1
+φi Cov (Yt, Yt−i) +
+k
+X
+i=1
+k
+X
+j=1
+φiφj Cov (Yt−i, Yt−j)
+= γ0 −2
+k
+X
+i=1
+φiγi +
+k
+X
+i=1
+k
+X
+j=1
+φiφjγj−i.
+(Yt stationary)
+Summing up we end up with:
+E
+
+
+ 
+Yt −
+k
+X
+i=1
+φiYt−i
+!2
+= γ0 −2
+k
+X
+i=1
+φiγi +
+k
+X
+i=1
+k
+X
+j=1
+φiφjγi−j.
+Being a positive quadratic equation, we can only find the minimum. Hence, differentiating with respect to the
+ith index and equating to zero we obtain:
+−2γi + 2
+k
+X
+j=1
+φjγi−j=0.
+Rearranging
+γi =
+k
+X
+j=1
+φjγi−j.
+Exercise 4.3
+We assume that we have observations from a mean-zero MA(1). We observe X1 = 0, X2 = 1 and X3 = 0.5.
+Estimate θ.
+Solution 4.3
+We recall for the MA(1) process: Xt = εt −θ1εt−1. We are given X1, X2, X3. We choose t = 0 as the starting
+point in time.
+We want the minimise the squared error terms; yet, the ε terms are unknown. Thus we try to recover them via
+εt = Xt + θ1εt−1 as follows.
+Write ε0 = 0 (t = 0 is the starting point), ε1 = X1 +θ1ε0 = 0, ε2 = X2 +θ1ε1 = 1, and finally, ε3 = X3 +θ1ε2 =
+0.5 + θ1.
+The least squares consist of minimising
+2
+
+===== PAGE 3/4 =====
+3
+X
+t=1
+ε2
+t = 0 + 1 + (0.5 + θ1)2,
+which clearly achieves the minimum for θ = −0.5, hence ˆθ = −0.5.
+Exercise 4.4
+From a series of length 100, we have computed that the ACF at lag 1 is 0.8, at lag 2 is 0.5, and at lag 3 is 0.4.
+If we assume that an AR(3) model with zero mean is appropriate, obtain estimates of φ1 and φ2 and φ3?
+Solution 4.4
+Using Yule-Walker, we have that for γ = (γ1, γ2, γ3)⊤, and φ = (φ1, φ2, φ3)⊤and
+Γ =
+
+
+γ0
+γ1
+γ2
+γ1
+γ0
+γ1
+γ2
+γ1
+γ0
+
+,
+we may write the solution as ˆφ = ˆΓ−1ˆγ.
+As we are given the correlations, we take a new 3 × 3 diagonal matrix with the quotient of the variance, 1/γ0,
+on the diagonal, say V . Let ¯Γ = V Γ, ρ = V γ, and note that similar to the previous matrices, such matrices
+are filled with the autocorrelation ρ instead of the autocovariance.
+Then we can rewrite γ = Γφ as V γ = V Γφ, from which we see
+φ = (V Γ)−1V γ = ¯Γ−1ρ.
+Finally, we can estimate ˆφ = ˆ¯Γ−1 ˆρ.
+Using the given details we obtain
+ˆφ = (1.30909, −0.954545, 0.509091)⊤.
+Exercise 4.5
+Consider the Wolfer sunspot data. Compute the forwards least squares estimator for an AR(2) model. Do the
+same for the backwards estimator. Remember you need to remove the mean if it is significantly non-zero.
+Hint: do not do this by hand!
+Solution 4.5
+The following R code computes both estimators:
+sunspot <- read.table("sunspot.txt", header = TRUE)
+foward_ls_estimator <- function(x, p) {
+x <- x-mean(x)
+n <- length(x)
+Xf <- x[-1:-p]
+compute_x_col <- function(j) {
+x[(p + 1 - j):(n - j)]
+}
+F <- cbind(apply(array(1:p), MARGIN=1, FUN = compute_x_col))
+phi_F <- solve(t(F) %*% F) %*% t(F) %*% Xf
+sigma_F_squared <- sum((Xf - F %*% phi_F)^2) / (n - p - p)
+return(list(phi_F = phi_F, sigma_F_squared = sigma_F_squared))
+}
+print(foward_ls_estimator(sunspot$sunspot , 2))
+backward_ls_estimator <- function(x, p) {
+x <- x-mean(x)
+n <- length(x)
+Xb <- x[1:(n-p)]
+3
+
+===== PAGE 4/4 =====
+compute_x_col <- function(j) {
+x[(1 + j):(n - p + j)]
+}
+B <- cbind(apply(array(1:p), MARGIN=1, FUN = compute_x_col))
+phi_B <- solve(t(B) %*% B) %*% t(B) %*% Xb
+sigma_B_squared <- sum((Xb - B %*% phi_B)^2) / (n - p - p)
+return(list(phi_B = phi_B, sigma_B_squared = sigma_B_squared))
+}
+print(backward_ls_estimator(sunspot$sunspot , 2))
+Running this outputs:
+$phi_F
+[,1]
+[1,]
+1.4045705
+[2,] -0.7113314
+$sigma_F_squared
+[1] 232.2614
+$phi_B
+[,1]
+[1,]
+1.4061489
+[2,] -0.7075649
+$sigma_B_squared
+[1] 231.0316
+So we have
+φF ≈[1.4046, −0.7113]⊤,
+σF ≈232.2614,
+φB ≈[1.4061, −0.7076]⊤,
+σB ≈231.0316.
+4

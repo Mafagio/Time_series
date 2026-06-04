@@ -1,0 +1,111 @@
+% ======================================================================
+%  Time Series -- Final Exam Preparation  (MATH-342, EPFL, S. Olhede)
+%  Master file.  Compile with:  pdflatex main  (twice for TOC).
+% ======================================================================
+\documentclass[11pt]{article}
+\input{preamble}
+
+\begin{document}
+
+% ----------------------------------------------------------------------
+%  TITLE PAGE
+% ----------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2.2cm}
+{\Huge\bfseries Time Series Analysis\par}
+\vspace{0.6cm}
+{\LARGE Complete Final-Exam Preparation\par}
+\vspace{0.4cm}
+{\large MATH-342 -- \'Ecole Polytechnique F\'ed\'erale de Lausanne\par}
+{\large Course by Prof.\ Sofia C.\ Olhede\par}
+\vspace{1.6cm}
+
+\begin{tcolorbox}[width=0.86\textwidth, colback=blue!4!white,
+  colframe=blue!58!black, arc=2mm, boxrule=0.8pt,
+  title=\textbf{What this document is}, coltitle=white,
+  colbacktitle=blue!58!black, fonttitle=\large\bfseries]
+A self-contained revision companion covering \emph{every} chapter of the
+lecture notes: all \textbf{definitions}, \textbf{theorems / propositions /
+lemmas} (statement $+$ proof idea $+$ why it matters), the \textbf{key
+techniques} you reproduce in the exam, and \textbf{worked exercises}
+(selected from the problem sheets and freshly created) with \textbf{full
+solutions}. It ends with an \textbf{Exam Strategy Checklist} and a list of
+\textbf{classic pitfalls}.
+\end{tcolorbox}
+
+\vfill
+{\large Coverage: Stationarity \,$\cdot$\, ACVS/ACF/PACF \,$\cdot$\,
+AR/MA/ARMA/ARIMA/SARIMA \,$\cdot$\, Causality \& Invertibility \,$\cdot$\,
+Estimation (Yule--Walker, LS, MLE) \,$\cdot$\, Forecasting \,$\cdot$\,
+Fourier \& Spectral Analysis \,$\cdot$\, Periodogram \& Tapering \,$\cdot$\,
+Multivariate / VAR \,$\cdot$\, Diagnostics \& Model Selection \,$\cdot$\,
+Long Memory \,$\cdot$\, ARCH/GARCH \,$\cdot$\, LTI Filters\par}
+\vspace{1.2cm}
+{\large Revision document compiled with \texttt{pdflatex}.\par}
+\end{titlepage}
+
+% ----------------------------------------------------------------------
+%  HOW TO USE
+% ----------------------------------------------------------------------
+\section*{How to use this document}
+\addcontentsline{toc}{section}{How to use this document}
+
+\begin{tcolorbox}[colback=orange!7!white, colframe=orange!75!black,
+  arc=1.5mm, boxrule=0.7pt, title=\textbf{Reading strategy},
+  coltitle=white, colbacktitle=orange!75!black, fonttitle=\bfseries]
+\begin{enumerate}[leftmargin=2.2em]
+  \item \textbf{First pass.} Read each section's \emph{Definitions} and
+        \emph{Theorems} boxes. For every theorem, learn the
+        \emph{one-line statement}, the \emph{proof idea}, and the
+        \emph{``why''} --- examiners reward knowing \emph{when} a result
+        applies, not just \emph{that} it is true.
+  \item \textbf{Second pass.} Work through the \emph{Key Technique} boxes.
+        These are the recurring computational moves (compute an ACVS,
+        check causality via roots, derive an MA$(\infty)$ representation,
+        forecast recursively, get a spectral density). The exam is mostly
+        these moves.
+  \item \textbf{Third pass.} Do the \emph{Exercises} \textbf{with the
+        solution hidden}. Exercises tagged \texttt{[Sheet $k$]} come from
+        the problem sheets; those tagged \texttt{[New]} were written to
+        probe understanding from a different angle. \emph{When you can do
+        every exercise unaided, you are ready.}
+  \item \textbf{Night before.} Read only the
+        \hyperref[sec:strategy]{Exam Strategy Checklist} and the
+        \hyperref[sec:pitfalls]{Classic Pitfalls}.
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!3!white, colframe=blue!45!black,
+  arc=1.5mm, boxrule=0.6pt, title=\textbf{Colour legend},
+  coltitle=white, colbacktitle=blue!45!black, fonttitle=\bfseries]
+\textcolor{blue!58!black}{$\blacksquare$}~Definition \quad
+\textcolor{red!62!black}{$\blacksquare$}~Theorem \quad
+\textcolor{teal!62!black}{$\blacksquare$}~Proposition \quad
+\textcolor{violet!60!black}{$\blacksquare$}~Lemma/Corollary \quad
+\textcolor{orange!75!black}{$\blacksquare$}~Key Technique \quad
+\textcolor{cyan!55!black}{$\blacksquare$}~Exercise \quad
+\textcolor{green!48!black}{$\blacksquare$}~Solution
+\end{tcolorbox}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ----------------------------------------------------------------------
+%  CONTENT PARTS
+% ----------------------------------------------------------------------
+\input{part01}
+\input{part02}
+\input{part03}
+\input{part04}
+\input{part05}
+\input{part06}
+\input{part07}
+\input{part08}
+\input{part09}
+\input{part10}
+\input{part11}
+\input{part12}
+
+\end{document}

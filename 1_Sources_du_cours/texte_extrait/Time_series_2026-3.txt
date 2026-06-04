@@ -1,0 +1,42 @@
+
+===== PAGE 1/1 =====
+Time Series Exercise Sheet 1
+Sofia Olhede
+February 19, 2026
+A note on notation: sometimes it is useful to discuss the autocovariance sequence of multiple different time
+series. Often, for a time series {Xt}, the autocovariance will be written as γX(τ), even if it is really a sequence.
+This is because the notation is usually cleaner than the alternatives such as γX,τ. Whether the autocovariance
+is a sequence or a function will be clear from context.
+Exercise 1.1
+Let Xt be distributed as a student t distribution on one degree of freedom independently across t. Is {Xt}
+weakly stationary?
+Exercise 1.2
+Let {Xt} be second order stationary with autocovariance γτ and εt be iid with finite variance. Furthermore,
+assume {Xt} and {εt} are mutually independent. Determine the autocovariance of Zt = Xt + εt.
+Exercise 1.3
+Let Yt be iid Gaussian random variables of mean 0 and variance σ2
+Y . Let a, b and c be constants. Which of the
+following processes are weakly stationary/strongly stationary, and if so, give their mean and ACVS.
+1. Xt = a + bYt + cYt−1,
+2. Xt = a + bY0,
+3. Xt = Y1 cos(ct) + Y2 sin(ct)
+4. Xt = Y0 cos(ct)
+Exercise 1.4
+Determine the autocovariance of ϵt which is uncorrelated across t, but with fixed variance σ2 and mean zero.
+Exercise 1.5
+Determine the autocovariance of Xt = θ1ϵt +θ2ϵt−1 where ϵt which is mean zero, uncorrelated across t but with
+fixed variance σ2.
+Exercise 1.6
+Suppose that {Xt} and {Yt} are uncorrelated stationary time series, i.e. Xt and Ys are uncorrelated for every
+choice of t and s. Show that the sequence {Xt + Yt} is stationary with an autocovariance that is the sum of the
+autocovariance sequences of {Xt} and {Yt}.
+Exercise 1.7
+Suppose that {Xt,1} , {Xt,2} , . . . , {Xt,m} are stationary processes with zero means and
+γj(τ) = Cov (Xt,j, Xt+τ,j) .
+If E [Xt,jXt+τ,k] = 0 for all t, τ and j ̸= k determine the autocovariance sequence of
+Xt =
+m
+X
+j=1
+Xt,j.
+1

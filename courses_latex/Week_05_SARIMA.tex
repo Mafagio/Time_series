@@ -1,0 +1,138 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{05}{19 March 2026}{Trends, Seasonality \& SARIMA}{Make a series stationary by removing trend and seasonality through differencing; ARIMA and SARMA encode this in the polynomials.}
+
+Real series are almost never stationary: they \emph{drift} (a trend) and they \emph{repeat} (a season). The working model of the chapter is $X_t=\mu_t+Y_t$, with $\mu_t$ a deterministic time-dependent mean and $\{Y_t\}$ stationary. There are two ways to peel $\mu_t$ off: \textbf{estimate-and-subtract} (regress on $t$ and on seasonal dummies) or \textbf{difference it away} with $\diff=I-B$. Layering AR/MA structure onto both ordinary and seasonal lags gives the SARMA family; folding the differencing in front gives (S)ARIMA --- the Box--Jenkins workhorse.
+
+\section*{Key definitions}
+
+\begin{defn}{Mean-trend (signal-plus-noise) model}
+$X_t=\mu_t+Y_t$, where $\mu_t$ is a deterministic, time-dependent mean (the \textbf{trend}) and $\{Y_t\}$ is zero-mean second-order stationary. Canonical cases: $\mu_t=a+bt$ (linear), $\mu_t$ a degree-$(q-1)$ polynomial, or $\mu_t=s_t$ \textbf{periodic} of period $s$ ($s_{t+s}=s_t$). The two can coexist: $X_t=a+bt+s_t+Y_t$.
+\end{defn}
+
+\begin{defn}{Difference operators $\diff$ and $\diff_{(s)}$}
+Ordinary difference: $\diff=I-B$, $\ \diff X_t=X_t-X_{t-1}$ (with $BX_t=X_{t-1}$). It is linear, and
+\[
+\diff^{d}=(I-B)^{d}=\sum_{k=0}^{d}\binom{d}{k}(-1)^{k}B^{k},\qquad
+\text{e.g. } \diff^{2}X_t=X_t-2X_{t-1}+X_{t-2}.
+\]
+\textbf{Seasonal} difference of period $s$: $\diff_{(s)}=I-B^{s}$, $\ \diff_{(s)}X_t=X_t-X_{t-s}$ (just two terms). Ordinary is the case $s=1$.
+\end{defn}
+
+\begin{defn}{Seasonal MA and AR (SMA, SAR)}
+Only lags that are \emph{multiples of $s$} appear:
+\[
+\begin{aligned}
+\mathrm{SMA}(Q)_s:&\quad X_t=\eps_t-\sum_{j=1}^{Q}\theta^{(s)}_j\eps_{t-js}=\Theta^{(s)}(B)\eps_t,\\
+\mathrm{SAR}(P)_s:&\quad \Phi^{(s)}(B)X_t=\eps_t,\quad X_t=\eps_t+\sum_{j=1}^{P}\phi^{(s)}_jX_{t-js}.
+\end{aligned}
+\]
+Polynomials: $\Theta^{(s)}(z)=1-\sum_j\theta^{(s)}_jz^{sj}$ and $\Phi^{(s)}(z)=1-\sum_j\phi^{(s)}_jz^{sj}$. Basic seasonal MA(1): $X_t=\eps_t-\theta\eps_{t-s}$.
+\end{defn}
+
+\begin{defn}{SARMA$(p,q)\times(P,Q)_s$}
+Multiply an ordinary ARMA by a seasonal ARMA at period $s$:
+\[
+\Phi(B)\,\Phi^{(s)}(B)\,X_t=\Theta(B)\,\Theta^{(s)}(B)\,\eps_t .
+\]
+$\mathrm{SMA}(Q)_s=\mathrm{SARMA}(0,0)\times(0,Q)_s$ and $\mathrm{SAR}(P)_s=\mathrm{SARMA}(0,0)\times(P,0)_s$. Example, $\mathrm{SARMA}(0,1)\times(0,1)_{12}$: $\ X_t=(1-\theta B)\bigl(1-\theta^{(12)}B^{12}\bigr)\eps_t$.
+\end{defn}
+
+\begin{defn}{ARIMA$(p,d,q)$ and SARIMA$(p,d,q)\times(P,D,Q)_s$}
+$\{X_t\}$ is \textbf{ARIMA$(p,d,q)$} (``integrated ARMA'') if its $d$-th difference is a causal, invertible ARMA$(p,q)$:
+\[
+\Phi(B)\,(1-B)^{d}X_t=\Theta(B)\,\eps_t ,\qquad\text{i.e. } Z_t=\diff^{d}X_t \text{ is ARMA}(p,q).
+\]
+The ``I'' is \emph{integrated}: recover $X_t$ from $Z_t$ by summing $d$ times. The full \textbf{SARIMA} folds in both an ordinary difference $d$ and a seasonal difference $D$:
+\[
+\Phi(B)\,\Phi^{(s)}(B)\,(1-B)^{d}(1-B^{s})^{D}\,X_t=\Theta(B)\,\Theta^{(s)}(B)\,\eps_t .
+\]
+\end{defn}
+
+\begin{defn}{Random walk, IMA$(1,1)$, ARI$(1,1)$}
+\textbf{Random walk} $X_t=X_{t-1}+\eps_t$ is the AR(1) at $\phi=1$: \emph{not} stationary, but $\diff X_t=\eps_t$ is white noise, so it is ARIMA$(0,1,0)$. Two minimal one-step-integrated models, both with non-stationary $\{Y_t\}$:
+\begin{itemize}
+\item \textbf{IMA$(1,1)$}=ARIMA$(0,1,1)$: $\ Y_t=Y_{t-1}+\eps_t-\theta\eps_{t-1}$ (i.e. $\diff Y_t=\eps_t-\theta\eps_{t-1}$);
+\item \textbf{ARI$(1,1)$}=ARIMA$(1,1,0)$: $\ Y_t-Y_{t-1}=\phi(Y_{t-1}-Y_{t-2})+\eps_t$, $\abs\phi<1$.
+\end{itemize}
+\end{defn}
+
+\begin{intu}[Subtract vs.\ difference]
+\textbf{Regress-and-subtract} ($a+bt$, or $\sin/\cos$ harmonics) gives an interpretable deterministic trend, but you must \emph{know its form}. \textbf{Differencing} is model-free and robust: $\diff$ kills any linear drift, $\diff^{q}$ any degree-$(q-1)$ polynomial, $\diff_{(s)}$ any period-$s$ season --- at the price of slightly distorting the noise ($\diff Y_t$ replaces $Y_t$) and risking \emph{over}-differencing.
+\end{intu}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Differencing removes a polynomial trend}
+If $X_t=a+bt+Y_t$ with $\{Y_t\}$ stationary, then $\diff X_t=b+\diff Y_t$: the trend collapses to the constant $b$, and $\diff Y_t$ is again stationary. More generally, if $\mu_t$ is a degree-$(q-1)$ polynomial then $\diff^{q}\mu_t\equiv0$, so
+\[
+\diff^{q}X_t=\diff^{q}Y_t=\sum_{k=0}^{q}\binom{q}{k}(-1)^{k}Y_{t-k}.
+\]
+\textit{Idea:} each $\diff$ lowers a polynomial's degree by one; linearity passes through to $Y$.
+\end{result}
+
+\begin{intu}[How many differences?]
+$\diff$ lowers a polynomial degree by exactly one. So \textbf{linear drift $\Rightarrow d=1$}, \textbf{quadratic $\Rightarrow d=2$}: choose $d=q$ to flatten a degree-$(q-1)$ trend. A seasonal pattern of period $s$ needs \emph{one} seasonal difference $\diff_{(s)}$ ($D=1$).
+\end{intu}
+
+\begin{result}{Theorem --- $\diff\diff_{(12)}$ flattens trend + season}
+Let $X_t=a+bt+s_t+Y_t$ with $s_{t+12}=s_t$ and $\{Y_t\}$ zero-mean stationary. Apply the seasonal difference first ($\diff_{(12)}X_t=12b+\diff_{(12)}Y_t$ kills $s_t$ and turns $bt$ into a constant), then $\diff$ kills the constant:
+\[
+\diff\diff_{(12)}X_t=\diff\diff_{(12)}Y_t=Y_t-Y_{t-1}-Y_{t-12}+Y_{t-13}.
+\]
+This is a fixed linear combination of stationary $Y$'s: mean $0$, covariance a function of $\tau$ only $\Rightarrow$ weakly stationary. (This is the standard ``$\diff_{12}$ then $\diff$'' pre-processing for monthly data, e.g.\ the Mauna Loa CO$_2$ series.)
+\end{result}
+
+\begin{intu}[Multiplicative season needs a different recipe]
+If trend and season \emph{multiply}, $X_t=(a+bt)s_t+Y_t$ (amplitude grows with level), then $\diff\diff_{(12)}$ is \emph{wrong}: here a single \emph{double seasonal} difference works, $\diff_{(12)}^{2}X_t=Y_t-2Y_{t-12}+Y_{t-24}$, again stationary.
+\end{intu}
+
+\begin{result}{ACVS of the seasonal MA(1)}
+For $X_t=\eps_t-\theta\eps_{t-s}$ (white-noise variance $\sigma_\eps^2$), only three lags survive:
+\[
+\acvs_0=(1+\theta^{2})\sigma_\eps^2,\quad \acvs_{\pm s}=-\theta\,\sigma_\eps^2,\quad \acvs_\tau=0\ \text{else}
+\qquad\Rightarrow\qquad \acf_{\pm s}=\frac{-\theta}{1+\theta^{2}}.
+\]
+\textit{Idea:} white-noise filter rule $\acvs_\tau=\sigma_\eps^2\sum_j a_ja_{j+\abs\tau}$ on taps $a_0=1,a_s=-\theta$. A single ACF spike at lag $s$ is the fingerprint of an $\mathrm{SMA}(1)_s$.
+\end{result}
+
+\begin{result}{Random walk and integrated growth (the difference-me signal)}
+For the random walk $X_t=\sum_{j=1}^{t}\eps_j$ ($X_0=0$): $\E[X_t]=0$, $\Var(X_t)=t\sigma_\eps^2$, $\Cov(X_t,X_{t+\tau})=t\sigma_\eps^2$ --- all depend on $t$, so $\{X_t\}$ is \emph{not} stationary, yet $\diff X_t=\eps_t$ is white noise. Same diagnostic for IMA$(1,1)$ ($\theta\neq1$):
+\[
+\Var(Y_t)=\sigma_\eps^2\bigl[1+(1-\theta)^{2}(t-1)+\theta^{2}\bigr],\qquad \Corr(Y_t,Y_{t+\tau})\to1.
+\]
+ARI$(1,1)$ behaves the same way. \textbf{Variance growing linearly in $t$ and nearby values almost perfectly correlated} is the signature that a difference is needed.
+\end{result}
+
+\begin{result}{Theorem (pitfall) --- $\diff_{(s)}\neq\diff^{s}$, and over-differencing}
+$\diff_{(s)}=I-B^{s}$ subtracts the value $s$ steps back (two terms, removes a period-$s$ \emph{season}); $\diff^{s}=(I-B)^{s}$ is an $(s+1)$-term binomial sum (removes a degree-$(s-1)$ \emph{polynomial}). They are not the same. Differencing an already-stationary series injects a $(1-B)$ factor into the MA part: a non-invertible MA(1) with $\acf_1\to-\tfrac12$. Seeing $\acf_1\approx-\tfrac12$ after differencing means \emph{difference one time fewer}.
+\end{result}
+
+\begin{exmpl}[Seasonal ARMA $(1-0.7B^{2})X_t=(1-0.3B^{2})\eps_t$]
+Write $\phi=0.7,\theta=0.3$. AR roots have modulus $>1$ $\Rightarrow$ causal; expand the geometric series in $B^{2}$. Only \emph{even} lags survive: $a_0=1$, $a_j=0$ for odd $j$, and $a_j=\phi^{(j-2)/2}(\phi-\theta)$ for even $j\ge2$. Hence odd-lag correlations vanish and the ACF decays geometrically at rate $\phi$ along even lags: $\acf_2\approx0.47$, $\acf_4\approx0.33$, $\acf_6\approx0.23$ --- the correlogram shows spikes only at $\tau=2,4,6,\dots$ decaying like $0.7^{\tau/2}$.
+\end{exmpl}
+
+\section*{Intuition}
+
+\begin{intu}[The whole chapter in one line]
+Strip non-stationarity \emph{before} modelling: $\diff^{d}$ for trend, $\diff_{(s)}^{D}$ for season; then fit a SARMA on the (now stationary) result. SARIMA bundles all of this into four polynomials plus two differencing exponents.
+\end{intu}
+
+\begin{intu}[Reading a correlogram]
+\textbf{Ordinary} ARMA structure lives at small lags $1,2,3,\dots$; \textbf{seasonal} structure clusters around $s,2s,\dots$ (with small side-lobes at $s\pm1$ from cross terms). A slowly decaying sample ACF $\Rightarrow$ a unit root $\Rightarrow$ difference. A lone $-\tfrac12$ at lag 1 $\Rightarrow$ you over-differenced.
+\end{intu}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+\item \textbf{Recipe.} $X_t=\mu_t+Y_t$: remove $\mu_t$ by regression (need the form) \emph{or} differencing (model-free). For monthly data with linear drift: $\diff\diff_{(12)}$ (seasonal first, then ordinary).
+\item \textbf{Pick $d,D$.} $d=q$ flattens a degree-$(q-1)$ polynomial trend; $D=1$ removes a period-$s$ season (rarely $D=2$). Stop when the mean is stable, variance constant, and the ACF decays fast.
+\item \textbf{Know the polynomials.} ARIMA: $\Phi(B)(1-B)^{d}X_t=\Theta(B)\eps_t$. SARIMA multiplies in seasonal factors $\Phi^{(s)},\Theta^{(s)}$ and $(1-B^{s})^{D}$. Expand by treating $B$ as a formal variable; seasonal factors contribute only multiples of $s$, cross terms give lags $s\pm1$.
+\item \textbf{Diagnostics of integration.} Variance growing $\propto t$ and near-unit correlation of nearby points $\Rightarrow$ difference. Random walk, IMA$(1,1)$, ARI$(1,1)$ all show this.
+\item \textbf{Traps.} $\diff_{(s)}\neq\diff^{s}$ (season vs.\ polynomial). Over-differencing creates a non-invertible MA unit root with $\acf_1\to-\tfrac12$.
+\end{itemize}
+\end{retenir}
+
+\end{document}

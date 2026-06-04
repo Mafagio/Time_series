@@ -1,0 +1,236 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 5: Trends, Seasonality \& SARIMA}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} With $\mu_t=a+bt$, linearity of $\diff=I-\Bsh$ gives
+\[
+\diff X_t=X_t-X_{t-1}
+=\bigl(a+bt+Y_t\bigr)-\bigl(a+b(t-1)+Y_{t-1}\bigr)
+=b+\bigl(Y_t-Y_{t-1}\bigr)=b+\diff Y_t .
+\]
+So differencing collapses the linear trend $a+bt$ to the constant $b$. Now $\diff Y_t=Y_t-Y_{t-1}$ is a \emph{fixed finite linear combination} of a stationary process, hence itself stationary (its mean is $0$ and its covariance depends on the lag only). The original $\{X_t\}$ is not stationary because $\E[X_t]=a+bt$ depends on $t$.
+
+\textbf{(b)} With $\mu_t=a+bt+s_t$ and $s_{t+4}=s_t$, apply the seasonal difference first. Using $s_t=s_{t-4}$,
+\[
+\diff_{(4)}X_t=X_t-X_{t-4}
+=\bigl(a+bt+s_t+Y_t\bigr)-\bigl(a+b(t-4)+s_{t-4}+Y_{t-4}\bigr)
+=4b+\bigl(Y_t-Y_{t-4}\bigr).
+\]
+The period-$4$ season has been annihilated and the linear trend has collapsed to the constant $4b$. Now apply $\diff=I-\Bsh$, which kills the constant:
+\[
+\diff\diff_{(4)}X_t
+=\bigl(4b+Y_t-Y_{t-4}\bigr)-\bigl(4b+Y_{t-1}-Y_{t-5}\bigr)
+=\boxed{\,Y_t-Y_{t-1}-Y_{t-4}+Y_{t-5}\,}.
+\]
+This is a fixed linear combination of $\{Y_t\}$, so its mean is $\E[Y_t-Y_{t-1}-Y_{t-4}+Y_{t-5}]=0$, and by bilinearity its covariance,
+\[
+\begin{aligned}
+\Cov\bigl(\diff\diff_{(4)}X_t,\ \diff\diff_{(4)}X_{t-\tau}\bigr)
+=\;&4\acvs_\tau
+-2\acvs_{\tau-1}-2\acvs_{\tau+1}
+-2\acvs_{\tau-4}-2\acvs_{\tau+4}\\
+&+\acvs_{\tau-3}+\acvs_{\tau+3}
++\acvs_{\tau-5}+\acvs_{\tau+5}
++\acvs_{\tau+1-4}+\acvs_{\tau-1+4},
+\end{aligned}
+\]
+depends on the lag $\tau$ only (no $t$). Hence $\diff\diff_{(4)}X_t$ is weakly stationary; all $t$-dependence has been removed. (One need not simplify the covariance fully; the key point is that it is a function of $\tau$ alone.)
+
+\textbf{(c)} Treat $\mu_t=t^{2}$ as a deterministic sequence.
+
+\emph{Ordinary second difference $\diff^{2}=(I-\Bsh)^{2}$:}
+\[
+\diff^{2}t^{2}=t^{2}-2(t-1)^{2}+(t-2)^{2}
+=t^{2}-2\bigl(t^{2}-2t+1\bigr)+\bigl(t^{2}-4t+4\bigr)
+=2 ,
+\]
+a constant. (And $\diff^{3}t^{2}=\diff\,(2)=0$.) So $\diff^{q}$ \emph{annihilates a polynomial trend of degree $q-1$}: here $\diff^{2}$ reduces the degree-$2$ polynomial $t^{2}$ to a degree-$0$ constant, and one further $\diff$ kills it.
+
+\emph{Seasonal difference of period $2$, $\diff_{(2)}=I-\Bsh^{2}$:}
+\[
+\diff_{(2)}t^{2}=t^{2}-(t-2)^{2}=t^{2}-\bigl(t^{2}-4t+4\bigr)=4t-4 ,
+\]
+which is still linear (not annihilated). The seasonal operator $\diff_{(s)}$ removes a deterministic \emph{period-$s$ season} ($\diff_{(s)}s_t=s_t-s_{t-s}=0$), \emph{not} a polynomial trend. The two operators serve different purposes, and $\diff_{(2)}\neq\diff^{2}$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Expand the seasonal AR factor $(1-\Phi\Bsh^{4})X_t=(1-\theta\Bsh)\eps_t$ and solve for $X_t$:
+\[
+\boxed{\,X_t=\Phi\,X_{t-4}+\eps_t-\theta\eps_{t-1}\,}
+\]
+--- an $\mathrm{AR}(1)$ acting only on the seasonal lag $4$, driven by an $\mathrm{MA}(1)$ input. Invert the seasonal factor as a geometric series in $\Bsh^{4}$ (valid since $\abs\Phi<1$),
+\[
+\frac{1}{1-\Phi\Bsh^{4}}=\sum_{l\ge0}\Phi^{l}\Bsh^{4l},
+\]
+so that
+\[
+X_t=\sum_{l\ge0}\Phi^{l}\Bsh^{4l}\bigl(\eps_t-\theta\eps_{t-1}\bigr)
+=\sum_{l\ge0}\Phi^{l}\bigl(\eps_{t-4l}-\theta\eps_{t-4l-1}\bigr).
+\]
+Reading off the coefficient of $\eps_{t-j}$:
+\[
+\boxed{\;\psi_{4l}=\Phi^{l},\qquad \psi_{4l+1}=-\theta\,\Phi^{l}\quad(l\ge0),\qquad \psi_j=0\ \text{otherwise.}\;}
+\]
+(Check: $\psi_0=1,\ \psi_1=-\theta,\ \psi_4=\Phi,\ \psi_5=-\theta\Phi,\dots$, and indeed $\psi_j-\Phi\psi_{j-4}$ reproduces the $\mathrm{MA}(1)$ numerator $1-\theta\Bsh$.)
+
+\textbf{(b)} Apply $\acvs_\tau=\sigma^{2}\sum_{j\ge0}\psi_j\psi_{j+\tau}$. The only nonzero taps sit at $j\equiv0$ and $j\equiv1\pmod4$, so a product $\psi_j\psi_{j+\tau}$ survives only when both indices are of this type; this happens at $\tau\in\{0,\pm1,\pm3,\pm4,\pm5,\dots\}$, i.e.\ in clusters $\{4k-1,\,4k,\,4k+1\}$ around the seasonal multiples $4k$.
+
+\emph{Lag $0$:} $\sum_l\psi_{4l}^{2}+\sum_l\psi_{4l+1}^{2}=\sum_l\Phi^{2l}+\theta^{2}\sum_l\Phi^{2l}=(1+\theta^{2})/(1-\Phi^{2})$, so
+\[
+\acvs_0=\frac{(1+\theta^{2})\,\sigma^{2}}{1-\Phi^{2}} .
+\]
+\emph{Lag $1$:} the surviving pairs are $\psi_{4l}\psi_{4l+1}=\Phi^{l}(-\theta\Phi^{l})=-\theta\Phi^{2l}$, so
+\[
+\acvs_1=\sigma^{2}\sum_{l\ge0}\bigl(-\theta\Phi^{2l}\bigr)=\frac{-\theta\,\sigma^{2}}{1-\Phi^{2}} .
+\]
+\emph{Lag $3$:} pairs $\psi_{4l+1}\psi_{4l+4}=(-\theta\Phi^{l})(\Phi^{l+1})=-\theta\Phi^{2l+1}$, so
+\[
+\acvs_3=\sigma^{2}\sum_{l\ge0}\bigl(-\theta\Phi^{2l+1}\bigr)=\frac{-\theta\,\Phi\,\sigma^{2}}{1-\Phi^{2}} .
+\]
+\emph{Lag $4$:} pairs $\psi_{4l}\psi_{4l+4}=\Phi^{2l+1}$ and $\psi_{4l+1}\psi_{4l+5}=(-\theta\Phi^{l})(-\theta\Phi^{l+1})=\theta^{2}\Phi^{2l+1}$, so
+\[
+\acvs_4=\sigma^{2}\sum_{l\ge0}(1+\theta^{2})\Phi^{2l+1}=\frac{(1+\theta^{2})\Phi\,\sigma^{2}}{1-\Phi^{2}}=\Phi\,\acvs_0 .
+\]
+\emph{Lag $5$:} pairs $\psi_{4l}\psi_{4l+5}=\Phi^{l}(-\theta\Phi^{l+1})=-\theta\Phi^{2l+1}$, so
+\[
+\acvs_5=\frac{-\theta\,\Phi\,\sigma^{2}}{1-\Phi^{2}}=\acvs_3 .
+\]
+Collecting,
+\[
+\boxed{\;
+\acvs_0=\frac{(1+\theta^{2})\sigma^{2}}{1-\Phi^{2}},\quad
+\acvs_1=\frac{-\theta\,\sigma^{2}}{1-\Phi^{2}},\quad
+\acvs_3=\acvs_5=\frac{-\theta\Phi\,\sigma^{2}}{1-\Phi^{2}},\quad
+\acvs_4=\Phi\,\acvs_0 .
+\;}
+\]
+So the seasonal $\mathrm{AR}(1)$ produces a spike at every seasonal lag $4k$ of size $\Phi^{k}\acvs_0$, each flanked by $\mathrm{MA}(1)$ side-lobes at $4k\pm1$; the whole pattern decays geometrically in $\Phi$.
+
+\textbf{(c)} With $\Phi=\tfrac12$, $\theta=\tfrac25$, $\sigma^{2}=1$: $1-\Phi^{2}=\tfrac34$ and $1+\theta^{2}=1+\tfrac{4}{25}=\tfrac{29}{25}$. Hence
+\[
+\acvs_0=\frac{29/25}{3/4}=\frac{116}{75}\approx1.5467 .
+\]
+Then
+\[
+\acf_1=\frac{\acvs_1}{\acvs_0}=\frac{-\theta}{1+\theta^{2}}=\frac{-2/5}{29/25}=\frac{-2/5\cdot25}{29}=-\frac{10}{29}\approx-0.3448 ,
+\]
+\[
+\acf_4=\frac{\acvs_4}{\acvs_0}=\Phi=\tfrac12=0.5 ,
+\qquad
+\acf_3=\frac{\acvs_3}{\acvs_0}=\Phi\,\acf_1=\tfrac12\cdot\Bigl(-\tfrac{10}{29}\Bigr)=-\frac{5}{29}\approx-0.1724 .
+\]
+(So the correlogram shows a dominant seasonal spike $\acf_4=0.5$ with small negative side-lobes $\acf_3=\acf_5\approx-0.172$ at $4\pm1$, and $\acf_1\approx-0.345$ near the origin.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Since $X_t=\sum_{j=1}^{t}\eps_j$ is a sum of mean-zero noise, $\E[X_t]=0$. As the $\eps_j$ are uncorrelated with variance $\sigma^{2}$,
+\[
+\Var(X_t)=\sum_{j=1}^{t}\Var(\eps_j)=t\,\sigma^{2}.
+\]
+For $\tau\ge0$, $X_{t+\tau}=X_t+\sum_{j=t+1}^{t+\tau}\eps_j$ adds only \emph{new} (uncorrelated) noise, so the overlap is the first $t$ shared terms:
+\[
+\Cov(X_t,X_{t+\tau})=\Cov\Bigl(\sum_{j=1}^{t}\eps_j,\ \sum_{k=1}^{t+\tau}\eps_k\Bigr)
+=\sum_{j=1}^{t}\sigma^{2}=t\,\sigma^{2}.
+\]
+Both $\Var(X_t)$ and $\Cov(X_t,X_{t+\tau})$ depend on $t$, so $\{X_t\}$ is \textbf{not} (weakly) stationary. However
+\[
+\diff X_t=X_t-X_{t-1}=\eps_t ,
+\]
+which is white noise; hence $\{X_t\}$ is an $\mathrm{ARIMA}(0,1,0)$. Finally
+\[
+\Corr(X_t,X_{t+\tau})=\frac{t\sigma^{2}}{\sqrt{t\sigma^{2}}\sqrt{(t+\tau)\sigma^{2}}}
+=\sqrt{\frac{t}{t+\tau}}\xrightarrow[t\to\infty]{}1 \quad(\tau\text{ fixed}),
+\]
+the near-unit correlation of nearby values characteristic of an integrated series.
+
+\textbf{(b)} The recursion $Y_t=Y_{t-1}+(\eps_t-\theta\eps_{t-1})$ with $Y_0=0$ telescopes:
+\[
+Y_t=\sum_{k=1}^{t}\bigl(\eps_k-\theta\eps_{k-1}\bigr)
+=\sum_{k=1}^{t}\eps_k-\theta\sum_{k=1}^{t}\eps_{k-1}
+=\sum_{k=1}^{t}\eps_k-\theta\sum_{j=0}^{t-1}\eps_j .
+\]
+Separating the unmatched endpoints $\eps_t$ (only in the first sum) and $\eps_0$ (only in the second),
+\[
+Y_t=\eps_t+\sum_{k=1}^{t-1}\eps_k-\theta\eps_0-\theta\sum_{j=1}^{t-1}\eps_j
+=\eps_t+(1-\theta)\sum_{j=1}^{t-1}\eps_j-\theta\eps_0 ,
+\]
+as claimed. The coefficients of the $t+1$ independent innovations $\eps_0,\eps_1,\dots,\eps_t$ are: $-\theta$ on $\eps_0$, $(1-\theta)$ on each of $\eps_1,\dots,\eps_{t-1}$ (that is $t-1$ terms), and $1$ on $\eps_t$. By independence,
+\[
+\boxed{\;\Var(Y_t)=\sigma^{2}\Bigl[\,1+(1-\theta)^{2}(t-1)+\theta^{2}\,\Bigr].\;}
+\]
+For $\theta\neq1$ this is \emph{linear in $t$} with positive slope $(1-\theta)^{2}\sigma^{2}>0$: $\Var(Y_t)=O(t)$, exactly the random-walk-like variance growth that flags an integrated (needs-differencing) series.
+
+\textbf{(c)} At the boundary $\theta=1$ the slope $(1-\theta)^{2}$ vanishes, so
+\[
+\Var(Y_t)=\sigma^{2}\bigl[1+0+1\bigr]=2\sigma^{2},
+\]
+which is \emph{bounded} (no growth). Indeed the recursion telescopes completely:
+\[
+Y_t=\sum_{k=1}^{t}(\eps_k-\eps_{k-1})=\eps_t-\eps_0 ,
+\]
+so the level is itself stationary, and
+\[
+\diff Y_t=Y_t-Y_{t-1}=\eps_t-\eps_{t-1},
+\]
+an $\mathrm{MA}(1)$ with unit coefficient $\theta=1$. Its MA polynomial $1-z$ has root $z=1$ \emph{on} the unit circle, so it is \textbf{non-invertible}, and its lag-$1$ autocorrelation is
+\[
+\acf_1=\frac{-\theta}{1+\theta^{2}}=\frac{-1}{1+1}=-\tfrac12 .
+\]
+This is the warning signature of \textbf{over-differencing}: differencing a series that was already stationary injects a $(1-\Bsh)$ factor into the MA part, i.e.\ a non-invertible $\mathrm{MA}(1)$ with $\acf_1=-\tfrac12$. Seeing a sample $\acf_1\approx-\tfrac12$ after a difference is the cue to difference one time fewer.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Multiply the model $X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$ by $X_{t-k}$ and take expectations. The process is causal, so $X_{t-k}$ is a one-sided combination of $\eps_{t-k},\eps_{t-k-1},\dots$; hence for $k\ge1$ the noise term is uncorrelated with the past, $\E[\eps_tX_{t-k}]=0$. With mean zero, $\E[X_{t-j}X_{t-k}]=\acvs_{k-j}$, giving for $k\ge1$
+\[
+\acvs_k=\phi_1\acvs_{k-1}+\phi_2\acvs_{k-2}\qquad(\text{using }\acvs_{-1}=\acvs_1).
+\]
+Multiplying instead by $X_t$ keeps the noise term: by causality and $\psi_0=1$,
+\[
+\E[\eps_tX_t]=\E\bigl[\eps_t(\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t)\bigr]=\sigma^{2},
+\]
+so the variance identity is
+\[
+\acvs_0=\phi_1\acvs_1+\phi_2\acvs_2+\sigma^{2}.
+\]
+The single fact ``causality $\Rightarrow\E[\eps_tX_{t-k}]=0$ for $k\ge1$'' is what closes the system. Replacing the population $\acvs$ by the sample $\hat\acvs$ gives the Yule--Walker \emph{estimators}.
+
+\textbf{(b)} Taking $k=1,2$ gives the $2\times2$ Yule--Walker system
+$\hat\Gamma_2\hat{\boldsymbol\phi}=\hat{\boldsymbol\acvs}_2$:
+\[
+\begin{pmatrix}\hat\acvs_0 & \hat\acvs_1\\[2pt] \hat\acvs_1 & \hat\acvs_0\end{pmatrix}
+\begin{pmatrix}\hat\phi_1\\[2pt] \hat\phi_2\end{pmatrix}
+=\begin{pmatrix}\hat\acvs_1\\[2pt] \hat\acvs_2\end{pmatrix}
+\quad\Longrightarrow\quad
+\begin{pmatrix}10 & 5\\[2pt] 5 & 10\end{pmatrix}
+\begin{pmatrix}\hat\phi_1\\[2pt] \hat\phi_2\end{pmatrix}
+=\begin{pmatrix}5\\[2pt] 1\end{pmatrix}.
+\]
+The inverse of $\left(\begin{smallmatrix}a&b\\ b&a\end{smallmatrix}\right)$ is $\tfrac{1}{a^{2}-b^{2}}\left(\begin{smallmatrix}a&-b\\ -b&a\end{smallmatrix}\right)$; here $a=10,\ b=5$ and $a^{2}-b^{2}=100-25=75$. Hence
+\[
+\begin{pmatrix}\hat\phi_1\\ \hat\phi_2\end{pmatrix}
+=\frac{1}{75}\begin{pmatrix}10 & -5\\ -5 & 10\end{pmatrix}\begin{pmatrix}5\\ 1\end{pmatrix}
+=\frac{1}{75}\begin{pmatrix}10\cdot5-5\cdot1\\ -5\cdot5+10\cdot1\end{pmatrix}
+=\frac{1}{75}\begin{pmatrix}45\\ -15\end{pmatrix}
+=\begin{pmatrix}0.6\\ -0.2\end{pmatrix}.
+\]
+The innovation variance is
+\[
+\hat\sigma^{2}=\hat\acvs_0-\hat\phi_1\hat\acvs_1-\hat\phi_2\hat\acvs_2
+=10-0.6\cdot5-(-0.2)\cdot1=10-3+0.2=7.2 .
+\]
+So $\boxed{\hat\phi_1=0.6,\ \hat\phi_2=-0.2,\ \hat\sigma^{2}=7.2.}$
+(Consistency check via $\acvs_0=\sigma^{2}/(1-\phi_1\acf_1-\phi_2\acf_2)$ with $\acf_1=\tfrac12,\acf_2=\tfrac{1}{10}$: $1-0.6\cdot\tfrac12-(-0.2)\cdot\tfrac1{10}=1-0.3+0.02=0.72$, and $7.2/0.72=10=\hat\acvs_0$.\ \checkmark)
+
+\textbf{(c)} The fitted AR polynomial is $\hat\Phi(z)=1-0.6z+0.2z^{2}$. Its roots solve $0.2z^{2}-0.6z+1=0$, i.e.\ $z^{2}-3z+5=0$:
+\[
+z=\frac{3\pm\sqrt{9-20}}{2}=\frac{3\pm\sqrt{-11}}{2}=\tfrac32\pm\tfrac{\sqrt{11}}{2}\,i,
+\qquad
+\abs{z}=\sqrt{\Bigl(\tfrac32\Bigr)^{2}+\tfrac{11}{4}}=\sqrt{\tfrac{9}{4}+\tfrac{11}{4}}=\sqrt5\approx2.236 .
+\]
+Both roots have modulus $\sqrt5>1$ (outside the unit circle), so the fit is \textbf{causal/stationary}. Equivalently, the $\mathrm{AR}(2)$ stationarity-triangle conditions hold: $\hat\phi_1+\hat\phi_2=0.4<1$, $\hat\phi_2-\hat\phi_1=-0.8<1$, and $\abs{\hat\phi_2}=0.2<1$. (Unlike least squares, the Yule--Walker estimator always returns a stationary fit.)
+
+\end{document}

@@ -1,0 +1,173 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{02}{26 February 2026}{ARMA Models and the PACF}{Three building blocks (white noise, MA, AR) combine into ARMA; the ACF and PACF are the fingerprints used to identify each.}
+
+The ARMA family is the workhorse of linear time series modelling. We start from \textbf{white noise} --- the indivisible ``atom'' of randomness --- and build \textbf{moving average} (MA), \textbf{autoregressive} (AR) and combined \textbf{ARMA} processes by feeding white noise through finite linear filters and linear recursions. Two diagnostic curves run through the whole story: the autocorrelation function (ACF, $\acf_\tau$) and its less-obvious partner, the \textbf{partial autocorrelation function} (PACF, $\pacf_\tau$). The punchline, in one small table: the \textbf{ACF identifies the MA order $q$}, the \textbf{PACF identifies the AR order $p$}.
+
+\begin{intu}[The one idea to carry through the week]
+Everything is built from white noise. An \textbf{MA} is white noise pushed forward through a \emph{finite filter} (it forgets after $q$ steps). An \textbf{AR} feeds its own past back in (its memory \emph{never} fully dies). The ACF and PACF are just two different ways of looking at that memory --- and they cut off at exactly the orders $q$ and $p$.
+\end{intu}
+
+\section*{Key definitions}
+
+\begin{defn}{White noise (purely random process)}
+$\{X_t\}$ is \textbf{white noise} if it is a sequence of \emph{uncorrelated}, mean-zero, finite-variance variables: $\E[X_t]=0$, $\Var(X_t)=\sigma^2<\infty$, and $\Cov(X_s,X_t)=0$ for $s\ne t$. Equivalently
+\[
+\acvs_\tau=\begin{cases}\sigma^2 & \tau=0,\\ 0 & \tau\ne0,\end{cases}
+\qquad
+\acf_\tau=\begin{cases}1 & \tau=0,\\ 0 & \tau\ne0.\end{cases}
+\]
+It is automatically (weakly) stationary and is the \textbf{building block} of every model below. We write $\eps_t$ for mean-zero white noise of variance $\sigma_\eps^2$.
+\end{defn}
+
+\begin{intu}[Uncorrelated $\ne$ independent]
+White noise only constrains the first two moments, so it need not be i.i.d.\ or Gaussian. ``White'' refers to its \emph{flat} spectral density (equal power at all frequencies), mirroring the flat ACF.
+\end{intu}
+
+\begin{defn}{Moving average MA($q$)}
+With $\{\eps_t\}$ mean-zero white noise,
+\[
+X_t=\mu-\sum_{j=0}^{q}\theta_j\,\eps_{t-j},\qquad \theta_0=-1,\ \theta_q\ne0 .
+\]
+(The convention $\theta_0=-1$ makes the leading term $\eps_t$; simple examples use the zero-mean form $X_t=\eps_t-\theta\eps_{t-1}$.) An MA($q$) is just a \emph{finite linear filter} of white noise, hence \textbf{always stationary} --- the only requirement is $\abs{\theta_j}<\infty$. Its moments are
+\[
+\E[X_t]=\mu,\qquad
+\acvs_\tau=
+\begin{cases}
+\sigma_\eps^2\sum_{j=0}^{q}\theta_j\theta_{j+\abs\tau} & \abs\tau\le q,\\[1mm]
+0 & \abs\tau>q .
+\end{cases}
+\]
+The \textbf{ACVS cuts off at lag $q$} --- this is the signature used to read $q$ off the ACF.
+\end{defn}
+
+\begin{defn}{Autoregressive AR($p$)}
+With $\{\eps_t\}$ mean-zero white noise,
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}+\eps_t,\qquad \phi_p\ne0 .
+\]
+Unlike MA, there \emph{are} constraints on $\{\phi_j\}$ for stationarity, and there is no simple closed form for the ACVS in general.
+\end{defn}
+
+\begin{defn}{ARMA($p,q$) and causality}
+$\{X_t\}$ is \textbf{ARMA($p,q$)} if
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\eps_{t-k},\qquad \theta_0=-1,
+\]
+i.e.\ in backshift form ($\Bsh^jX_t=X_{t-j}$) $\ \Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$. It is \textbf{causal} if $X_t=\sum_{j=0}^{\infty}\psi_j\eps_{t-j}$ with $\sum_j\abs{\psi_j}<\infty$ (depends only on present and past noise; the $\{\psi_j\}$ are the MA($\infty$) weights). A mean-zero MA($q$) is always causal.
+\end{defn}
+
+\begin{defn}{Best linear predictor \& partial correlation}
+The \textbf{best linear predictor} of $Y$ from $X_1,\dots,X_n$ is $P(Y)=\sum_j\beta_jX_j$ minimising the MSE; it is characterised by the \textbf{orthogonality equations} --- the error is uncorrelated with every regressor, $\Cov(Y-P(Y),X_k)=0$. The \textbf{partial correlation} of $X,Y$ given confounders $Z$ is the correlation of the residuals after removing the best linear effect of $Z$ from each:
+\[
+\acf_{XY\bullet Z}=\Corr\big(X-P_Z(X),\,Y-P_Z(Y)\big).
+\]
+\end{defn}
+
+\begin{defn}{Partial autocorrelation function (PACF)}
+For mean-zero stationary $\{X_t\}$, $\pacf_\tau$ is the partial correlation of $X_t$ and $X_{t+\tau}$ given the intervening values $Z=(X_{t+1},\dots,X_{t+\tau-1})$:
+\[
+\pacf_\tau=\Corr\big(X_{t+\tau}-\hat X_{t+\tau},\,X_t-\hat X_t\big),
+\]
+with $\hat X$ the best linear predictors from $Z$. \textbf{Regression form:} if $P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$, then $\pacf_\tau=\pacf_{\tau,\tau}$, the \emph{last} regression coefficient (and $\pacf_1=\acf_1$).
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Proposition --- Causal AR(1): from recursion to MA($\infty$)}
+For $X_t=\phi X_{t-1}+\eps_t$ with $\abs\phi<1$, iterating gives the causal representation and its autocovariance:
+\[
+\begin{aligned}
+X_t&=\sum_{k=0}^{\infty}\phi^{k}\eps_{t-k}\quad(\psi_k=\phi^k),\\
+\acvs_\tau&=\frac{\sigma_\eps^2}{1-\phi^2}\,\phi^{\abs\tau},\qquad \acf_\tau=\phi^{\abs\tau}.
+\end{aligned}
+\]
+\textit{Idea:} substitute $X_{t-1}=\phi X_{t-2}+\eps_{t-1}$ repeatedly (remainder $\phi^nX_{t-n}\to0$), then use the white-noise filter trick. \textit{Why it matters:} the ACF $\phi^{\abs\tau}$ \textbf{tails off} (never exactly $0$) --- which is precisely why we need the PACF.
+\end{result}
+
+\begin{result}{Proposition --- ACF$\leftrightarrow$PACF (prediction equations)}
+For mean-zero stationary $\{X_t\}$ and $1\le k\le\tau$,
+\[
+\acf_k=\sum_{j=1}^{\tau}\pacf_{\tau,j}\,\acf_{k-j}.
+\]
+\textit{Idea:} split $\acvs_k=\Cov(X_{\tau-k},\hat X_\tau)+\Cov(X_{\tau-k},X_\tau-\hat X_\tau)$; the second term is $0$ by orthogonality. \textit{Why:} these \textbf{Yule--Walker-type} equations are exactly what Durbin--Levinson solves to extract $\pacf_\tau=\pacf_{\tau,\tau}$.
+\end{result}
+
+\begin{result}{Proposition --- PACF of an AR($p$) vanishes beyond lag $p$}
+For a causal AR($p$), $\ \pacf_\tau=0$ for all $\tau>p$. The \emph{estimated} PACF at lags $>p$ is asymptotically mean $0$ with variance $1/n$, giving the $\pm1.96/\sqrt n$ significance bands. \textit{Idea:} for $\tau>p$ the best predictor uses only $\phi_1,\dots,\phi_p$; setting $\pacf_{\tau,j}=\phi_j$ ($=0$ for $j>p$) solves all prediction equations by causality, so $\pacf_{\tau,\tau}=0$. \textit{Why:} this is the backbone of the identification table.
+\end{result}
+
+\begin{result}{Theorem --- ACF \& PACF signatures of ARMA}
+For \emph{causal and invertible} ARMA($p,q$):
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccc}
+\hline\\[-2.4mm]
+ & \textbf{AR($p$)} & \textbf{MA($q$)} & \textbf{ARMA($p,q$)}\\[0.5mm]
+\hline\\[-2.4mm]
+\textbf{ACF}  & Tails off            & Cuts off after lag $q$ & Tails off\\
+\textbf{PACF} & Cuts off after lag $p$ & Tails off             & Tails off\\[0.5mm]
+\hline
+\end{tabular}
+\end{center}
+Read $q$ from where the ACF cuts, $p$ from where the PACF cuts; if neither cuts (both tail off), the model is mixed ARMA. ``Tails off'' $=$ geometric / damped-sine decay with no exact zero.
+\end{result}
+
+\begin{result}{Technique --- Durbin--Levinson recursion (ACF $\to$ PACF)}
+Given the ACF, compute $\pacf_\tau=\pacf_{\tau,\tau}$ by
+\[
+\begin{aligned}
+\pacf_{1,1}&=\acf_1,\qquad
+\pacf_{\tau,\tau}
+=\frac{\acf_\tau-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{\tau-j}}
+       {1-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{j}},\\
+\pacf_{\tau,j}&=\pacf_{\tau-1,j}-\pacf_{\tau,\tau}\,\pacf_{\tau-1,\tau-j},\quad j=1,\dots,\tau-1 .
+\end{aligned}
+\]
+Works with theoretical \emph{or} sample ACF. A clean cut to $0$ at $\tau=p+1$ flags an AR($p$); the final diagonal coefficients then equal the AR coefficients.
+\end{result}
+
+\section*{Intuition}
+
+\begin{intu}[What the PACF actually measures]
+The PACF answers: ``how much \emph{new} linear information about $X_{t+\tau}$ is in $X_t$, once everything in between is removed?'' In an AR(1), $\acf_\tau=\phi^{\abs\tau}\ne0$ for all $\tau$ even though $X_t$ depends \emph{directly} only on $X_{t-1}$: the lag-2 correlation is entirely \emph{transmitted} through $X_{t-1}$. The PACF strips out that transmitted part, so it vanishes for $\tau>1$ --- exactly pinning the order $p=1$.
+\end{intu}
+
+\begin{intu}[Why MA cuts the ACF, AR cuts the PACF]
+An MA($q$) is a window of width $q+1$ over the noise: two observations more than $q$ apart share \emph{no} common noise term, so the \textbf{ACF is exactly $0$ beyond lag $q$}. An AR($p$) directly depends on its last $p$ values, so once those are conditioned on, an older value adds nothing: the \textbf{PACF is exactly $0$ beyond lag $p$}. Same idea, dual diagnostics.
+\end{intu}
+
+\begin{intu}[Why invertibility: the MA(1) twin]
+The MA(1) $X_t=\eps_t-\theta\eps_{t-1}$ and its ``root-reciprocal'' twin $Y_t=\eta_t-\tfrac1\theta\eta_{t-1}$ (with $\Var\eta=\sigma_\eps^2\theta^2$) have the \emph{identical} ACVS: $\acvs_0=\sigma_\eps^2(1+\theta^2)$, $\acvs_{\pm1}=-\sigma_\eps^2\theta$, $0$ else. Second-order structure cannot tell them apart. We impose \textbf{invertibility} (root of $\Theta(z)$ outside the unit circle, i.e.\ $\abs\theta<1$) to choose a unique representation.
+\end{intu}
+
+A quick word on \textbf{roots conventions} (worth memorising): \emph{stationarity / causality} $=$ all roots of $\Phi(z)$ outside the unit circle ($\abs z>1$); \emph{invertibility} $=$ all roots of $\Theta(z)$ outside. For AR(1), $\Phi(z)=1-\phi z$ has root $z=1/\phi$, so $\abs z>1\iff\abs\phi<1$. For AR(2) the conditions are $\phi_1+\phi_2<1$, $\phi_2-\phi_1<1$, $\abs{\phi_2}<1$ (the ``stationarity triangle'').
+
+\begin{exmpl}[Durbin--Levinson identifies an AR(2)]
+Given $\acf_1=\tfrac25,\ \acf_2=-\tfrac1{20},\ \acf_3=-\tfrac18$:
+\[
+\begin{aligned}
+\pacf_{1,1}&=\tfrac25,\qquad
+\pacf_{2,2}=\frac{-\frac1{20}-\frac25\cdot\frac25}{1-\frac25\cdot\frac25}=-\tfrac14,\qquad
+\pacf_{2,1}=\tfrac25-(-\tfrac14)\tfrac25=\tfrac12,\\
+\pacf_{3,3}&=\frac{-\frac18-\frac12(-\frac1{20})-(-\frac14)\frac25}{\,1-\frac12\cdot\frac25-(-\frac14)(-\frac1{20})\,}=0 .
+\end{aligned}
+\]
+The PACF cuts to $0$ at lag $3$ $\Rightarrow$ \textbf{AR(2)}: indeed $Y_t=\tfrac12Y_{t-1}-\tfrac14Y_{t-2}+\eps_t$ reproduces these values, and $(\pacf_{2,1},\pacf_{2,2})=(\tfrac12,-\tfrac14)=(\phi_1,\phi_2)$ recovers the AR coefficients.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Build everything from white noise:} MA $=$ finite filter (always stationary); AR $=$ feedback (needs root conditions); ARMA $=$ both.
+  \item \textbf{The identification table is the goal:} ACF cuts after $q\Rightarrow$ MA($q$); PACF cuts after $p\Rightarrow$ AR($p$); both tail off $\Rightarrow$ mixed ARMA; nothing significant $\Rightarrow$ white noise. ``Significant'' $=$ outside $\pm1.96/\sqrt n$.
+  \item \textbf{MA covariance reflex:} $\acvs_\tau=\sigma_\eps^2\sum_j\theta_j\theta_{j+\abs\tau}$ --- keep only matching noise indices; it is $0$ for $\abs\tau>q$.
+  \item \textbf{Roots outside the unit circle:} $\Phi(z)$ for causality, $\Theta(z)$ for invertibility. For AR(1) this is just $\abs\phi<1$.
+  \item \textbf{Be able to run Durbin--Levinson} from a given ACF to get $\pacf_{\tau,\tau}$, and to spot the cut-off lag.
+  \item \textbf{First check stationarity:} an ACF decaying almost linearly (very slowly) signals non-stationarity --- difference before identifying.
+\end{itemize}
+\end{retenir}
+
+\end{document}

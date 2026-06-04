@@ -1,0 +1,276 @@
+
+===== PAGE 1/5 =====
+Time Series Exercise Sheet 13
+Sofia Olhede
+May 21, 2026
+Exercise 13.1
+Consider two LTI filters L1 and L2, and let α ∈C then the filter
+L = αL1 + L2
+(1)
+is also an LTI filter.
+Solution 13.1
+Let {Xt}, {Yt} be sequences, and β ∈C, then
+L [β {Xt} + {Yt}] = αL1 [β {Xt} + {Yt}] + L2 [β {Xt} + {Yt}]
+= αβL1 [{Xt}] + αL1 [{Yt}] + βL2 [{Xt}] + L2 [{Yt}]
+(linearity of LTI filters)
+= βL [{Xt}] + L [{Yt}] .
+Now for time invariance,
+L [B [{Xt}]] = αL1 [B [{Xt}]] + L2 [B [{Xt}]]
+= B [αL1 [{Xt}]] + B [L2 [{Xt}]]
+(linearity of LTI filters)
+= B [L [{Xt}]] .
+Exercise 13.2
+Consider two LTI filters L1 and L2. The filter L = L1L2, i.e. so that
+L [{Xt}] = L1 [L2 [{Xt}]]
+(2)
+is also an LTI filter.
+Solution 13.2
+Let {Xt}, {Yt} be sequences, and α ∈C, then
+L [α {Xt} + {Yt}] = L1 [L2 [α {Xt} + {Yt}]]
+= L1 [αL2 [{Xt}] + L2 [{Yt}]]
+= αL1 [L2 [{Xt}]] + L1 [L2 [{Yt}]]
+= αL [{Xt}] + L [{Yt}] .
+Now for time invariance
+L [B [{Xt}]] = L1 [L2 [B [{Xt}]]]
+= L1 [B [L2 [{Xt}]]]
+= B [L1 [L2 [{Xt}]]] .
+1
+
+===== PAGE 2/5 =====
+Exercise 13.3
+Consider deterministic input sequences in ℓ1. Let L : ℓ1 →CZ be a digital filter such that, for each fixed u ∈Z,
+the map
+{Xt} 7→L [{Xt}]u
+is continuous with respect to the ℓ1 norm. Define the impulse response by
+hm = L [{δt,−m}]0 ,
+and assume h ∈ℓ1.
+Prove that L is LTI on ℓ1 (that is, linear and time-invariant for all inputs in ℓ1) if and only if, for every {Xt} ∈ℓ1,
+L [{Xt}]u =
+X
+m∈Z
+hu−mXm
+(3)
+for any u ∈Z. In your proof, justify carefully all limit/sum interchanges.
+Solution 13.3
+(⇒) Assume that L is LTI on ℓ1. For N ∈N, define the truncated sequence
+X(N)
+t
+=
+X
+|m|≤N
+Xmδt,m.
+Since {Xt} ∈ℓ1, we have
+X(N) −X
+
+1 →0. Therefore, by continuity of {Xt} 7→L [{Xt}]u,
+L [{Xt}]u = lim
+N→∞L
+hn
+X(N)
+t
+oi
+u .
+For each N, linearity gives a finite sum:
+L
+hn
+X(N)
+t
+oi
+u =
+X
+|m|≤N
+XmL [{δt,m}]u .
+By time invariance,
+L [{δt,m}]u = L [{δt,m−u}]0 = hu−m,
+so
+L
+hn
+X(N)
+t
+oi
+u =
+X
+|m|≤N
+hu−mXm.
+Also, since h ∈ℓ1, we have ∥h∥∞≤∥h∥1, hence
+X
+m∈Z
+|hu−mXm| ≤∥h∥∞
+X
+m∈Z
+|Xm| < ∞.
+Therefore the partial sums converge to the full series, and
+L [{Xt}]u = lim
+N→∞
+X
+|m|≤N
+hu−mXm =
+X
+m∈Z
+hu−mXm.
+(⇐) Assume there exists h ∈ℓ1 such that, for every {Xt} ∈ℓ1,
+L [{Xt}]u =
+X
+m∈Z
+hu−mXm.
+2
+
+===== PAGE 3/5 =====
+The series is absolutely convergent because
+X
+m∈Z
+|hu−mXm| ≤∥h∥∞∥X∥1 ≤∥h∥1 ∥X∥1 .
+For α ∈C, and any u ∈Z,
+L [α {Xt} + {Yt}]u =
+X
+m∈Z
+hu−m(αXm + Ym)
+= α
+X
+m∈Z
+hu−mXm +
+X
+m∈Z
+hu−mYm
+= αL [{Xt}]u + L [{Yt}]u .
+So L is linear.
+For time invariance, using absolute convergence to justify reindexing,
+L [B [{Xt}]]u =
+X
+m∈Z
+hu−mXm−1
+=
+X
+m′∈Z
+hu−1−m′Xm′
+(m′ = m −1)
+= L [{Xt}]u−1
+= B [L [{Xt}]]u .
+Hence L is time-invariant on ℓ1, and therefore LTI on ℓ1.
+Exercise 13.4
+Consider a stationary mean-zero time series {Xt}, with spectral representation
+Xt =
+Z 1/2
+−1/2
+e2πiftdZ(f).
+(4)
+Assume that we observe this time series at the points 1, . . . , n, and we define the tapered discrete Fourier
+transform by
+Jh(f) =
+n
+X
+t=1
+htXte−2πift
+(5)
+where ∥ht∥2
+2 = 1 (we assume the mean is known to be zero, so do no mean correction). Show that
+Jh(f) =
+Z 1/2
+−1/2
+H(f −f ′)dZ(f ′).
+(6)
+Solution 13.4
+We see from the definition that
+Jh(f) =
+n
+X
+t=1
+htXte−2πift
+=
+n
+X
+t=1
+ht
+Z 1/2
+−1/2
+e2πif ′tdZ(f ′)e−2πift
+=
+Z 1/2
+−1/2
+n
+X
+t=1
+hte2πi(f ′−f)tdZ(f ′)
+=
+Z 1/2
+−1/2
+H(f −f ′)dZ(f ′).
+3
+
+===== PAGE 4/5 =====
+Exercise 13.5
+If {Xt} is a stationary series, define {Yt} = (I −B)[{Xt}]. Is Yt stationary? If so, what is the spectral density
+function of {Yt} in terms of the spectral density function of {Xt}?
+Solution 13.5
+Note that (I −B) is an LTI filter with impulse response in ℓ1, so from Theorem 9.11 {Yt} is stationary. Now
+we may use Theorem 9.12 to compute the spectral density function. In particular, the transfer function of this
+filter is given by
+H(f) = 1 −e−2πif,
+(7)
+and so
+SY (f) =
+1 −e−2πif2 SX (f)
+= 2(1 −cos(2πf))SX (f)
+= 4 sin2(πf)SX (f) .
+Exercise 13.6
+In lecture 3, we claimed that AR(p) processes were time reversible. In other words, If {Xt} is an AR(p) process,
+then if {Yt} is such that for all t ∈Z, Yt = X−t, then Yt is an AR(p) process with the same parameters as Xt.
+Specifically, if Xt had an AR representation
+Xt =
+p
+X
+j=1
+ϕjXt−j + ϵt
+(8)
+then
+Yt =
+p
+X
+j=1
+ϕjYt−j + ˜νt
+(9)
+where ˜νt has the same distribution as ϵt. Prove this result.
+Solution 13.6
+Let ϕ0 = −1, and define
+˜νt =
+p
+X
+j=0
+ϕjYt−j.
+All that remains is to show that ˜νt is Gaussian white noise with mean zero and variance σ2
+ϵ . Clearly it is
+Gaussian as it is a linear combination of Gaussians. Furthermore, E [Xt] = 0, so E [˜νt] = 0 by linearity.
+Now, we see that for all τ ∈Z
+γ(Y )
+τ
+= E [YtYt+τ]
+= E [X−tX−t−τ]
+= γ(X)
+−τ
+= γ(X)
+τ
+.
+Therefore SY (f) = SX (f) for all f ∈R. Finally, we see that {˜νt} results from applying an LTI filter to {Yt}.
+In particular, from Lemma 9.13 and Theorem 9.12, we have
+S˜ν (f) =
+Φ(e−2πif)
+2 SY (f)
+=
+Φ(e−2πif)
+2 SX (f)
+= σ2
+ϵ
+
+Φ(e−2πif)
+Φ(e−2πif)
+
+2
+= σ2
+ϵ
+4
+
+===== PAGE 5/5 =====
+where the penultimate line follows from Theorem 9.14. Therefore, we know that ˜ν is white noise with variance
+σ2
+ϵ .
+5

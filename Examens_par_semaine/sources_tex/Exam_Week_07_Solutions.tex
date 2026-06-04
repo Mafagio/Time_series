@@ -1,0 +1,158 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 7: Spectral Density \& Spectral Representation}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The ACVS of a real process is real and symmetric, $\acvs_{-\tau}=\acvs_\tau$. Pairing the term at lag $\tau$ with the one at lag $-\tau$ in the defining sum,
+\[
+\begin{aligned}
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i f\tau}
+&=\acvs_0+\sum_{\tau\ge1}\acvs_\tau\bigl(e^{-2\pi i f\tau}+e^{+2\pi i f\tau}\bigr)\\
+&=\acvs_0+2\sum_{\tau\ge1}\acvs_\tau\cos(2\pi f\tau),
+\end{aligned}
+\]
+using $e^{-i x}+e^{i x}=2\cos x$. The right-hand side is a sum of real cosines, hence \textbf{real-valued}. It is \textbf{even} because $\cos$ is even: replacing $f\mapsto-f$ leaves every term unchanged, so $\sdf(-f)=\sdf(f)$. (Equivalently, $\sdf(-f)=\sum_\tau\acvs_\tau e^{2\pi i f\tau}=\sum_\tau\acvs_{-\tau}e^{-2\pi i f\tau}=\sdf(f)$ after re-indexing $\tau\mapsto-\tau$ and using symmetry.)
+
+\textbf{(b)} Evaluate the inversion formula $\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f\tau}\,df$ at lag $\tau=0$, where the exponential equals $1$:
+\[
+\acvs_0=\int_{-1/2}^{1/2}\sdf(f)\,e^{0}\,df=\int_{-1/2}^{1/2}\sdf(f)\,df .
+\]
+Since $\acvs_0=\Cov(X_t,X_t)=\Var(X_t)$ (the process has mean $0$), this is the spectral form of Parseval: the \emph{total variance} of the process equals the integral of the SDF over the Nyquist band. Because $\sdf\ge0$ (it is the transform of a non-negative-definite sequence), $\sdf(f)\,df$ acts like the ``amount of variance/power carried by frequencies in $[f,f+df]$'': the SDF \textbf{distributes the total power $\Var(X_t)$ across frequency}, with peaks marking the bands that dominate the process's fluctuations.
+
+\textbf{(c)} White noise is uncorrelated, so $\acvs_\tau=\sigma^2$ at $\tau=0$ and $\acvs_\tau=0$ for $\tau\ne0$. Only the $\tau=0$ term survives the sum:
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i f\tau}=\acvs_0\,e^{0}=\boxed{\,\sigma^2\,},\qquad\text{for all }f .
+\]
+The spectrum is \textbf{flat}: every frequency carries exactly the same power $\sigma^2$, by analogy with white light containing all colours in equal measure --- hence ``white'' noise. (Check: $\int_{-1/2}^{1/2}\sigma^2\,df=\sigma^2=\acvs_0=\Var(\eps_t)$, consistent with part (b).)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} A summable symmetric sequence $\{\acvs_\tau\}$ is the ACVS of some stationary process \textbf{iff it is non-negative definite}, which (in the summable case) is equivalent to its Fourier transform being non-negative everywhere:
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i f\tau}\ \ge\ 0\qquad\text{for all }f\in[-\tfrac12,\tfrac12].
+\]
+This is the right test because, by Herglotz's theorem, every ACVS is non-negative definite and admits an integrated spectrum; in the summable case that spectrum has a density $\sdf$, and a genuine spectral density --- being the limit of the (non-negative) expected periodogram, equivalently $\Var(dZ(f))/df\ge0$ in the spectral representation --- can never be negative. So a single frequency at which $\sdf(f)<0$ \emph{disqualifies} the candidate.
+
+\textbf{(b)} The sequence is summable and symmetric, so we may form
+\[
+\sdf(f)=\sum_{\tau=-K}^{K}e^{-2\pi i\tau f}
+=1+2\sum_{\tau=1}^{K}\cos(2\pi\tau f)
+=\frac{\sin\bigl((2K+1)\pi f\bigr)}{\sin(\pi f)},
+\]
+the Dirichlet kernel (the closed form follows from summing the geometric series $\sum_{\tau=-K}^{K}e^{-2\pi i\tau f}$). Evaluate at the Nyquist endpoint $f=\tfrac12$, where $\cos(\pi\tau)=(-1)^\tau$. The alternating sum $\sum_{\tau=1}^{K}(-1)^\tau$ equals $0$ when $K$ is even and $-1$ when $K$ is odd, so
+\[
+\sdf(\tfrac12)=1+2\sum_{\tau=1}^{K}(-1)^\tau=
+\begin{cases}
+\ \ 1, & K\ \text{even},\\[2pt]
+-1, & K\ \text{odd}.
+\end{cases}
+\]
+Thus for every \textbf{odd} $K$ (write $K=2q+1$) we have $\sdf(\tfrac12)=-1<0$, so the SDF goes negative and $\{\acvs_\tau\}$ is \textbf{not} a valid ACVS. (For even $K$ this endpoint is harmless, but other frequencies of the Dirichlet kernel still dip below $0$, so a flat truncated ACVS is in general not valid --- truncating a genuine ACVS breaks non-negative-definiteness.)
+
+\textbf{(c)} This is the ACVS shape of an MA(1). With only lags $0,\pm1$ nonzero,
+\[
+\sdf(f)=\acvs_0+2\acvs_1\cos(2\pi f)=1+2\rho\cos(2\pi f).
+\]
+Since $\cos(2\pi f)$ ranges over $[-1,1]$, the minimum of $\sdf$ is $1-2\abs\rho$, attained at $f=\tfrac12$ if $\rho>0$ and at $f=0$ if $\rho<0$. Non-negativity $\sdf(f)\ge0$ for all $f$ therefore holds iff $1-2\abs\rho\ge0$, i.e.
+\[
+\boxed{\ \abs\rho\le\tfrac12\ }.
+\]
+For $\abs\rho>\tfrac12$ the SDF dips below zero and the sequence is \emph{not} a valid ACVS. This matches the known fact that an MA(1), $X_t=\eps_t+\vartheta\eps_{t-1}$, has lag-$1$ autocorrelation $\acf_1=\vartheta/(1+\vartheta^2)$, whose modulus is maximised at $\abs\vartheta=1$ giving $\abs{\acf_1}=\tfrac12$: \textbf{no} MA(1) (indeed no stationary process at all with this ACVS shape) can have $\abs{\acf_1}>\tfrac12$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Write $X_t=\sum_{j=0}^{q}\theta_j\eps_{t-j}$ (with $\theta_0=1$). Since $\eps$ is mean-zero, so is $X_t$, and by bilinearity of covariance together with $\E[\eps_{t-j}\eps_{t+\tau-k}]=\sigma^2\ind_{\{t-j=t+\tau-k\}}=\sigma^2\ind_{\{k-j=\tau\}}$,
+\[
+\acvs_\tau=\Cov(X_t,X_{t+\tau})
+=\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k\,\E[\eps_{t-j}\eps_{t+\tau-k}]
+=\sigma^2\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k\,\ind_{\{\tau=k-j\}}.
+\]
+Collapsing the indicator (set $k=j+\tau$) gives the single-sum form
+\[
+\acvs_\tau=\sigma^2\sum_{j=0}^{q}\theta_j\theta_{j+\abs\tau}\quad(\abs\tau\le q),
+\qquad \acvs_\tau=0\ (\abs\tau>q),
+\]
+where we used $\theta_j=0$ for $j>q$; the value depends only on $\abs\tau$ because the double sum is symmetric in $j\leftrightarrow k$. So the ACVS is finitely supported on $\abs\tau\le q$, hence trivially in $\ell^1$ and the SDF exists.
+
+\textbf{(b)} Transform the ACVS term by term, keeping the double-sum form so the indicator selects $\tau=k-j$:
+\[
+\begin{aligned}
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i\tau f}
+&=\sigma^2\sum_{\tau\in\Ints}\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k\,\ind_{\{\tau=k-j\}}\,e^{-2\pi i\tau f}\\
+&=\sigma^2\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k\,e^{-2\pi i(k-j)f}\\
+&=\sigma^2\Bigl(\sum_{j=0}^{q}\theta_j e^{+2\pi i j f}\Bigr)\Bigl(\sum_{k=0}^{q}\theta_k e^{-2\pi i k f}\Bigr)\\
+&=\sigma^2\,\conj{\Bigl(\sum_{k=0}^{q}\theta_k e^{-2\pi i k f}\Bigr)}\Bigl(\sum_{k=0}^{q}\theta_k e^{-2\pi i k f}\Bigr)
+=\boxed{\ \sigma^2\Bigl|\sum_{j=0}^{q}\theta_j e^{-2\pi i j f}\Bigr|^2\ }.
+\end{aligned}
+\]
+In the third line the sum over $\tau$ collapsed the indicator, and $e^{-2\pi i(k-j)f}=e^{+2\pi i j f}\,e^{-2\pi i k f}$ factored the double sum into a number times its conjugate (the $\theta_j$ are real). The SDF is the squared modulus of the MA transfer function $\Theta(e^{-2\pi i f})=\sum_j\theta_j e^{-2\pi i j f}$; \textbf{a squared modulus is $\ge0$ automatically}, so this form makes the necessary non-negativity of an SDF manifest.
+
+\textbf{(c)} For the MA(1), $\Theta(z)=1-\theta z$, so $\sum_j\theta_j e^{-2\pi i jf}=1-\theta e^{-2\pi i f}$ and
+\[
+\sdf(f)=\sigma^2\bigl|1-\theta e^{-2\pi i f}\bigr|^2
+=\sigma^2\bigl(1-\theta e^{-2\pi i f}\bigr)\bigl(1-\theta e^{+2\pi i f}\bigr)
+=\sigma^2\bigl(1+\theta^2-2\theta\cos(2\pi f)\bigr),
+\]
+matching the stated form (and the direct computation from $\acvs_0=\sigma^2(1+\theta^2)$, $\acvs_{\pm1}=-\sigma^2\theta$). For $\theta>0$ the term $-2\theta\cos(2\pi f)$ is smallest (most negative) when $\cos(2\pi f)=+1$, i.e.\ at $f=0$, and largest when $\cos(2\pi f)=-1$, i.e.\ at $f=\tfrac12$. Hence
+\[
+\min_f\sdf=\sdf(0)=\sigma^2(1+\theta^2-2\theta)=\sigma^2(1-\theta)^2\quad(\text{at }f=0),
+\]
+\[
+\max_f\sdf=\sdf(\tfrac12)=\sigma^2(1+\theta^2+2\theta)=\sigma^2(1+\theta)^2\quad(\text{at }f=\tfrac12).
+\]
+So a positive $\theta$ gives a \textbf{high-pass} shape: power is suppressed at low frequency ($f=0$) and amplified at the Nyquist frequency ($f=\tfrac12$). (For $\theta<0$ the two extremes swap, giving a low-pass spectrum; and $\sdf\ge0$ throughout, touching $0$ at one frequency only when $\abs\theta=1$.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} By definition $U(f)=\int_{-\infty}^{\infty}u(x)e^{-2\pi i x f}\,dx$ with $u(x)=\int g(x-y)h(y)\,dy$. Substitute and exchange the order of integration:
+\[
+\begin{aligned}
+U(f)
+&=\int_{-\infty}^{\infty}\!\Bigl(\int_{-\infty}^{\infty}g(x-y)h(y)\,dy\Bigr)e^{-2\pi i x f}\,dx\\
+&=\int_{-\infty}^{\infty}\!\Bigl(\int_{-\infty}^{\infty}g(x-y)e^{-2\pi i x f}\,dx\Bigr)h(y)\,dy
+&&\text{(Fubini)}\\
+&=\int_{-\infty}^{\infty}\!\Bigl(\int_{-\infty}^{\infty}g(s)e^{-2\pi i s f}\,ds\Bigr)e^{-2\pi i y f}\,h(y)\,dy
+&&(s=x-y)\\
+&=G(f)\int_{-\infty}^{\infty}h(y)e^{-2\pi i y f}\,dy=G(f)\,H(f).
+\end{aligned}
+\]
+In the third line the substitution $s=x-y$ (for fixed $y$) splits the kernel as $e^{-2\pi i x f}=e^{-2\pi i s f}e^{-2\pi i y f}$, making the inner integral exactly $G(f)$, independent of $y$. The interchange of the two integrals is legitimate by \textbf{Fubini's theorem}, justified because the integrand is absolutely integrable:
+\[
+\iint_{\Reals^2}\bigl|g(x-y)h(y)\bigr|\,dx\,dy
+=\int_{\Reals}\!|h(y)|\Bigl(\int_{\Reals}|g(s)|\,ds\Bigr)dy
+=\norm g_1\,\norm h_1<\infty,
+\]
+since $g,h\in L^1$. Hence $u=g*h\Longleftrightarrow U=G\cdot H$: convolution in time is multiplication in frequency.
+
+\textbf{(b)} For $t\in\Delta\Ints$ both inversion formulas give the \emph{same} value $g(t)$ --- the continuous one from $\mathcal G$, and the discrete-time (Fourier-series) one from $G$ on one period:
+\[
+g(t)=\int_{-\infty}^{\infty}\mathcal G(f)e^{2\pi i f t}\,df,
+\qquad
+g(t)=\int_{-1/(2\Delta)}^{1/(2\Delta)}G(f)e^{2\pi i f t}\,df .
+\]
+Split the real line in the first integral into period-length blocks centred at $k/\Delta$ and shift each block by $-k/\Delta$:
+\[
+\begin{aligned}
+g(t)
+&=\sum_{k\in\Ints}\int_{k/\Delta-1/(2\Delta)}^{k/\Delta+1/(2\Delta)}\mathcal G(f)e^{2\pi i f t}\,df
+=\sum_{k\in\Ints}\int_{-1/(2\Delta)}^{1/(2\Delta)}\mathcal G(f+k/\Delta)\,e^{2\pi i(f+k/\Delta)t}\,df\\
+&=\sum_{k\in\Ints}\int_{-1/(2\Delta)}^{1/(2\Delta)}\mathcal G(f+k/\Delta)\,e^{2\pi i f t}\,df,
+\end{aligned}
+\]
+because $t=z\Delta$ for some $z\in\Ints$ makes the extra phase $e^{2\pi i(k/\Delta)t}=e^{2\pi i kz}=1$. Under the summability hypothesis $\sum_k\int|\mathcal G(f+k/\Delta)|\,df<\infty$ we may swap sum and integral:
+\[
+\int_{-1/(2\Delta)}^{1/(2\Delta)}\Bigl(\sum_{k\in\Ints}\mathcal G(f+k/\Delta)\Bigr)e^{2\pi i f t}\,df
+=g(t)=\int_{-1/(2\Delta)}^{1/(2\Delta)}G(f)e^{2\pi i f t}\,df .
+\]
+Equality of these Fourier-series coefficients for all $t\in\Delta\Ints$ forces $\;G(f)=\sum_{k\in\Ints}\mathcal G(f+k/\Delta)\;$ for a.e.\ $f$ (and for all $f$, both sides being continuous). Sampling thus \textbf{folds} all the continuous content at the frequencies $\{f+k/\Delta\}$ onto the single frequency $f$. The \textbf{Nyquist frequency} is $f_N=1/(2\Delta)$ (one half the sampling rate): content beyond $\pm f_N$ cannot be recovered from the samples.
+
+\textbf{(c)} With $\Delta=1$ s the Nyquist band is $[-\tfrac12,\tfrac12]$ Hz and the aliases of $f_0=0.8$ Hz are $f_0+k=0.8+k$, $k\in\Ints$. The one landing inside $[-\tfrac12,\tfrac12]$ is
+\[
+0.8+(-1)=-0.2\ \text{Hz},
+\]
+so $f_0=0.8$ Hz \textbf{folds to} $-0.2$ Hz, i.e.\ appears at $|{-}0.2|=0.2$ Hz (a cosine has a symmetric line pair, so it is observed as a $0.2$ Hz oscillation --- the wagon-wheel effect). To resolve $f_0$ without aliasing one needs the Nyquist frequency above $f_0$: $1/(2\Delta)>0.8$, i.e.\ a \textbf{sampling rate $1/\Delta>1.6$ Hz} (any rate strictly above $1.6$ samples per second).
+
+\end{document}

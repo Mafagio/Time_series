@@ -1,0 +1,213 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{12}{14 May 2026}{Non-Linear Time Series: ARCH \& GARCH}{For the changing volatility of financial returns (volatility clustering) we model the conditional variance: ARCH/GARCH are uncorrelated yet dependent.}
+
+Linear models (AR, MA, ARMA) describe the conditional \emph{mean} and assume a constant innovation
+variance. Financial log-returns break both habits: they are nearly \emph{uncorrelated} (a
+conditional-mean model is almost useless), yet their \emph{squares} are strongly dependent --- big
+moves cluster with big moves, calm with calm. This \textbf{volatility clustering} plus heavy
+(\textbf{fat}) tails calls for a model of the \emph{conditional variance}. ARCH/GARCH keep the
+series mean-zero white noise while letting $\sigma_t^2$ evolve with past squared returns (and, for
+GARCH, past variances). Throughout, $\mathcal F_t$ is the information up to time $t$, and
+$\{\eps_t\}$ is white noise with $\E[\eps_t]=0$, $\Var(\eps_t)=1$, independent of $\mathcal F_{t-1}$.
+
+\section*{Key definitions}
+
+\begin{defn}{Log-returns \& volatility clustering}
+For prices $\{X_t\}$, the \textbf{log-returns} are $r_t=\log(X_t/X_{t-1})=\log X_t-\log X_{t-1}$
+(relative price changes). Empirically: (i) the ACF/PACF of $r_t$ looks like \emph{white noise};
+(ii) the ACF/PACF of $r_t^2$ \emph{decays slowly} $\Rightarrow$ the conditional variance changes
+over time; (iii) \textbf{volatility clustering} (large changes follow large, small follow small);
+(iv) \textbf{fat tails}, kurtosis $>3$ (a QQ-plot against $\mathcal N(0,1)$ bends at the ends).
+\end{defn}
+
+\begin{defn}{ARCH$(p)$ model}
+$\{r_t\}$ is \textbf{AutoRegressive Conditionally Heteroscedastic} of order $p$ if
+\[
+r_t=\sigma_t\eps_t,\qquad
+\sigma_t^2=\alpha_0+\sum_{j=1}^{p}\alpha_j\,r_{t-j}^2,
+\]
+with $\alpha_0>0$, $\alpha_p>0$, $\alpha_j\ge0$. The volatility $\sigma_t$ is
+$\mathcal F_{t-1}$-measurable (known one step ahead), so
+$\E[r_t\mid\mathcal F_{t-1}]=0$ and $\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2$. The case $p=1$ is
+$\sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2$.
+\end{defn}
+
+\begin{defn}{GARCH$(p,q)$ model}
+$\{r_t\}$ is \textbf{Generalised ARCH} if $r_t=\sigma_t\eps_t$ with
+\[
+\sigma_t^2=\alpha_0+\sum_{j=1}^{p}\alpha_j\,r_{t-j}^2+\sum_{j=1}^{q}\beta_j\,\sigma_{t-j}^2,
+\]
+$\alpha_0>0$, $\alpha_p,\beta_q>0$, other $\alpha_j,\beta_j\ge0$. Feeding back past
+\emph{variances} $\sigma_{t-j}^2$ makes volatility persistent far more cheaply than a large-$p$
+ARCH. A GARCH$(p,0)$ is exactly an ARCH$(p)$; again $\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2$.
+\end{defn}
+
+\begin{defn}{Standardised residuals (diagnostics)}
+After fitting, $\tilde e_t=r_t/\hat\sigma_t$. If the model is right these look i.i.d.\ $(0,1)$:
+the ACF/PACF of $\tilde e_t$ \emph{and} of the squares $\tilde e_t^2$ should resemble white noise,
+and a QQ-plot against the assumed innovation law should be roughly straight. One also overlays the
+in-sample bands $\pm1.96\,\hat\sigma_t$ on $r_t$ (Gaussian innovations).
+\end{defn}
+
+\begin{defn}{ARMA--GARCH model}
+Since a GARCH process is itself white noise, it can be the innovation of an ARMA: with $r_t$ a
+GARCH process,
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\,r_{t-k},\qquad \theta_0=-1,
+\]
+the $\phi_j,\theta_k$ satisfying the usual ARMA conditions. This models a conditional mean (ARMA)
+and a time-varying conditional variance (GARCH) at once --- just be careful with the likelihood, as
+errors are no longer i.i.d.\ Gaussian.
+\end{defn}
+
+\begin{intu}[Why feed back $\sigma_{t-1}^2$?]
+In ARCH(1) the variance depends only on the \emph{single} most recent $r_{t-1}^2$: one quiet day
+collapses $\sigma_t^2$ back toward $\alpha_0$, so the model cannot \emph{sustain} a high-volatility
+regime. GARCH adds the smooth term $\beta_1\sigma_{t-1}^2$: yesterday's variance estimate is mostly
+carried forward, so volatility is \textbf{sticky}. Fitted GARCH$(1,1)$ typically has
+$\alpha_1+\beta_1$ close to $1$ --- long, persistent memory (still geometric decay, but very slow).
+\end{intu}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Proposition --- moments of ARCH(1)}
+For ARCH(1) with $\alpha_1<1$:
+\[
+\begin{aligned}
+\E[r_t\mid\mathcal F_{t-1}]&=0, & \Var(r_t\mid\mathcal F_{t-1})&=\sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2,\\
+\E[r_t]&=0, & \Var(r_t)&=\frac{\alpha_0}{1-\alpha_1}.
+\end{aligned}
+\]
+\textit{Idea:} $\sigma_t$ is known given $\mathcal F_{t-1}$ and $\eps_t$ is independent of it, so
+$\E[r_t\mid\mathcal F_{t-1}]=\sigma_t\E[\eps_t]=0$ and $\E[r_t^2\mid\mathcal F_{t-1}]=\sigma_t^2$;
+take unconditional expectations and use stationarity $\Var(r_t)=\Var(r_{t-1})$. Here $\alpha_1<1$ is
+\emph{necessary and (for ARCH(1)) sufficient} for a finite, positive variance.
+\end{result}
+
+\begin{result}{Proposition --- (G)ARCH is white noise (uncorrelated but dependent)}
+Any ARCH$(p)$ or GARCH$(p,q)$ is mean-zero and serially uncorrelated: for $\tau\ne0$,
+\[
+\E[r_t]=0,\qquad \Cov(r_{t+\tau},r_t)=0,\qquad \Corr(r_{t+\tau},r_t)=0 .
+\]
+\textit{Idea:} for $\tau>0$, both $r_t$ and $\sigma_{t+\tau}$ are $\mathcal F_{t+\tau-1}$-measurable,
+so $\E[r_{t+\tau}r_t]=\E\big[r_t\sigma_{t+\tau}\,\E[\eps_{t+\tau}\mid\mathcal F_{t+\tau-1}]\big]=0$.
+The qualitative punchline: (G)ARCH leaves the \emph{linear} correlation flat (white noise) yet
+creates strong \emph{nonlinear} dependence in the squares. Mean and variance modelling decouple.
+\end{result}
+
+\begin{result}{Theorem --- Isserlis (Wick formula) \& ARCH(1) kurtosis}
+For a zero-mean Gaussian vector, $\E[X_1X_2X_3X_4]=\E[X_1X_2]\E[X_3X_4]+\E[X_1X_3]\E[X_2X_4]+\E[X_1X_4]\E[X_2X_3]$; in particular $\E[\eps_t^4]=3$. Hence, for ARCH(1) with Gaussian noise, the
+fourth moment is finite \textbf{iff} $\alpha_1^2<\tfrac13$, and
+\[
+\E[r_t^4]=\frac{3\alpha_0^2(1+\alpha_1)}{(1-\alpha_1)(1-3\alpha_1^2)},\qquad
+\kappa=\frac{\E[r_t^4]}{\Var(r_t)^2}=\frac{3(1-\alpha_1^2)}{1-3\alpha_1^2}>3\ \ (\alpha_1>0).
+\]
+So ARCH \emph{generates} excess kurtosis (fat tails) on its own, even with Gaussian $\eps_t$.
+\end{result}
+
+\begin{result}{Proposition --- ACF of the squares of ARCH(1)}
+For ARCH(1) with $0<\alpha_1<1/\sqrt3$,
+\[
+\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau},\qquad \tau\in\Ints :
+\]
+the autocorrelation of the \emph{squares} decays \textbf{geometrically}.
+\textit{Idea:} condition on $\mathcal F_{t+\tau-1}$ to peel one lag, giving the recursion
+$\Cov(r_{t+\tau}^2,r_t^2)=\alpha_1\Cov(r_{t+\tau-1}^2,r_t^2)$ (constant terms cancel via
+$\E[r_t^2]=\alpha_0/(1-\alpha_1)$). This is often \emph{too fast} for real data --- motivating GARCH.
+\end{result}
+
+\begin{result}{Proposition --- GARCH$(p,q)$ stationarity, variance \& 4th moment}
+A GARCH$(p,q)$ has a weakly stationary solution \textbf{iff} $\sum_j\alpha_j+\sum_j\beta_j<1$, and
+then
+\[
+\Var(r_t)=\frac{\alpha_0}{1-\sum_{j=1}^{p}\alpha_j-\sum_{j=1}^{q}\beta_j}.
+\]
+For GARCH$(1,1)$ with Gaussian noise the fourth moment exists \textbf{iff}
+$3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2<1$ (the analogue of $\alpha_1^2<1/3$). \emph{Note:}
+$\sum\alpha+\sum\beta<1$ is also sufficient for strict stationarity; the boundary
+$\sum\alpha+\sum\beta=1$ (Gaussian noise) is strictly --- not weakly --- stationary: the IGARCH case.
+\end{result}
+
+\begin{result}{Proposition --- conditional-Gaussian MLE}
+Conditioning on $r_1$ (so no marginal law for the initial value), the likelihood factorises and
+each $r_t\mid\mathcal F_{t-1}\sim\mathcal N(0,\sigma_t^2)$. Up to constants,
+\[
+\log L_c=-\tfrac12\sum_{t}\Big[\log\sigma_t^2+\frac{r_t^2}{\sigma_t^2}\Big],
+\]
+maximised numerically (with $\sigma_t^2$ from the model recursion) subject to positivity and
+$\sum\alpha+\sum\beta<1$. The per-time variance $\sigma_t^2$ is what is fitted, not a constant.
+\end{result}
+
+\section*{Intuition}
+
+\begin{intu}[White noise $\ne$ no structure]
+The headline paradox: $\Corr(r_{t+\tau},r_t)=0$ (uncorrelated, so linear forecasting of $r_t$ is
+hopeless) \emph{but} $\Corr(r_{t+\tau}^2,r_t^2)\ne0$ (the magnitudes are predictable). ARCH/GARCH
+live exactly here --- flat ACF, dependent squares. That is also why they slot in cleanly as ARMA
+innovations: they do not disturb the correlation structure.
+\end{intu}
+
+\begin{intu}[Two nested thresholds --- don't confuse them]
+$\alpha_1<1$ buys a finite \emph{variance}; the strictly tighter $\alpha_1^2<\tfrac13$ (i.e.\
+$\alpha_1<1/\sqrt3\approx0.577$) buys a finite \emph{fourth} moment, needed before any kurtosis or
+ACF-of-squares formula is valid. As $\alpha_1\uparrow1/\sqrt3$, $\kappa\to\infty$: more ARCH effect
+$\Rightarrow$ heavier tails. (GARCH$(1,1)$ analogue: $3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2<1$.)
+\end{intu}
+
+\begin{intu}[GARCH(1,1) $\approx$ ARCH$(\infty)$, but parsimonious]
+Iterating $\sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2+\beta_1\sigma_{t-1}^2$ gives
+$\sigma_t^2=\tfrac{\alpha_0}{1-\beta_1}+\alpha_1\sum_{k\ge0}\beta_1^k r_{t-1-k}^2$ --- an
+ARCH$(\infty)$ with geometrically decaying weights $\alpha_1\beta_1^k$. Three numbers
+$(\alpha_0,\alpha_1,\beta_1)$ encode the whole slow tail: $\alpha_1$ = immediate shock impact,
+$\beta_1$ = persistence/decay rate. An ARCH$(p)$ would need many $\alpha_j$ to mimic this.
+\end{intu}
+
+\begin{intu}[Reading the (G)ARCH likelihood]
+Each factor is a normal with its \emph{own} variance $\sigma_t^2$. The log-likelihood trades off
+``don't make $\sigma_t^2$ needlessly large'' (the $\log\sigma_t^2$ penalty) against ``explain a big
+$r_t^2$ with a big $\sigma_t^2$'' (the $r_t^2/\sigma_t^2$ term). That balancing act \emph{is}
+volatility tracking.
+\end{intu}
+
+\begin{intu}[Pros \& cons]
+\textbf{Pros:} capture volatility clusters and time-varying variance; reproduce fat tails (large
+kurtosis); GARCH gives persistent volatility cheaply; they don't disturb the white-noise
+correlation. \textbf{Cons:} positive and negative shocks act \emph{symmetrically} (no leverage
+effect); volatility dependence decays only \emph{geometrically}, often too fast for real markets.
+Extensions (EGARCH, GJR-GARCH, long-memory GARCH) fix these but are out of scope.
+\end{intu}
+
+\begin{exmpl}[GARCH(1,1) sanity checks (S\&P 500 fit)]
+Fitted: $\alpha_0=3.686\times10^{-6}$, $\alpha_1=0.1713$, $\beta_1=0.7897$.
+\emph{Stationary?} $\alpha_1+\beta_1=0.961<1$ \checkmark, with
+$\Var(r_t)=\alpha_0/(1-0.961)\approx9.45\times10^{-5}$, i.e.\ daily volatility
+$\sqrt{\cdot}\approx0.97\%$. \emph{Fourth moment?}
+$3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2\approx0.982<1$ \checkmark (only just --- very heavy tails).
+The persistence $\alpha_1+\beta_1=0.961$ near $1$ is the hallmark of financial GARCH: long
+quiet/turbulent regimes, yet still stationary.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Model the variance, not the mean.} $r_t=\sigma_t\eps_t$; ARCH:
+        $\sigma_t^2=\alpha_0+\sum\alpha_j r_{t-j}^2$; GARCH adds $\sum\beta_j\sigma_{t-j}^2$.
+        Always $\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2$.
+  \item \textbf{White noise but dependent:} $\Corr(r_{t+\tau},r_t)=0$ yet
+        $\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau}$ (ARCH(1)) $\ne0$. Diagnose with the ACF of
+        \emph{squared} residuals.
+  \item \textbf{Long-run variance / stationarity in one move:} take unconditional expectations of the
+        $\sigma_t^2$ recursion, set $\E[r_{t-j}^2]=\E[\sigma_{t-j}^2]=\Var(r_t)$, solve
+        $\Var(r_t)=\alpha_0/(1-\sum\alpha-\sum\beta)$; positivity $\Leftrightarrow\sum\alpha+\sum\beta<1$.
+  \item \textbf{Two thresholds:} $\alpha_1<1$ (variance) vs.\ $\alpha_1^2<1/3$ (kurtosis); GARCH(1,1)
+        4th moment: $3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2<1$.
+  \item \textbf{Fat tails for free:} Gaussian $\eps_t$ + ARCH $\Rightarrow\kappa>3$.
+  \item \textbf{Fit by MLE:} maximise $-\tfrac12\sum_t[\log\sigma_t^2+r_t^2/\sigma_t^2]$ with
+        $\sigma_t^2$ from the recursion. GARCH plugs into ARMA as the innovation (ARMA--GARCH).
+\end{itemize}
+\end{retenir}
+
+\end{document}

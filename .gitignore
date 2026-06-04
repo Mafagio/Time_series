@@ -1,0 +1,14 @@
+# Dépendances Node (servent seulement à valider les flashcards en local)
+**/node_modules/
+# macOS
+.DS_Store
+# Artefacts de compilation LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+# Outils de test
+.playwright-mcp/

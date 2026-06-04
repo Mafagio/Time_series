@@ -1,0 +1,670 @@
+% ======================================================================
+%  PART 2 -- ARMA Models: White Noise, MA, AR, ARMA and the PACF
+% ======================================================================
+\section{ARMA Models: White Noise, MA, AR, ARMA and the PACF}
+\label{sec:arma}
+
+The ARMA family is the workhorse of linear time series modelling. Starting from
+\textbf{white noise} --- the indivisible ``atom'' of randomness --- we build
+\textbf{moving average} (MA), \textbf{autoregressive} (AR) and combined
+\textbf{ARMA} processes by feeding white noise through finite linear filters and
+linear recursions. Two diagnostic curves run through the whole story: the
+autocorrelation function (ACF, $\acf_\tau$) and its less-obvious partner, the
+\textbf{partial autocorrelation function} (PACF, $\pacf_\tau$). The punchline,
+encoded in one small table, is that the ACF identifies the MA order $q$ while
+the PACF identifies the AR order $p$. We close with the
+\textbf{Durbin--Levinson} recursions that compute the PACF directly from the
+ACF.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{White noise (purely random process)}{p2-wn}
+$\{X_t\}$ is \textbf{white noise} (a purely random process) if it is a sequence
+of \emph{uncorrelated}, mean-zero, finite-variance random variables: for all
+$t\in\Ints$,
+\[
+\E[X_t]=0,\qquad \Var(X_t)=\sigma^2<\infty,
+\]
+and $\Cov(X_s,X_t)=0$ for $s\ne t$. Equivalently its second-order structure is
+\[
+\acvs_\tau=\begin{cases}\sigma^2 & \tau=0,\\ 0 & \tau\ne0,\end{cases}
+\qquad
+\acf_\tau=\begin{cases}1 & \tau=0,\\ 0 & \tau\ne0.\end{cases}
+\]
+White noise is automatically (weakly) stationary and is the \textbf{building
+block} of every model below. We write $\eps_t$ for a mean-zero white noise of
+variance $\sigma^2_\eps$.
+\end{definition}
+
+\begin{intuition}
+``Uncorrelated'' is weaker than ``independent''. White noise only constrains the
+first two moments, so a white-noise process need not be i.i.d.\ and need not be
+Gaussian. Calling something \emph{white} refers to its flat spectral density
+(equal power at all frequencies), which mirrors the flat ACF above.
+\end{intuition}
+
+\begin{definition}{Moving average process MA($q$)}{p2-maq}
+Let $\{\eps_t\}$ be mean-zero white noise of variance $\sigma_\eps^2$. The
+\textbf{$q$-th order moving average process} MA($q$) is
+\[
+X_t=\mu-\sum_{j=0}^{q}\theta_j\,\eps_{t-j},
+\qquad \theta_0=-1,\ \ \theta_q\ne0 .
+\]
+(The convention $\theta_0=-1$ makes the leading term $-\theta_0\eps_t=\eps_t$.)
+Simple examples use the equivalent zero-mean one-sign convention
+$X_t=\eps_t-\theta\eps_{t-1}$ for MA(1). An MA($q$) is just a finite linear
+filter of white noise, hence always stationary; the only requirement is
+$\abs{\theta_j}<\infty$.
+\end{definition}
+
+\begin{definition}{Moments of an MA($q$)}{p2-mamom}
+For the MA($q$) of Definition~\ref{def:p2-maq}, with $\theta_j:=0$ for $j>q$,
+\[
+\E[X_t]=\mu,
+\qquad
+\acvs_\tau=\Cov(X_{t+\tau},X_t)=
+\begin{cases}
+\sigma^2_\eps\displaystyle\sum_{j=0}^{q}\theta_j\theta_{j+\abs\tau} & \abs\tau\le q,\\[2mm]
+0 & \abs\tau>q .
+\end{cases}
+\]
+Hence the \textbf{ACVS of an MA($q$) cuts off (is exactly $0$) for lags
+$\abs\tau>q$} --- this is the signature used to read $q$ off the ACF.
+\end{definition}
+
+\begin{definition}{Autoregressive process AR($p$)}{p2-arp}
+Let $\{\eps_t\}$ be mean-zero white noise. The \textbf{$p$-th order
+autoregressive process} AR($p$) is
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}+\eps_t,
+\qquad \phi_p\ne0 .
+\]
+Unlike the MA case there \emph{are} constraints on $\{\phi_j\}$ for stationarity
+(the roots of the AR polynomial must lie outside the unit circle), and there is
+no simple closed form for the ACVS in general.
+\end{definition}
+
+\begin{definition}{ARMA($p,q$) process}{p2-arma}
+$\{X_t\}$ is an \textbf{autoregressive moving average} process of orders $p$ and
+$q$, ARMA($p,q$), if
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\eps_{t-k},
+\qquad \theta_0=-1,
+\]
+with $\{\eps_t\}$ mean-zero white noise and $\phi_j,\theta_k$ as in the AR and MA
+cases. Using the backshift operator $\Bsh$ (with $\Bsh^j X_t=X_{t-j}$) this is
+written compactly as
+\[
+\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t,
+\qquad
+\Phi(z)=1-\sum_{j=1}^{p}\phi_j z^{j},
+\quad
+\Theta(z)=-\sum_{k=0}^{q}\theta_k z^{k}.
+\]
+As for AR, conditions on the $\phi_j$ are needed for the model to be valid, and
+closed-form ACVS is generally unavailable (though computable).
+\end{definition}
+
+\begin{definition}{Causal ARMA($p,q$)}{p2-causal}
+An ARMA($p,q$) process is \textbf{causal} (more precisely a causal function of
+$\{\eps_t\}$) if there exists a sequence $\{\psi_j\}$ with
+$\sum_{j=0}^{\infty}\abs{\psi_j}<\infty$ such that
+\[
+X_t=\sum_{j=0}^{\infty}\psi_j\,\eps_{t-j},
+\qquad t=0,\pm1,\pm2,\dots
+\]
+i.e.\ $X_t$ depends only on \emph{present and past} noise. The $\{\psi_j\}$ are
+the \textbf{$\psi$-weights} (the MA($\infty$) representation). A mean-zero
+MA($q$) is \emph{always} causal (it already has this form with finitely many
+nonzero $\psi_j$). For ARMA, causality holds iff all roots of $\Phi(z)$ lie
+\emph{outside} the unit circle.
+\end{definition}
+
+\begin{recallbox}[Roots convention]
+\textbf{Stationarity / causality:} all roots of the AR polynomial $\Phi(z)$ lie
+\emph{outside} the unit circle ($\abs z>1$). \textbf{Invertibility:} all roots
+of the MA polynomial $\Theta(z)$ lie \emph{outside} the unit circle. For AR(1),
+$\Phi(z)=1-\phi z$ has root $z=1/\phi$, so $\abs z>1\iff\abs\phi<1$.
+\end{recallbox}
+
+\begin{definition}{Best linear predictor}{p2-blp}
+Given mean-zero random variables $X_1,\dots,X_n,Y$, the \textbf{best linear
+predictor} of $Y$ from $X_1,\dots,X_n$ is
+\[
+P_{X_1,\dots,X_n}(Y)=\sum_{j=1}^{n}\beta_j X_j,
+\]
+where $\beta_1,\dots,\beta_n$ minimise the mean-squared error
+$\E\big[(Y-P_{X_1,\dots,X_n}(Y))^2\big]$. The minimiser is characterised by the
+\textbf{prediction (orthogonality) equations}: the prediction error is
+uncorrelated with every regressor,
+\[
+\Cov\big(Y-P_{X_1,\dots,X_n}(Y),\,X_k\big)=0,\qquad k=1,\dots,n .
+\]
+\end{definition}
+
+\begin{definition}{Partial correlation}{p2-partcorr}
+For random variables $X,Y$ and confounders $Z=(Z_1,\dots,Z_n)\Tr$, the
+\textbf{partial correlation} of $X$ and $Y$ given $Z$ is
+\[
+\acf_{XY\bullet Z}=\Corr\big(X-P_Z(X),\,Y-P_Z(Y)\big),
+\]
+i.e.\ the correlation of the residuals after removing the best linear effect of
+$Z$ from each. If $X,Y,Z$ are jointly Gaussian then
+$\acf_{XY\bullet Z}=\E[\Corr(X,Y\mid Z)]$, and in fact
+$\acf_{XY\bullet Z}\overset{\text{a.s.}}{=}\Corr(X,Y\mid Z)$.
+\end{definition}
+
+\begin{definition}{Partial autocorrelation function (PACF)}{p2-pacf}
+For a mean-zero stationary $\{X_t\}$, the \textbf{PACF} at lag $\tau$ is the
+partial correlation of $X_t$ and $X_{t+\tau}$ given the intervening values
+$Z=(X_{t+1},\dots,X_{t+\tau-1})$. Writing
+$\hat X_t=P_{X_{t+1},\dots,X_{t+\tau-1}}(X_t)$ and
+$\hat X_{t+\tau}=P_{X_{t+1},\dots,X_{t+\tau-1}}(X_{t+\tau})$,
+\[
+\pacf_\tau=\Corr\big(X_{t+\tau}-\hat X_{t+\tau},\,X_t-\hat X_t\big).
+\]
+Equivalently (regression form): if
+$P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$ is
+the best linear predictor of $X_\tau$ from its $\tau$ predecessors, then
+$\pacf_\tau=\pacf_{\tau,\tau}$ (the \emph{last} regression coefficient).
+Conventionally $\pacf_1=\acf_1$.
+\end{definition}
+
+\begin{intuition}
+The PACF answers ``how much \emph{new} linear information about $X_{t+\tau}$ is
+in $X_t$, once everything in between is accounted for?''. In an AR(1),
+$\acf_\tau=\phi^{\abs\tau}\ne0$ for all $\tau$ even though $X_t$ only directly
+depends on $X_{t-1}$: the correlation at lag $2$ is entirely \emph{transmitted}
+through $X_{t-1}$. The PACF strips out that transmitted part, so it vanishes for
+$\tau>1$ --- exactly identifying the order $p=1$.
+\end{intuition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Causal AR(1) expansion and its ACVS}{p2-ar1}
+For the AR(1) $X_t=\phi X_{t-1}+\eps_t$ with $\abs\phi<1$, iterating the
+recursion gives the causal (MA($\infty$)) representation
+\[
+X_t=\sum_{k=0}^{\infty}\phi^{k}\eps_{t-k},
+\qquad \psi_k=\phi^k,\ \ \sum_k\abs{\psi_k}=\tfrac1{1-\abs\phi}<\infty,
+\]
+with $\E[X_t]=0$ and autocovariance
+\[
+\acvs_\tau=\frac{\sigma_\eps^2}{1-\phi^2}\,\phi^{\abs\tau},
+\qquad
+\acf_\tau=\phi^{\abs\tau}.
+\]
+\textit{Proof idea:} substitute $X_{t-1}=\phi X_{t-2}+\eps_{t-1}$ repeatedly;
+the remainder $\phi^{n}X_{t-n}\to0$ in mean square. Then
+$\acvs_\tau=\sigma_\eps^2\sum_{k\ge0}\phi^k\phi^{k+\abs\tau}
+=\sigma_\eps^2\phi^{\abs\tau}\sum_{k\ge0}\phi^{2k}
+=\sigma_\eps^2\phi^{\abs\tau}/(1-\phi^2)$ by the geometric series.\\
+\textit{Why:} the AR(1) is the canonical example of a causal process and the
+template for ``write an AR as an infinite MA, then use the white-noise filter
+trick to get the ACVS''. The ACF $\phi^{\abs\tau}$ \emph{tails off} (never hits
+exactly $0$), motivating the PACF.
+\end{proposition}
+
+\begin{proposition}{ACF--PACF relation (prediction equations)}{p2-acfpacf}
+For a mean-zero stationary $\{X_t\}$, fix $\tau>0$ and write
+$\hat X_\tau=P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$.
+Then for each $k\in\{1,\dots,\tau\}$,
+\[
+\acf_k=\sum_{j=1}^{\tau}\pacf_{\tau,j}\,\acf_{k-j}.
+\]
+\textit{Proof idea:} decompose
+$\acvs_k=\Cov(X_{\tau-k},X_\tau)
+=\Cov(X_{\tau-k},\hat X_\tau)+\Cov(X_{\tau-k},X_\tau-\hat X_\tau)$;
+the second term is $0$ by the orthogonality of the prediction error, and
+expanding the first using $\hat X_\tau=\sum_j\pacf_{\tau,j}X_{\tau-j}$ gives
+$\acvs_k=\sum_j\pacf_{\tau,j}\acvs_{k-j}$; divide by $\acvs_0$.\\
+\textit{Why:} these are the \textbf{Yule--Walker-type} equations linking the ACF
+to the prediction coefficients $\pacf_{\tau,j}$. They are exactly what the
+Durbin--Levinson recursion solves to extract the PACF
+$\pacf_\tau=\pacf_{\tau,\tau}$.
+\end{proposition}
+
+\begin{theorem}{ACF \& PACF signatures of ARMA models}{p2-table}
+For \emph{causal and invertible} ARMA($p,q$) models the ACF and PACF behave as:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{AR($p$)} & \textbf{MA($q$)} & \textbf{ARMA($p,q$)}\\
+\midrule
+\textbf{ACF}  & Tails off            & Cuts off after lag $q$ & Tails off\\
+\textbf{PACF} & Cuts off after lag $p$ & Tails off             & Tails off\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textit{Proof idea:} the ACF cut-off for MA($q$) is the moment computation of
+Definition~\ref{def:p2-mamom}; the PACF cut-off for AR($p$) is
+Proposition~\ref{prop:p2-arpacf}; ``tails off'' means a geometric/damped-sine
+decay with no exact zero (as for the AR(1) ACF $\phi^{\abs\tau}$).\\
+\textit{Why:} this $2\times3$ table is \emph{the} model-identification tool:
+read $q$ from where the ACF cuts, $p$ from where the PACF cuts; if neither cuts
+(both tail off) the model is mixed ARMA.
+\end{theorem}
+
+\begin{proposition}{PACF of an AR($p$) vanishes beyond lag $p$}{p2-arpacf}
+For a causal AR($p$),
+\[
+\pacf_\tau=0\qquad\text{for all }\tau>p .
+\]
+Moreover the \emph{estimated} PACF at lags $>p$ is, asymptotically, mean $0$
+with variance $1/n$ ($n$ the sample size), giving the $\pm1.96/\sqrt n$
+significance bands.\\
+\textit{Proof idea:} for $\tau>p$ write the prediction error
+$X_\tau-\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$. Because the process is
+AR($p$), the true best predictor uses only $\phi_1,\dots,\phi_p$ and the noise
+$\eps_\tau$; setting $\tilde\phi_j=\phi_j$ for $j\le p$ and $\tilde\phi_j=0$ for
+$j>p$, the prediction equations
+$\Cov(X_\tau-\sum_j\pacf_{\tau,j}X_{\tau-j},X_k)=0$ are solved by
+$\pacf_{\tau,j}=\tilde\phi_j$ (using $\Cov(\eps_\tau,X_k)=0$ for $k<\tau$, by
+causality). In particular $\pacf_\tau=\pacf_{\tau,\tau}=\tilde\phi_\tau=0$ for
+$\tau>p$.\\
+\textit{Why:} this is the theoretical backbone of the table: it is why a sharp
+cut-off in the (sample) PACF at lag $p$ diagnoses an AR($p$), and the $1/n$
+variance gives the threshold for ``cut off''.
+\end{proposition}
+
+\begin{proposition}{Non-identifiability of MA(1) from the ACVS}{p2-maident}
+The MA(1) processes
+\[
+X_t=\eps_t-\theta\eps_{t-1}\ \ (\Var\eps_t=\sigma_\eps^2)
+\qquad\text{and}\qquad
+Y_t=\eta_t-\tfrac1\theta\eta_{t-1}\ \ (\Var\eta_t=\sigma_\eps^2\theta^2)
+\]
+have \emph{identical} autocovariance sequences, hence are indistinguishable from
+second-order structure alone.\\
+\textit{Proof idea:} both give
+$\acvs_0=\sigma_\eps^2(1+\theta^2)$, $\acvs_{\pm1}=-\sigma_\eps^2\theta$, and $0$
+elsewhere (direct computation, see Exercise~\ref{exo:p2-maident-ex}).\\
+\textit{Why:} an MA(1) and its ``root-reciprocal'' twin share an ACVS; choosing
+the \emph{invertible} representation ($\abs\theta<1$, root outside the unit
+circle) pins down a unique model. This is the reason invertibility is imposed.
+\end{proposition}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Computing the ACVS of an MA($q$)}{p2-ktma}
+Use bilinearity of covariance and
+$\Cov(\eps_s,\eps_u)=\sigma_\eps^2\ind_{\{s=u\}}$. For
+$X_t=\mu-\sum_{j=0}^q\theta_j\eps_{t-j}$ (constant $\mu$ drops out of
+covariances),
+\[
+\acvs_\tau=\Cov\!\Big(\sum_{k}\theta_k\eps_{t+\tau-k},\sum_j\theta_j\eps_{t-j}\Big)
+=\sigma_\eps^2\sum_{j}\theta_j\theta_{j+\abs\tau},
+\]
+the surviving terms being those with $k=j+\tau$. Steps: (1) write both sums; (2)
+keep only matching noise indices; (3) read off that $\acvs_\tau=0$ for
+$\abs\tau>q$.
+\end{keytech}
+
+\begin{keytech}{Checking causality / stationarity via roots}{p2-ktroots}
+To test an AR or ARMA: (1) form $\Phi(z)=1-\sum_{j=1}^p\phi_j z^j$; (2) find its
+roots; (3) the model is causal/stationary iff every root satisfies $\abs z>1$
+(outside the unit circle). For AR(1) this reduces to $\abs\phi<1$; for AR(2)
+$\Phi(z)=1-\phi_1 z-\phi_2 z^2$, the conditions are
+$\phi_1+\phi_2<1,\ \phi_2-\phi_1<1,\ \abs{\phi_2}<1$. Invertibility uses the same
+test on $\Theta(z)$.
+\end{keytech}
+
+\begin{keytech}{Deriving the MA($\infty$) ($\psi$-weight) representation}{p2-ktpsi}
+Match coefficients in $\Phi(\Bsh)\,\psi(\Bsh)=\Theta(\Bsh)$ where
+$\psi(z)=\sum_{j\ge0}\psi_j z^j$. Equivalently expand
+$\psi(z)=\Theta(z)/\Phi(z)$ as a power series. For AR(1):
+$\psi(z)=1/(1-\phi z)=\sum_{j\ge0}\phi^j z^j$, so $\psi_j=\phi^j$. For an
+ARMA(1,1) written $X_t=\phi X_{t-1}+\eps_t+\vartheta\eps_{t-1}$
+(so $\Phi(z)=1-\phi z$, $\Theta(z)=1+\vartheta z$):
+$\psi_0=1$ and $\psi_j=(\phi+\vartheta)\phi^{\,j-1}$ for $j\ge1$. Once you have
+$\{\psi_j\}$, the ACVS is
+$\acvs_\tau=\sigma_\eps^2\sum_{j\ge0}\psi_j\psi_{j+\abs\tau}$.
+\end{keytech}
+
+\begin{keytech}{Durbin--Levinson recursion for the PACF}{p2-ktdl}
+Given the ACF $\{\acf_\tau\}$, compute $\pacf_\tau=\pacf_{\tau,\tau}$ by:
+\[
+\pacf_{1,1}=\acf_1,\qquad
+\pacf_{\tau,\tau}
+=\frac{\acf_\tau-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{\tau-j}}
+       {1-\sum_{j=1}^{\tau-1}\pacf_{\tau-1,j}\,\acf_{j}},
+\]
+then update the auxiliary coefficients
+\[
+\pacf_{\tau,j}=\pacf_{\tau-1,j}-\pacf_{\tau,\tau}\,\pacf_{\tau-1,\tau-j},
+\qquad j=1,\dots,\tau-1 .
+\]
+Works with theoretical \emph{or} sample ACF. A clean cut to $0$ in
+$\pacf_{\tau,\tau}$ at $\tau=p+1$ flags an AR($p$); the last diagonal
+coefficients then equal the AR coefficients.
+\end{keytech}
+
+\begin{keytech}{Reading $(p,q)$ off ACF \& PACF plots}{p2-ktident}
+\begin{enumerate}
+  \item First confirm \textbf{stationarity}: stable mean/variance; an ACF that
+        decays very slowly (almost linearly) signals non-stationarity ---
+        difference first.
+  \item \textbf{ACF cuts after lag $q$, PACF tails off} $\Rightarrow$ MA($q$).
+  \item \textbf{PACF cuts after lag $p$, ACF tails off} $\Rightarrow$ AR($p$).
+  \item \textbf{Both tail off} $\Rightarrow$ mixed ARMA($p,q$).
+  \item \textbf{Neither significant at any nonzero lag} $\Rightarrow$ white noise.
+\end{enumerate}
+Use the $\pm1.96/\sqrt n$ band to decide ``significant''. Choices are rarely
+unique --- justify with a sensible argument.
+\end{keytech}
+
+\begin{pitfall}
+Two recurring sign/convention traps. (i) The notes' MA/ARMA definition carries a
+\emph{minus} sign in front of the $\theta$-sum with $\theta_0=-1$, so
+$X_t=\mu-\sum_{j=0}^q\theta_j\eps_{t-j}$ starts as $\eps_t+\cdots$; simple
+examples instead write $X_t=\eps_t-\theta\eps_{t-1}$. Track which convention a
+problem uses before plugging into the ACVS formula. (ii) ``Roots outside the
+unit circle'' is for the polynomials $\Phi(z),\Theta(z)$ in $z$; in terms of the
+coefficient it means $\abs\phi<1$ for AR(1). Do not confuse it with ``roots
+inside''.
+\end{pitfall}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{Why fix $\theta_0=-1$? (MA identifiability) \quad\textnormal{[Sheet 2]}}{p2-theta0}
+When defining the MA($q$) we set $\theta_0=-1$. In terms of covariance
+structure, why do we gain no generality by letting $\theta_0$ be arbitrary?
+\end{exercise}
+\begin{solution}
+Rescaling the leading coefficient produces a \emph{different} parametrisation
+with the \emph{same} covariance, so $\theta_0$ is not free --- we fix it for
+identifiability. Take the zero-mean MA(1)
+\[
+X_t=-\theta_0\eps_t-\theta_1\eps_{t-1}=\eps_t-\theta_1\eps_{t-1},
+\qquad \eps_t\sim\mathcal N(0,\sigma_\eps^2),\ \theta_0=-1 .
+\]
+Suppose a second parametrisation uses $\theta_0'=c\theta_0=c$ and $\theta_1'$
+with noise $\eps_t'\sim\mathcal N(0,\sigma_{\eps'}^2)$:
+$X_t=-\theta_0'\eps_t'-\theta_1'\eps_{t-1}'=c\eps_t'-\theta_1'\eps_{t-1}'$.
+Rewriting the first form,
+\[
+X_t=\eps_t-\theta_1\eps_{t-1}
+=c\,\tfrac{\eps_t}{c}-(c\theta_1)\tfrac{\eps_{t-1}}{c},
+\]
+so $\eps_t'=c^{-1}\eps_t$, $\theta_1'=c\theta_1$, and
+$\sigma_{\eps'}^2=c^{-2}\sigma_\eps^2$. The two representations share moments:
+\[
+\Var(X_t)=(1+\theta_1^2)\sigma_\eps^2,
+\qquad
+\{(\theta_0')^2+(\theta_1')^2\}\sigma_{\eps'}^2
+=c^2(1+\theta_1^2)c^{-2}\sigma_\eps^2=(1+\theta_1^2)\sigma_\eps^2,
+\]
+and $\Cov(X_t,X_{t-1})=\theta_0\theta_1\sigma_\eps^2$ is likewise unchanged.
+Thus many MA(1) representations give the same $X_t$; fixing $\theta_0=-1$ makes
+the representation unique. The same scaling argument extends verbatim to
+MA($q$).
+\end{solution}
+
+\begin{exercise}{Rewriting an MA(1) recursively \quad\textnormal{[Sheet 2]}}{p2-marewrite}
+Show that the MA(1) process $X_t=\eps_t-\theta\eps_{t-1}$ can be written, for any
+positive integer $p$, as
+\[
+X_t=\eps_t-\sum_{j=1}^{p}\theta^{j}X_{t-j}-\theta^{p+1}\eps_{t-p-1}.
+\]
+\end{exercise}
+\begin{solution}
+For any $p\ge1$, $X_{t-p}=\eps_{t-p}-\theta\eps_{t-p-1}$, hence
+$\eps_{t-p}=X_{t-p}+\theta\eps_{t-p-1}$. Substitute this recursively:
+\[
+\begin{aligned}
+X_t&=\eps_t-\theta\eps_{t-1}
+   =\eps_t-\theta\,(X_{t-1}+\theta\eps_{t-2})
+   =\eps_t-\theta X_{t-1}-\theta^2\eps_{t-2}\\
+   &=\eps_t-\theta X_{t-1}-\theta^2(X_{t-2}+\theta\eps_{t-3})
+   =\eps_t-\theta X_{t-1}-\theta^2 X_{t-2}-\theta^3\eps_{t-3}\\
+   &=\ \cdots\ =\eps_t-\sum_{j=1}^{p}\theta^{j}X_{t-j}-\theta^{p+1}\eps_{t-p-1}.
+\end{aligned}
+\]
+If $\abs\theta<1$ (invertible MA), the remainder $\theta^{p+1}\eps_{t-p-1}\to0$
+in mean square as $p\to\infty$, giving the AR($\infty$) representation
+$X_t=\eps_t-\sum_{j\ge1}\theta^j X_{t-j}$.
+\end{solution}
+
+\begin{exercise}{Moments of a sum of two filtered noises \quad\textnormal{[Sheet 2]}}{p2-sumfilter}
+Let $Y_t=\sum_{s=-p}^{p}g_{s-t}\eps_s$ and $Z_t=\sum_{s=-p}^{p}h_{s-t}\eps_s$ with
+$\{\eps_t\}$ mean-zero white noise of variance $\sigma^2$, and define
+$X_t=Y_t+Z_t$. Determine the first and second moments of $X_t$.
+\end{exercise}
+\begin{solution}
+Combine the filters: $X_t=\sum_{s=-p}^{p}(g_{s-t}+h_{s-t})\eps_s$. Since
+$\E[\eps_s]=0$,
+\[
+\E[X_t]=\sum_{s=-p}^{p}(g_{s-t}+h_{s-t})\,\E[\eps_s]=0 .
+\]
+For the (auto)covariance, use $\Cov(\eps_s,\eps_l)=\sigma^2\ind_{\{s=l\}}$:
+\[
+\begin{aligned}
+\E[X_t X_{t+\tau}]=\Cov(X_t,X_{t+\tau})
+&=\Cov\!\Big(\sum_{s=-p}^{p}(g_{s-t}+h_{s-t})\eps_s,\
+            \sum_{l=-p}^{p}(g_{l-t-\tau}+h_{l-t-\tau})\eps_l\Big)\\
+&=\sum_{s=-p}^{p}\sum_{l=-p}^{p}(g_{s-t}+h_{s-t})(g_{l-t-\tau}+h_{l-t-\tau})\,
+   \Cov(\eps_s,\eps_l)\\
+&=\sigma^2\sum_{s=-p}^{p}(g_{s-t}+h_{s-t})(g_{s-t-\tau}+h_{s-t-\tau}).
+\end{aligned}
+\]
+Only the diagonal $s=l$ survives, collapsing the double sum to a single one.
+(Note: because the filter is indexed by $s-t$ over the fixed window
+$\{-p,\dots,p\}$, this is a covariance computation rather than a stationarity
+claim --- the surviving sum can depend on $t$ near the window edges.)
+\end{solution}
+
+\begin{exercise}{PACF of an AR($p$) is zero beyond lag $p$ \quad\textnormal{[Sheet 2]}}{p2-arpacf-ex}
+Prove that for a causal AR($p$), $\pacf_\tau=0$ for all $\tau>p$. Use the
+prediction equations
+$\Cov(Y-P_{X_1,\dots,X_n}(Y),X_k)=0$ and the causal fact
+$\Cov(X_t,\eps_s)=0$ for $t<s$.
+\end{exercise}
+\begin{solution}
+Recall $\pacf_\tau=\pacf_{\tau,\tau}$, the last coefficient in
+$P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$.
+Take $\tau>p$. The prediction equations state, for all
+$k\in\{0,\dots,\tau-1\}$,
+\[
+\Cov\!\Big(X_\tau-\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j},\,X_k\Big)=0 .
+\]
+Substitute the AR($p$) form $X_\tau=\sum_{j=1}^{p}\phi_j X_{\tau-j}+\eps_\tau$
+and define $\tilde\phi_j=\phi_j$ for $j\le p$, $\tilde\phi_j=0$ for $j>p$:
+\[
+\Cov\!\Big(\sum_{j=1}^{\tau}(\tilde\phi_j-\pacf_{\tau,j})X_{\tau-j}+\eps_\tau,\,X_k\Big)
+=\sum_{j=1}^{\tau}(\tilde\phi_j-\pacf_{\tau,j})\Cov(X_{\tau-j},X_k)
++\Cov(\eps_\tau,X_k).
+\]
+By causality $X_k$ depends only on $\eps_s$ with $s\le k<\tau$, so
+$\Cov(\eps_\tau,X_k)=0$. Hence choosing $\pacf_{\tau,j}=\tilde\phi_j$ for all $j$
+satisfies every prediction equation; by uniqueness of the best linear predictor
+these are the coefficients. In particular
+$\pacf_\tau=\pacf_{\tau,\tau}=\tilde\phi_\tau=0$ for $\tau>p$. $\qquad\blacksquare$
+\end{solution}
+
+\begin{exercise}{Model identification from ACF \& PACF \quad\textnormal{[Sheet 2]}}{p2-ident}
+For six time series, each shown with its sample ACF and PACF, decide which of
+white noise, MA($q$), AR($p$), ARMA($p,q$) is appropriate, with reasoning.
+\end{exercise}
+\begin{solution}
+The diagnostic is the signature table (Theorem~\ref{thm:p2-table}). The (hidden)
+truths and sample arguments were:
+\begin{enumerate}
+  \item Stationary-looking; \emph{both} ACF and PACF decay without a sharp
+        cut-off $\Rightarrow$ \textbf{ARMA} (truth: ARMA(1,1); one could argue
+        AR(2)).
+  \item Stationary; ACF cuts sharply after lag $1$ while the PACF decays
+        $\Rightarrow$ \textbf{MA(1)}.
+  \item Stationary; ACF decays, PACF cuts after lag $1$ $\Rightarrow$
+        \textbf{AR(1)} (an ARMA is also arguable).
+  \item Stationary; neither ACF nor PACF significant at nonzero lags
+        $\Rightarrow$ \textbf{white noise}.
+  \item Very strong lag-1 PACF, ACF decaying very slowly, apparent changing
+        variance $\Rightarrow$ likely \textbf{non-stationary} (could be a
+        near-unit-root AR(1) with $\phi\approx1$).
+  \item Stationary; ACF decays, PACF cuts after lag $1$ $\Rightarrow$
+        \textbf{AR(1)}.
+\end{enumerate}
+The point is to make a defensible argument; model selection is not unique, and
+ACF/PACF are sanity checks, not proofs.
+\end{solution}
+
+\begin{exercise}{Durbin--Levinson: $\acf_1=\tfrac25,\ \acf_2=-\tfrac1{20},\ \acf_3=-\tfrac18$ \quad\textnormal{[Lecture worked example]}}{p2-dl}
+A stationary process has $\acf_1=\tfrac25,\ \acf_2=-\tfrac1{20},\
+\acf_3=-\tfrac18$. Find $\pacf_1,\pacf_2,\pacf_3$, and identify a plausible model.
+\end{exercise}
+\begin{solution}
+Apply the Durbin--Levinson recursion (Key Technique~\ref{kt:p2-ktdl}).
+
+\textbf{Lag 1:} $\ \pacf_{1,1}=\acf_1=\dfrac25 .$
+
+\textbf{Lag 2:}
+\[
+\pacf_{2,2}=\frac{\acf_2-\pacf_{1,1}\acf_1}{1-\pacf_{1,1}\acf_1}
+=\frac{-\frac1{20}-\frac25\cdot\frac25}{1-\frac25\cdot\frac25}
+=\frac{-\frac1{20}-\frac4{25}}{1-\frac4{25}}
+=\frac{-\frac{21}{100}}{\frac{84}{100}}
+=-\frac{21}{84}=-\frac14 .
+\]
+Update: $\ \pacf_{2,1}=\pacf_{1,1}-\pacf_{2,2}\pacf_{1,1}
+=\tfrac25-(-\tfrac14)\tfrac25=\tfrac25+\tfrac1{10}=\tfrac12 .$
+
+\textbf{Lag 3:}
+\[
+\pacf_{3,3}
+=\frac{\acf_3-\pacf_{2,1}\acf_2-\pacf_{2,2}\acf_1}
+       {1-\pacf_{2,1}\acf_1-\pacf_{2,2}\acf_2}.
+\]
+Numerator:
+$-\tfrac18-\tfrac12\!\cdot\!(-\tfrac1{20})-(-\tfrac14)\!\cdot\!\tfrac25
+=-\tfrac18+\tfrac1{40}+\tfrac1{10}
+=-\tfrac{5}{40}+\tfrac{1}{40}+\tfrac{4}{40}=0$.
+Hence $\pacf_{3,3}=0$.
+
+So $\pacf_1=\tfrac25,\ \pacf_2=-\tfrac14,\ \pacf_3=0$. The PACF cutting to $0$ at
+lag $3$ suggests an \textbf{AR(2)}. Indeed
+\[
+Y_t=\tfrac12 Y_{t-1}-\tfrac14 Y_{t-2}+\eps_t
+\]
+matches: its Yule--Walker ACF is
+$\acf_1=\phi_1/(1-\phi_2)=\frac{1/2}{1+1/4}=\frac25$
+and $\acf_2=\phi_1\acf_1+\phi_2=\frac12\cdot\frac25-\frac14=-\frac1{20}$, exactly
+the given values; and the diagonal PACF coefficients
+$\pacf_{2,1}=\tfrac12=\phi_1$, $\pacf_{2,2}=-\tfrac14=\phi_2$ recover the AR
+coefficients.
+\end{solution}
+
+\begin{exercise}{MA(1) and its reciprocal twin share an ACVS \quad\textnormal{[New]}}{p2-maident-ex}
+Let $X_t=\eps_t-\theta\eps_{t-1}$ with $\Var\eps_t=\sigma_\eps^2$ ($\theta\ne0$),
+and let $Y_t=\eta_t-\tfrac1\theta\eta_{t-1}$ with $\Var\eta_t=\sigma_\eps^2\theta^2$.
+Compute both ACVSs and show they coincide. Which representation is invertible?
+\end{exercise}
+\begin{solution}
+For $X_t$, by the MA covariance technique
+(Key Technique~\ref{kt:p2-ktma}) with taps $(1,-\theta)$,
+\[
+\acvs_0=\sigma_\eps^2(1+\theta^2),\qquad
+\acvs_{\pm1}=-\sigma_\eps^2\theta,\qquad
+\acvs_\tau=0\ (\abs\tau\ge2).
+\]
+For $Y_t$ the MA(1) coefficient is $1/\theta$ and the noise variance is
+$\sigma_\eta^2=\sigma_\eps^2\theta^2$:
+\[
+\begin{aligned}
+\tilde\acvs_0&=\sigma_\eta^2\Big(1+\tfrac1{\theta^2}\Big)
+=\sigma_\eps^2\theta^2\cdot\frac{\theta^2+1}{\theta^2}
+=\sigma_\eps^2(1+\theta^2),\\
+\tilde\acvs_{\pm1}&=-\sigma_\eta^2\cdot\tfrac1\theta
+=-\sigma_\eps^2\theta^2\cdot\tfrac1\theta=-\sigma_\eps^2\theta,
+\qquad \tilde\acvs_\tau=0\ (\abs\tau\ge2).
+\end{aligned}
+\]
+Thus $\tilde\acvs_\tau=\acvs_\tau$ for all $\tau$: the two MA(1)s are
+\textbf{indistinguishable} from second-order structure. The MA polynomial roots
+are $z=1/\theta$ (for $X_t$) and $z=\theta$ (for $Y_t$); the \textbf{invertible}
+representation is the one with the root outside the unit circle, i.e.\ the one
+with the smaller coefficient in modulus ($\abs\theta<1$ picks $X_t$,
+$\abs\theta>1$ picks $Y_t$).
+\end{solution}
+
+\begin{exercise}{ACVS and ACF of an MA(2) \quad\textnormal{[New]}}{p2-ma2}
+Let $X_t=\eps_t-\theta_1\eps_{t-1}-\theta_2\eps_{t-2}$ with white-noise variance
+$\sigma_\eps^2$. Find $\acvs_\tau$ for all $\tau$ and write down $\acf_1,\acf_2$.
+Verify $\acvs_\tau=0$ for $\abs\tau\ge3$.
+\end{exercise}
+\begin{solution}
+The filter taps are $(1,-\theta_1,-\theta_2)$. By Key
+Technique~\ref{kt:p2-ktma},
+$\acvs_\tau=\sigma_\eps^2\sum_j(\text{tap}_j)(\text{tap}_{j+\abs\tau})$:
+\[
+\begin{aligned}
+\acvs_0&=\sigma_\eps^2(1+\theta_1^2+\theta_2^2),\\
+\acvs_{\pm1}&=\sigma_\eps^2\big[(1)(-\theta_1)+(-\theta_1)(-\theta_2)\big]
+=\sigma_\eps^2(-\theta_1+\theta_1\theta_2)=\sigma_\eps^2\theta_1(\theta_2-1),\\
+\acvs_{\pm2}&=\sigma_\eps^2\big[(1)(-\theta_2)\big]=-\sigma_\eps^2\theta_2,\\
+\acvs_\tau&=0\quad(\abs\tau\ge3),
+\end{aligned}
+\]
+the last because for $\abs\tau\ge3$ no pair of taps overlaps (the filter has
+length $3$). The ACF cuts off after lag $q=2$, as the table predicts:
+\[
+\acf_1=\frac{\theta_1(\theta_2-1)}{1+\theta_1^2+\theta_2^2},
+\qquad
+\acf_2=\frac{-\theta_2}{1+\theta_1^2+\theta_2^2}.
+\]
+\end{solution}
+
+\begin{exercise}{AR(2) causality region and ACF via Yule--Walker \quad\textnormal{[New]}}{p2-ar2yw}
+Consider $X_t=\phi_1 X_{t-1}+\phi_2 X_{t-2}+\eps_t$. (a) State the causality
+(stationarity) conditions on $(\phi_1,\phi_2)$. (b) For $\phi_1=\tfrac12$,
+$\phi_2=-\tfrac14$, compute $\acf_1,\acf_2,\acf_3$ from the Yule--Walker
+equations, and predict the PACF pattern.
+\end{exercise}
+\begin{solution}
+\textbf{(a)} With $\Phi(z)=1-\phi_1 z-\phi_2 z^2$, causality requires both roots
+outside the unit circle. Equivalently (the standard ``stationarity triangle''):
+\[
+\phi_1+\phi_2<1,\qquad \phi_2-\phi_1<1,\qquad \abs{\phi_2}<1 .
+\]
+
+\textbf{(b)} Here $\phi_1+\phi_2=\tfrac14<1$, $\phi_2-\phi_1=-\tfrac34<1$,
+$\abs{\phi_2}=\tfrac14<1$: causal. The Yule--Walker recursion
+$\acf_\tau=\phi_1\acf_{\tau-1}+\phi_2\acf_{\tau-2}$ ($\tau\ge1$, with
+$\acf_0=1,\ \acf_{-1}=\acf_1$) gives
+\[
+\acf_1=\frac{\phi_1}{1-\phi_2}=\frac{1/2}{1+1/4}=\frac25,
+\qquad
+\acf_2=\phi_1\acf_1+\phi_2=\tfrac12\cdot\tfrac25-\tfrac14=-\tfrac1{20},
+\]
+\[
+\acf_3=\phi_1\acf_2+\phi_2\acf_1
+=\tfrac12\cdot(-\tfrac1{20})-\tfrac14\cdot\tfrac25
+=-\tfrac1{40}-\tfrac1{10}=-\tfrac18 .
+\]
+These are exactly the values of Exercise~\ref{exo:p2-dl}: the PACF cuts off after
+lag $2$ ($\pacf_3=0$), the AR(2) signature, while the ACF tails off.
+\end{solution}
+
+\begin{exercise}{One-step recursive forecast for an AR(1) \quad\textnormal{[New]}}{p2-forecast}
+For a causal AR(1) $X_t=\phi X_{t-1}+\eps_t$ ($\abs\phi<1$), find the best linear
+one-step-ahead predictor $P_{X_1,\dots,X_n}(X_{n+1})$ and its mean-squared error.
+\end{exercise}
+\begin{solution}
+The prediction equations require the error $X_{n+1}-\hat X_{n+1}$ to be
+uncorrelated with $X_1,\dots,X_n$. Try $\hat X_{n+1}=\phi X_n$: the error is
+$X_{n+1}-\phi X_n=\eps_{n+1}$, and by causality $X_k$ depends only on
+$\eps_s,\ s\le k\le n<n+1$, so $\Cov(\eps_{n+1},X_k)=0$ for all $k\le n$. The
+orthogonality conditions hold, hence
+\[
+P_{X_1,\dots,X_n}(X_{n+1})=\phi X_n,
+\qquad
+\MSE=\E[\eps_{n+1}^2]=\sigma_\eps^2 .
+\]
+Only the most recent observation matters --- a direct consequence of the AR(1)
+having PACF $0$ beyond lag $1$ (the older points carry no \emph{new} linear
+information).
+\end{solution}

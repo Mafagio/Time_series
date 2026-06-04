@@ -1,0 +1,122 @@
+
+===== PAGE 1/3 =====
+Ecole Polytechnique Federale de Lausanne
+Month Year
+MATH-342
+Time Series
+Date:
+xth of X, XXXX
+Time:
+Mock exam
+Calculators may not be used. All questions should be answered.
+
+===== PAGE 2/3 =====
+1.
+(a)
+Please
+state
+(write
+down)
+the
+definitions
+of
+a
+stationary,
+as
+well
+as
+a
+strictly stationary process when time takes values in the index set Z.
+(b)
+Define an Autoregressive Process with p terms and a Moving Average with q terms.
+Write down when such processes are stationary when p = q = 1.
+(c)
+Consider the zero-mean process
+Xt = ϵt −0.2ϵt−1 + 0.1ϵt−2,
+t ∈Z.
+Write down (calculate) the autocovariance sequence of Xt assuming Var (ϵt) = σ2 < ∞
+and Cov (ϵt+τ, ϵt) = 0 if τ ̸= 0.
+2.
+(a)
+Find the coefficients λj for j = 0, 1, 2, 3, . . . if we calculate the representation of
+Xt =
+∞
+X
+j=0
+λjϵt−j,
+for the ARMA process with backshift operator B if
+(1 −0.5B + 0.042)Xt = (1 + 0.25B)ϵt.
+In this specification ϵt is white noise Var (ϵt) = σ2.
+(b)
+Calculate the autocovariance sequence of Xt.
+(c)
+Assuming it is fine to truncate the infinite expansion at j = 5. Describe how to predict
+Xn+1, given you have observed X1, . . . Xn.
+
+===== PAGE 3/3 =====
+3.
+Define the periodogram estimator for a zero-mean stochastic process {Xt} for a unit sampling
+rate to take the form
+bS(p) (f) = 1
+N
+
+N
+X
+t=1
+Xte−2iπft
+
+2
+.
+(a)
+Assume Xt is white noise, independent between observations and with variance
+Var (Xt) = σ2. Calculate E{bS(p) (f)}.
+(b)
+Calculate
+Z
+1
+2
+−1
+2
+bS(p) (f) df,
+(1)
+in terms of the estimated autocovariance sequence, and take the expectation.
+(c)
+Assume we observe Xt = ϵt + θϵt−1 where ϵt is white noise, independent between
+observations and with variance Var (ϵt) = σ2. Determine (and write down) the spectral
+density function of Xt.
+4.
+Assume that we observe the delay process for c ̸= 0 and d ∈Z:
+X(1)
+t
+= cX(2)
+t−d + εt,
+t ∈Z
+where X(2)
+t
+is second-order stationary and zero mean and εt is white noise, with variance
+Var{εt} = σ2 < ∞and zero mean and X(2)
+t , εs are independent for all t, s ∈Z.
+(a)
+Prove that X(1)
+t
+is second-order stationary.
+(b)
+Prove that the multivariate process (X(1)
+t , X(2)
+t )T is jointly second-order stationary.
+(c)
+Assuming that the autocovariance function of X(2)
+t
+is given by γ(2,2)
+τ
+and
+∞
+X
+τ=−∞
+γ(2,2)
+τ
+ < ∞,
+what are the spectral density functions and cross-spectral density functions of the process
+(X(1)
+t , X(2)
+t )T?

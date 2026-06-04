@@ -1,0 +1,226 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\newcommand{\Herm}{^{\mathsf{H}}}
+\DeclareMathOperator{\diag}{diag}
+\newcommand{\Fej}{\mathcal{F}}
+\begin{document}
+
+\solheader{Week 9: Multivariate Time Series \& VAR}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The symmetry relation is
+\[
+\Gamma_{-\tau}=\Gamma_\tau\Tr
+\qquad\Longleftrightarrow\qquad
+\acvs_{-\tau}^{(j,k)}=\acvs_\tau^{(k,j)} .
+\]
+\emph{Proof.} Covariance is symmetric in its two arguments, and the process is stationary, so for every $j,k$,
+\[
+\acvs_\tau^{(j,k)}=\Cov\bigl(X_{t+\tau}^{(j)},X_t^{(k)}\bigr)
+=\Cov\bigl(X_t^{(k)},X_{t+\tau}^{(j)}\bigr)
+\overset{s=t+\tau}{=}\Cov\bigl(X_{s-\tau}^{(k)},X_s^{(j)}\bigr)
+=\acvs_{-\tau}^{(k,j)} .
+\]
+Reading this off entrywise: the $(j,k)$ entry of $\Gamma_\tau$ equals the $(k,j)$ entry of $\Gamma_{-\tau}$, i.e.\ $\Gamma_{-\tau}=\Gamma_\tau\Tr$.
+
+\emph{Why not even.} Flipping the sign of $\tau$ forces a \emph{swap of the channel indices} $(j,k)\to(k,j)$; only the diagonal entries ($j=k$) are therefore even in $\tau$. For $j\neq k$ one has merely $\acvs_{-\tau}^{(1,2)}=\acvs_\tau^{(2,1)}$, which differs from $\acvs_\tau^{(1,2)}$ in general --- this asymmetry is exactly what encodes lead--lag (directional) relationships between the two channels.
+
+\textbf{(b)} Expand the cross-covariance by bilinearity, using independence of $U^{(1)},U^{(2)},\phi$ (all cross terms involving distinct independent zero-mean series vanish):
+\[
+\begin{aligned}
+\acvs_\tau^{(1,2)}
+&=\Cov\bigl(U_{t+\tau}^{(1)}+\phi_{t+\tau},\ U_t^{(2)}+\phi_t\bigr)\\
+&=\underbrace{\Cov\bigl(U_{t+\tau}^{(1)},U_t^{(2)}\bigr)}_{0}
++\underbrace{\Cov\bigl(U_{t+\tau}^{(1)},\phi_t\bigr)}_{0}
++\underbrace{\Cov\bigl(\phi_{t+\tau},U_t^{(2)}\bigr)}_{0}
++\Cov\bigl(\phi_{t+\tau},\phi_t\bigr).
+\end{aligned}
+\]
+The first term is $0$ because $U^{(1)},U^{(2)}$ are independent, the two middle terms because $\phi$ is independent of the $U$'s, and $\Cov(\phi_{t+\tau},\phi_t)=\sigma_\phi^2\,\delta_{\tau,0}$ because $\phi$ is white noise. Hence
+\[
+\boxed{\;\acvs_\tau^{(1,2)}=\sigma_\phi^2\,\delta_{\tau,0}
+=\begin{cases}\sigma_\phi^2 & \tau=0,\\[2pt] 0 & \tau\neq0.\end{cases}\;}
+\]
+The marginal variances are $\acvs_0^{(1,1)}=\Var(U_t^{(1)}+\phi_t)=\sigma_1^2+\sigma_\phi^2$ and likewise $\acvs_0^{(2,2)}=\sigma_2^2+\sigma_\phi^2$. Therefore
+\[
+\boxed{\;
+\acf_\tau^{(1,2)}
+=\frac{\acvs_\tau^{(1,2)}}{\sqrt{(\sigma_1^2+\sigma_\phi^2)(\sigma_2^2+\sigma_\phi^2)}}
+=\begin{cases}
+\dfrac{\sigma_\phi^2}{\sqrt{(\sigma_1^2+\sigma_\phi^2)(\sigma_2^2+\sigma_\phi^2)}} & \tau=0,\\[12pt]
+0 & \tau\neq0.
+\end{cases}\;}
+\]
+The shared shock injects correlation \emph{only at lag $0$} (contemporaneously); at all nonzero lags the two channels are uncorrelated. (This is the ``common shock $\Rightarrow$ everything moves together'' mechanism: $\Gamma_0$ gains the rank-one term $\sigma_\phi^2\,\mathbf 1\mathbf 1\Tr$.)
+
+\textbf{(c)} With $\sigma_1^2=3,\ \sigma_2^2=1,\ \sigma_\phi^2=1$: $\sigma_1^2+\sigma_\phi^2=4$ and $\sigma_2^2+\sigma_\phi^2=2$, so
+\[
+\acf_0^{(1,2)}=\frac{1}{\sqrt{4\cdot2}}=\frac{1}{\sqrt8}=\frac{1}{2\sqrt2}=\frac{\sqrt2}{4}\approx0.3536,
+\qquad
+\acf_\tau^{(1,2)}=0\quad(\tau\neq0).
+\]
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Since $\{\eps_t\}$ is uncorrelated with $\{X_t^{(2)}\}$ at all lags, $\Cov(\eps_{t+\tau},X_t^{(2)})=0$, so by bilinearity
+\[
+\acvs_\tau^{(1,2)}=\Cov\bigl(X_{t+\tau}^{(1)},X_t^{(2)}\bigr)
+=\alpha\,\Cov\bigl(X_{t+\tau-\nu}^{(2)},X_t^{(2)}\bigr)
++\underbrace{\Cov\bigl(\eps_{t+\tau},X_t^{(2)}\bigr)}_{0}
+=\alpha\,\acvs_{\tau-\nu}^{(2,2)} .
+\]
+The marginal variances are
+\[
+\acvs_0^{(1,1)}=\Var\bigl(\alpha X_{t-\nu}^{(2)}+\eps_t\bigr)=\alpha^2\sigma_2^2+\sigma^2,
+\qquad
+\acvs_0^{(2,2)}=\sigma_2^2 ,
+\]
+(the cross term vanishes by uncorrelatedness). Hence
+\[
+\acf_\tau^{(1,2)}
+=\frac{\alpha\,\acvs_{\tau-\nu}^{(2,2)}}{\sqrt{(\alpha^2\sigma_2^2+\sigma^2)}\,\sqrt{\sigma_2^2}}
+=\frac{\acf_{\tau-\nu}^{(2,2)}}{\sqrt{1+\sigma^2/(\alpha\sigma_2)^2}} ,
+\]
+using $\acvs_{\tau-\nu}^{(2,2)}=\sigma_2^2\,\acf_{\tau-\nu}^{(2,2)}$. So the cross-correlation is the \emph{autocorrelation of $X^{(2)}$ shifted by $\nu$} and shrunk by the constant factor $\bigl(1+\sigma^2/(\alpha\sigma_2)^2\bigr)^{-1/2}\le1$ coming from the added noise.
+
+\textbf{(b)} Fourier-transform the cross-covariance and re-index $\tau\to\tau+\nu$ to pull out the delay phase:
+\[
+\begin{aligned}
+S_{1,2}(f)
+&=\sum_{\tau\in\Ints}\acvs_\tau^{(1,2)}e^{-2\pi if\tau}
+=\alpha\sum_{\tau\in\Ints}\acvs_{\tau-\nu}^{(2,2)}e^{-2\pi if\tau}\\
+&=\alpha\,e^{-2\pi if\nu}\sum_{\tau'\in\Ints}\acvs_{\tau'}^{(2,2)}e^{-2\pi if\tau'}
+=\alpha\,\sdf_2(f)\,e^{-2\pi if\nu} .
+\end{aligned}
+\]
+Because $\sdf_2(f)\ge0$ is real (it is the spectral density of $X^{(2)}$) and $\alpha>0$,
+\[
+\boxed{\;\abs{S_{1,2}(f)}=\alpha\,\sdf_2(f),\qquad
+\arg S_{1,2}(f)=-2\pi\nu f .\;}
+\]
+The phase is \emph{linear in $f$} precisely because a pure time shift of $\nu$ samples in the time domain becomes a multiplicative factor $e^{-2\pi if\nu}$ in the frequency domain (the Fourier shift rule); its slope is $-2\pi\nu$, the textbook signature of a lead/lag of $\nu$ samples. The amplitude is just the spectrum of $X^{(2)}$ scaled by the gain $\alpha$.
+
+\textbf{(c)} With $S_{1,1}(f)=\alpha^2\sdf_2(f)+\sigma^2$, $S_{2,2}(f)=\sdf_2(f)$ and $\abs{S_{1,2}(f)}=\alpha\sdf_2(f)$,
+\[
+\abs{r_{1,2}(f)}
+=\frac{\abs{S_{1,2}(f)}}{\sqrt{S_{1,1}(f)\,S_{2,2}(f)}}
+=\frac{\alpha\,\sdf_2(f)}{\sqrt{\bigl(\alpha^2\sdf_2(f)+\sigma^2\bigr)\,\sdf_2(f)}}
+=\frac{\alpha\,\sqrt{\sdf_2(f)}}{\sqrt{\alpha^2\sdf_2(f)+\sigma^2}} .
+\]
+Squaring,
+\[
+\abs{r_{1,2}(f)}^2=\frac{\alpha^2\sdf_2(f)}{\alpha^2\sdf_2(f)+\sigma^2}\in[0,1].
+\]
+As $\sigma^2\to0$ this $\to\dfrac{\alpha^2\sdf_2(f)}{\alpha^2\sdf_2(f)}=1$ at every frequency where $\sdf_2(f)>0$: a \emph{pure} delay produces perfect coherence (magnitude $1$) with linear phase $-2\pi\nu f$. The added noise $\eps_t$ is the only thing that pulls the coherence below $1$, and it does so by the factor $\bigl(1+\sigma^2/(\alpha^2\sdf_2(f))\bigr)^{-1}$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Build $M(z)=I_2-\Phi_1 z-\Phi_2 z^2$:
+\[
+M(z)=\begin{pmatrix}
+1-0.5z & 0\\[2pt]
+-0.3z-0.1z^2 & 1-0.7z+0.1z^2
+\end{pmatrix}.
+\]
+This matrix is lower triangular, so its determinant is the product of the diagonal entries (the off-diagonal cross-terms $\Phi_1^{(2,1)},\Phi_2^{(2,1)}$ do \emph{not} enter the determinant):
+\[
+\det M(z)=(1-0.5z)\bigl(1-0.7z+0.1z^2\bigr).
+\]
+\emph{Roots.} The first factor gives $z=2$. The quadratic $0.1z^2-0.7z+1=0$ has
+\[
+z=\frac{0.7\pm\sqrt{0.49-0.4}}{0.2}=\frac{0.7\pm0.3}{0.2}
+\ \Longrightarrow\ z=2\ \text{ or }\ z=5 .
+\]
+So the three roots are $z\in\{2,2,5\}$, all with $\abs z>1$ (strictly outside the unit circle). Hence the $\mathrm{VAR}(2)$ is \textbf{stable} (and therefore stationary). \emph{Sanity check:} $\det M(0)=\det I_2=1$, as required.
+
+\emph{Companion form.} Stacking $Y_t=(X_t\Tr,X_{t-1}\Tr)\Tr\in\Reals^4$ turns the VAR(2) into the VAR(1) $Y_t=FY_{t-1}+U_t$ with
+\[
+F=\begin{pmatrix}\Phi_1 & \Phi_2\\ I_2 & 0\end{pmatrix}
+=\begin{pmatrix}
+0.5 & 0 & 0 & 0\\
+0.3 & 0.7 & 0.1 & -0.1\\
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0
+\end{pmatrix}.
+\]
+The companion test is ``all eigenvalues of $F$ inside the unit circle'', and it is the reciprocal of the root test: $\det(I_2-\Phi_1 z-\Phi_2 z^2)=z^{4}\det(z^{-1}I_4-F)$ up to a constant, so the eigenvalues of $F$ are the reciprocals of the roots $z_i$. Here $\lambda=1/2,\,1/2,\,1/5$ (and a structural $\lambda=0$ from the rank-deficient $\Phi_2$), all with $\abs\lambda<1$, giving the \emph{same} conclusion: stable.
+
+\textbf{(b)} Since $\Phi=\diag(\tfrac12,\tfrac13)$ has spectral radius $\tfrac12<1$, the VAR(1) is stable and back-substitution gives the matrix geometric ($\mathrm{MA}(\infty)$) filter
+\[
+X_t=\sum_{j=0}^{\infty}\Phi^{\,j}\eps_{t-j},
+\qquad
+\Phi^{\,j}=\diag\!\bigl(2^{-j},\,3^{-j}\bigr).
+\]
+By the VAR(1) covariance formula $\Gamma_0=\sum_{k\ge0}\Phi^k\Sigma(\Phi^k)\Tr$ with $\Sigma=I_2$ (everything diagonal, so the two channels decouple into independent AR(1)'s),
+\[
+\Gamma_0=\sum_{k=0}^{\infty}\diag\!\bigl(4^{-k},\,9^{-k}\bigr)
+=\diag\!\left(\frac{1}{1-\tfrac14},\ \frac{1}{1-\tfrac19}\right)
+=\boxed{\ \diag\!\left(\tfrac43,\ \tfrac98\right)\ }.
+\]
+(Equivalently, solve the Lyapunov equation $\Gamma_0=\Phi\Gamma_0\Phi\Tr+I_2$ componentwise: $g_{jj}=\phi_j^2 g_{jj}+1\Rightarrow g_{jj}=1/(1-\phi_j^2)$.) The lag-$1$ matrix follows from Yule--Walker $\Gamma_1=\Phi\Gamma_0$:
+\[
+\Gamma_1=\diag\!\bigl(\tfrac12,\tfrac13\bigr)\diag\!\bigl(\tfrac43,\tfrac98\bigr)
+=\boxed{\ \diag\!\left(\tfrac23,\ \tfrac38\right)\ }.
+\]
+
+\textbf{(c)} Both $\Phi$ and $\Sigma=I_2$ are diagonal, so by the formula in (b) \emph{every} $\Gamma_\tau$ is diagonal: all off-diagonal cross-covariances vanish at every lag. Hence the cross-spectrum $S_{1,2}(f)=\sum_\tau\acvs_\tau^{(1,2)}e^{-2\pi if\tau}\equiv0$, and the coherence
+\[
+r_{1,2}(f)=\frac{S_{1,2}(f)}{\sqrt{S_{1,1}(f)S_{2,2}(f)}}=0\quad\text{for all }f .
+\]
+The two channels are completely uncoupled: the off-diagonal entries of $\Phi$ (here zero) are precisely the cross-channel dynamics, and there is no shared innovation ($\Sigma$ diagonal), so nothing links the series at any frequency.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Write $Y_t=X_t$ (zero mean). Expand the squared modulus as a double sum over $T$:
+\[
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2
+=\Bigl(\sum_{t\in T}h_tX_t e^{-2\pi itf}\Bigr)\Bigl(\sum_{s\in T}h_sX_s e^{2\pi isf}\Bigr)
+=\sum_{t\in T}\sum_{s\in T}h_th_s\,X_tX_s\,e^{-2\pi if(t-s)} .
+\]
+Take expectations, using $\E[X_tX_s]=\acvs_{t-s}$ and grouping the terms by the lag $\tau=t-s$ (with $h$ set to $0$ outside $T$, the sum over $t$ runs over all of $\Ints$):
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\sum_{t,s}h_th_s\,\acvs_{t-s}\,e^{-2\pi if(t-s)}
+=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi if\tau},
+\qquad
+w_\tau=\sum_{t\in\Ints}h_t h_{t+\tau} .
+\]
+The weight $w_\tau$ is the autocorrelation of the taper. Writing $\tilde h_t=h_{-t}$, we have $w=\tilde h * h$, whose discrete Fourier transform is, by the convolution theorem,
+\[
+W(f)=\tilde H(f)\,H(f)=\conj{H(f)}\,H(f)=\abs{H(f)}^2
+\]
+(using $\tilde H(f)=\conj{H(f)}$ for real $h$). Since $\E[\hat\sdf^{(p)}_h(f)]=\sum_\tau w_\tau\acvs_\tau e^{-2\pi if\tau}$ is the transform of the \emph{product} $w_\tau\acvs_\tau$, the convolution theorem (product in time $=$ convolution in frequency) gives
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\int_{-1/2}^{1/2}\sdf(f')\,W(f-f')\,df'
+=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df' ,
+\]
+as claimed. The kernel that blurs the true spectrum is $\abs{H(f)}^2$.
+
+\textbf{(b)} For white noise $\sdf\equiv\sigma^2$, part (a) and periodicity give
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\int_{-1/2}^{1/2}\sigma^2\,\abs{H(f-f')}^2\,df'
+=\sigma^2\int_{-1/2}^{1/2}\abs{H(f')}^2\,df'
+=\sigma^2\sum_{t\in T}h_t^2=\sigma^2\,\norm h_2^2 ,
+\]
+where the third equality is Parseval's relation. This holds for \emph{every} $f$ and every $n$. Therefore
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\sigma^2=\sdf(f)
+\quad\Longleftrightarrow\quad
+\norm h_2^2=\sum_{t\in T}h_t^2=1 .
+\]
+So the normalisation $\norm h_2^2=1$ is exactly the condition that makes the tapered periodogram unbiased for a flat (white-noise) spectrum --- this pins down the normalisation in the definition of a taper. (For the constant taper $h_t=1/\sqrt n$ one has $\sum_t h_t^2=n\cdot\tfrac1n=1$, recovering the ordinary periodogram.)
+
+\textbf{(c)} We need $\norm h_2^2=c^2\sum_t g_t^2=1$. With $g=(1,2,1)$,
+\[
+\sum_{t=1}^{3}g_t^2=1^2+2^2+1^2=6
+\quad\Longrightarrow\quad
+c=\frac{1}{\sqrt6},\qquad
+h=\frac{1}{\sqrt6}\,(1,2,1) .
+\]
+(Check: $\tfrac16(1+4+1)=1$.) \emph{Tapering vs.\ multitapering.} The two cure different defects of the raw periodogram. \textbf{Tapering} replaces the Fej\'er kernel $\Fej_n$ by the sharper, lower-side-lobe kernel $\abs{H(f)}^2$, reducing \emph{bias} (spectral leakage). It does \emph{nothing} for the variance: a single tapered periodogram still has $\Var\approx\sdf(f)^2$ and is inconsistent. \textbf{Multitapering} averages $K$ tapered periodograms from orthonormal tapers, reducing the \emph{variance} to $\approx\sdf(f)^2/K$ and restoring consistency (let $K\to\infty$ slowly), at the cost of a modest bias increase.
+
+\end{document}

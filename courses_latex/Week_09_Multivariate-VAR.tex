@@ -1,0 +1,153 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{09}{23 April 2026}{Multivariate Time Series \& VAR}{Move to vectors: matrix autocovariance (the lag is in the FIRST argument!), spectral matrix, coherence, and the VAR model with its companion form.}
+
+We now observe several series at once: a basket of stocks (Apple, Nasdaq-100, S\&P 500), or the position and temperature of an ocean drifter. Each $X_t$ becomes a \emph{vector} in $\Reals^d$. Two questions: how do we \emph{describe} the second-order structure (now matrix-valued, with genuine \textbf{cross}-terms between components), and how do we \emph{model} it (answer: the VAR). The recurring trick: \emph{every VAR($p$) is a VAR(1) in disguise}, so the whole theory reduces to a single matrix.
+
+% ======================================================================
+\section*{Key definitions}
+
+\begin{defn}{Multivariate series \& second-order stationarity}
+$\{X_t\}$ with $X_t=(X_t^{(1)},\dots,X_t^{(d)})\Tr\in\Reals^d$, each marginal a univariate series. It is \textbf{(weakly) second-order stationary} if the mean is constant, $\trace(\Var(X_t))<\infty$, and
+\[
+\Cov(X_{t+\tau},X_t)\ \text{depends only on }\tau .
+\]
+Equivalently: each marginal is stationary \emph{and} every pair has a shift-invariant cross-covariance.
+\end{defn}
+
+\begin{defn}{Matrix autocovariance sequence (ACVS) \& cross-correlation}
+\[
+\Gamma_\tau=\Cov(X_{t+\tau},X_t),\qquad
+\acvs_\tau^{(j,k)}=\Cov\!\big(X_{t+\tau}^{(j)},X_t^{(k)}\big).
+\]
+\textbf{The lag $\tau$ sits in the FIRST argument} (irrelevant in the scalar case, crucial here). Diagonal ($j=k$): the usual marginal ACVS. Off-diagonal ($j\ne k$): the \textbf{cross-covariance}, which encodes lead--lag relations between channels. The \textbf{cross-correlation sequence} (CCS) is
+\[
+\acf_\tau^{(j,k)}=\frac{\acvs_\tau^{(j,k)}}{\sqrt{\acvs_0^{(j,j)}\,\acvs_0^{(k,k)}}},\qquad \acf_\tau^{(j,k)}=\acf_{-\tau}^{(k,j)} .
+\]
+\end{defn}
+
+\begin{defn}{Multivariate white noise $\mathrm{WN}(0,\Sigma)$}
+$\{\eps_t\}\sim\mathrm{WN}(0,\Sigma)$ iff it is stationary, mean zero, with $\Gamma_\tau^{(\eps)}=\Sigma$ at $\tau=0$ and $0$ otherwise. Components are uncorrelated \textbf{across time} but may be correlated \textbf{contemporaneously} (off-diagonal entries of $\Sigma$). One sometimes assumes $\Sigma$ diagonal --- an \emph{extra} assumption, not part of the definition.
+\end{defn}
+
+\begin{defn}{Spectral density matrix}
+If all cross-covariances are summable ($\ell^1$),
+\[
+S(f)=\sum_{\tau\in\Ints}\Gamma_\tau\,e^{-2\pi i\tau f},\qquad
+\Gamma_\tau=\int_{-1/2}^{1/2}S(f)\,e^{2\pi if\tau}\,df,\qquad f\in[-\tfrac12,\tfrac12].
+\]
+Diagonal: the usual (real) spectral density $\sdf_j(f)$. Off-diagonal: the \textbf{cross-spectrum} $S_{j,k}(f)\in\Comp$ (complex in general).
+\end{defn}
+
+\begin{defn}{Coherence}
+\[
+r_{j,k}(f)=\frac{S_{j,k}(f)}{\sqrt{S_{j,j}(f)\,S_{k,k}(f)}}\in\Comp .
+\]
+The frequency-by-frequency ``correlation'' between channels (literally the correlation of the increments $dZ_j,dZ_k$ below). Report its \textbf{magnitude} $\abs{r_{j,k}(f)}$ (strength of association, $\abs{r}^2\in[0,1]$) and its \textbf{phase} $\arg r_{j,k}(f)$ (the ``sign'' / lead--lag angle).
+\end{defn}
+
+\begin{defn}{VAR($p$) \& companion form}
+With $\{\eps_t\}\sim\mathrm{WN}(0,\Sigma)$ and $\Phi_p\ne0$,
+\[
+X_t=\Phi_1 X_{t-1}+\cdots+\Phi_p X_{t-p}+\eps_t,\qquad \Phi(\Bsh)X_t=\eps_t,\quad \Phi(z)=I_d-\sum_{j=1}^p\Phi_j z^j .
+\]
+Stacking $Y_t=(X_t\Tr,\dots,X_{t-p+1}\Tr)\Tr\in\Reals^{dp}$ turns it into a VAR(1), $Y_t=F\,Y_{t-1}+U_t$, with
+\[
+F=\begin{pmatrix}
+\Phi_1 & \Phi_2 & \cdots & \Phi_{p-1} & \Phi_p\\
+I_d & 0 & \cdots & 0 & 0\\
+0 & I_d & & & \vdots\\
+\vdots & & \ddots & & \vdots\\
+0 & \cdots & & I_d & 0
+\end{pmatrix},
+\quad U_t=\begin{pmatrix}\eps_t\\0\\\vdots\\0\end{pmatrix}.
+\]
+Recover the original process via $X_t=G\,Y_t$ with $G=(I_d\ 0\ \cdots\ 0)$. The off-diagonal entries of the $\Phi_j$ \emph{are} the cross-component dynamics.
+\end{defn}
+
+% ======================================================================
+\section*{Key results \& formulas}
+
+\begin{result}{Symmetry of the ACVS and the spectrum}
+\[
+\acvs_\tau^{(j,k)}=\acvs_{-\tau}^{(k,j)}\ \Longleftrightarrow\ \Gamma_{-\tau}=\Gamma_\tau\Tr,
+\qquad S(f)=S(f)\Herm=\conj{S(-f)\Tr},\quad S(f)\succeq0 .
+\]
+$\{\Gamma_\tau\}$ is positive semi-definite: $\sum_{j,k}a_j\Tr\Gamma_{k-j}a_k\ge0$ (it is a variance). \textbf{Warning:} off-diagonal, the ACVS is \emph{not} even in $\tau$; you must swap the indices $(j,k)\!\to\!(k,j)$ when you flip the sign of $\tau$. This asymmetry is exactly what encodes lead--lag.
+\end{result}
+
+\begin{result}{Theorem --- Multivariate spectral representation}
+There is a vector orthogonal-increment process $\{Z(f)\}$ with
+\[
+\begin{aligned}
+X_t&=\mu+\int_{-1/2}^{1/2}e^{2\pi ift}\,dZ(f),\\
+\E[dZ(f)]&=0,\quad \Var\big(dZ(f)\big)=S(f)\,df,\quad \Cov\big(dZ(f),dZ(f')\big)=0\ (f\ne f').
+\end{aligned}
+\]
+\emph{Idea:} the vector analogue of Cram\'er. So a stationary vector process is a sum of uncorrelated random sinusoids whose (matrix) variance is $S(f)\,df$; coherence is literally the correlation of $dZ_j(f),dZ_k(f)$.
+\end{result}
+
+\begin{result}{Stability of a VAR($p$)}
+Stable iff the roots of the reverse characteristic polynomial $\det(I_d-\Phi_1 z-\cdots-\Phi_p z^p)=0$ \emph{all} lie outside the unit circle ($\abs{z}>1$); equivalently iff $F$ has all eigenvalues $\abs{\lambda}<1$. Stability $\Rightarrow$ stationarity (not conversely in general). \textbf{VAR(1) shortcut:} just check $\abs{\lambda_i(\Phi_1)}<1$ (spectral radius $<1$); for triangular $\Phi_1$ these are the diagonal entries. Sanity check: $\det(\cdot)\big|_{z=0}=\det I_d=1$.
+\end{result}
+
+\begin{result}{MA($\infty$) and covariance of a stable VAR(1)}
+\[
+X_t=\sum_{j\ge0}\Phi_1^{\,j}\,\eps_{t-j},\qquad
+\Gamma_\tau=\sum_{k\ge0}\Phi_1^{\,k+\tau}\,\Sigma\,(\Phi_1^{\,k})\Tr\quad(\tau\ge0).
+\]
+At $\tau=0$ this is the discrete Lyapunov equation $\Gamma_0=\Phi_1\Gamma_0\Phi_1\Tr+\Sigma$. For a VAR($p$): same formula with $F,\Sigma_U$ (top-left block $\Sigma$), then project $\Gamma_\tau^{(X)}=G\big(\sum_k F^{k+\tau}\Sigma_U(F^k)\Tr\big)G\Tr$.
+\end{result}
+
+\begin{result}{Theorem --- Yule--Walker equations (VAR)}
+For $\tau\ge0$,
+\[
+\Gamma_\tau=\Phi_1\Gamma_{\tau-1}+\cdots+\Phi_p\Gamma_{\tau-p}+\delta_{\tau,0}\,\Sigma .
+\]
+\emph{Idea:} multiply the VAR equation on the right by $X_t\Tr$ and take expectations; the noise term contributes $\Sigma$ only at $\tau=0$. Solve the first $p+1$ equations for $\Gamma_0,\dots,\Gamma_p$, then recurse for all $\tau>p$. Run in reverse, it \emph{estimates} the $\Phi_j$ from sample covariances (VAR fitting).
+\end{result}
+
+\begin{result}{Two signatures: common noise \& pure delay}
+\emph{Common noise.} If $Y_t=X_t+\phi_t\ind$ (the \emph{same} scalar noise in both channels), then $\Gamma_\tau^{(Y)}=\Gamma_\tau^{(X)}+\sigma_\phi^2\,\delta_{\tau,0}\,\ind\ind\Tr$: correlation added \emph{only} at lag $0$.\\
+\emph{Pure delay.} If $X_t=(Y_t,Y_{t-\nu})\Tr$, then $S_{1,2}(f)=\sdf_Y(f)\,e^{2\pi if\nu}$, hence coherence of magnitude $1$ and phase $2\pi\nu f$ (\emph{linear} in $f$).
+\end{result}
+
+% ======================================================================
+\section*{Intuition}
+
+\begin{intu}[Why the lag lives in the first argument]
+Scalar: $\acvs_\tau=\acvs_{-\tau}$, so argument order is irrelevant. Multivariate: it becomes \emph{crucial} --- it fixes the convention $\Gamma_{-\tau}=\Gamma_\tau\Tr$. Diagonals stay even, but a cross-covariance $\acvs_\tau^{(1,2)}$ (channel $1$ leading channel $2$ by $\tau$) has no reason to equal $\acvs_{-\tau}^{(1,2)}$. Classic error: forgetting to swap $(j,k)$ when you flip $\tau$.
+\end{intu}
+
+\begin{intu}[The noise only shows up at $\tau=0$]
+$X_t$ is built from $\eps_t,\eps_{t-1},\dots$ (the causal MA($\infty$)). For $\tau>0$, $\eps_{t+\tau}$ lies in the \emph{future} of $X_t$, hence uncorrelated: $\Cov(\eps_{t+\tau},X_t)=0$. Only $\tau=0$ gives $\Cov(\eps_t,X_t)=\Sigma$. Exactly the scalar Yule--Walker mechanism, transposed to matrices.
+\end{intu}
+
+\begin{intu}[``Everything is a VAR(1)'']
+The companion form collapses any VAR($p$) into a single VAR(1) on $F$. So you prove the VAR(1) theory \emph{once} (stability, MA($\infty$), covariances), then reuse it for every $p$ via $X_t=GY_t$. The top block row of $F$ carries the real equation; the lower $I_d$ blocks just shift the stack.
+\end{intu}
+
+\begin{intu}[Delay $\leftrightarrow$ linear phase]
+A shift of $\nu$ samples in time $=$ a factor $e^{\pm2\pi i\nu f}$ in the spectrum $=$ a \emph{linear} phase $\mp2\pi\nu f$. A coherence of magnitude $1$ whose phase grows proportionally to $f$ (slope $2\pi\nu$) is the textbook signature of a lead/lag of $\nu$ samples between two channels.
+\end{intu}
+
+\begin{intu}[Where the channel couplings live]
+The \emph{off-diagonal} entries of the $\Phi_j$ \emph{and} of $\Sigma$ are the only links between components. If $\Phi_1$ and $\Sigma$ are diagonal, the VAR(1) decouples into $d$ independent scalar AR(1)'s ($\Gamma_0^{(j,j)}=\sigma_j^2/(1-\phi_j^2)$): cross-spectrum zero, coherence zero everywhere.
+\end{intu}
+
+% ======================================================================
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Lag in the first argument} $\Rightarrow$ $\Gamma_{-\tau}=\Gamma_\tau\Tr$ and $\acvs_\tau^{(j,k)}=\acvs_{-\tau}^{(k,j)}$: always swap indices when flipping $\tau$.
+  \item \textbf{Test stability:} roots of $\det(I_d-\sum\Phi_j z^j)$ all $\abs{z}>1$, or eigenvalues of $F$ all $\abs{\lambda}<1$. Sanity check: $\det(\cdot)\big|_{z=0}=1$. For VAR(1), read off $\lambda_i(\Phi_1)$ directly.
+  \item \textbf{MA($\infty$) \& covariance:} write $X_t=\sum\Phi_1^j\eps_{t-j}$, get $\Gamma_\tau=\sum_k\Phi_1^{k+\tau}\Sigma(\Phi_1^k)\Tr$, or solve Lyapunov for $\Gamma_0$.
+  \item \textbf{Yule--Walker recursion:} $\Gamma_\tau=\sum_i\Phi_i\Gamma_{\tau-i}$ (add $\Sigma$ at $\tau=0$); mind the transpose $\Gamma_{-s}=\Gamma_s\Tr$.
+  \item \textbf{Cross-spectrum:} find $\acvs_\tau^{(j,k)}$ (often a \emph{shift} of a known covariance), Fourier-transform, re-index to pull out $e^{\pm2\pi i\nu f}$, read magnitude \& phase, divide by $\sqrt{S_{jj}S_{kk}}$ for coherence.
+  \item \textbf{Signature reflexes:} common noise $\to$ correlation at lag $0$ only; pure delay $\to$ coherence $1$, linear phase.
+\end{itemize}
+\end{retenir}
+
+\end{document}

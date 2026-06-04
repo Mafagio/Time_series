@@ -1,0 +1,257 @@
+% ======================================================================
+%  PART 4 -- Parametric Estimation: Yule--Walker and Least Squares
+% ======================================================================
+\section{Parametric Estimation: Yule--Walker and Least Squares}
+\label{sec:estimation}
+
+Having modelled $\{X_t\}$ as an ARMA process, we now \emph{fit} it: given data
+$X_1,\dots,X_n$, estimate the autoregressive coefficients $\phi_1,\dots,\phi_p$,
+the moving-average coefficients $\theta_1,\dots,\theta_q$ and the innovation
+variance $\sigma_\eps^2$. This part develops the two workhorse estimators of the
+course. The \textbf{Yule--Walker} (method-of-moments) estimator turns the AR
+recursion into a linear system in the autocovariances and is solved by a single
+matrix inversion (accelerated by the Levinson--Durbin algorithm). The
+\textbf{least-squares} estimator minimises the sum of squared one-step
+prediction errors; for pure AR models it is an ordinary linear regression
+(forward, backward, or forward--backward), and for general ARMA models it
+becomes a nonlinear minimisation in which the unobserved innovations
+$\{\eps_t\}$ are reconstructed recursively. Throughout, $\eps_t\iid\mathcal
+N(0,\sigma_\eps^2)$ is Gaussian white noise and the AR part is assumed causal
+(roots of $\Phi(z)$ outside the unit circle), so that $\eps_t$ is uncorrelated
+with the past $X_{t-k}$, $k>0$ --- the single fact that makes the whole
+derivation work.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Yule--Walker estimators (AR$(p)$)}{p4-yw}
+Let $\{X_t\}$ be a mean-zero causal AR$(p)$ process
+$X_t=\sum_{k=1}^p\phi_kX_{t-k}+\eps_t$, observed at $X_1,\dots,X_n$. Form the
+sample ACVS (mean known to be zero)
+\[
+\hat\acvs_\tau=\frac1n\sum_{t=1}^{n-\abs\tau}X_tX_{t+\abs\tau},
+\]
+collect $\hat{\boldsymbol\acvs}_p=(\hat\acvs_1,\dots,\hat\acvs_p)\Tr$ and the
+symmetric Toeplitz matrix
+\[
+\hat\Gamma_p=
+\begin{pmatrix}
+\hat\acvs_0 & \hat\acvs_1 & \cdots & \hat\acvs_{p-1}\\
+\hat\acvs_1 & \hat\acvs_0 & \cdots & \hat\acvs_{p-2}\\
+\vdots & \vdots & \ddots & \vdots\\
+\hat\acvs_{p-1} & \hat\acvs_{p-2} & \cdots & \hat\acvs_0
+\end{pmatrix}.
+\]
+The \textbf{Yule--Walker estimators} are
+\[
+\hat{\boldsymbol\phi}_p=\hat\Gamma_p^{-1}\hat{\boldsymbol\acvs}_p,
+\qquad
+\hat\sigma_\eps^2=\hat\acvs_0-\sum_{j=1}^p\hat\phi_j\,\hat\acvs_j .
+\]
+They are the empirical analogue of the population identities
+$\boldsymbol\acvs=\Gamma\boldsymbol\phi$ and
+$\acvs_0=\sum_j\phi_j\acvs_j+\sigma_\eps^2$.
+\end{definition}
+
+\begin{definition}{Forward least-squares estimators (AR$(p)$)}{p4-fls}
+Write the AR equations for the observable times $t=p+1,\dots,n$ as the linear
+model $\mathbf X_F=F\boldsymbol\phi+\boldsymbol\eps$, where
+\[
+\mathbf X_F=\begin{pmatrix}X_{p+1}\\ \vdots\\ X_n\end{pmatrix},
+\quad
+F=\begin{pmatrix}
+X_p & X_{p-1} & \cdots & X_1\\
+X_{p+1} & X_p & \cdots & X_2\\
+\vdots & \vdots & & \vdots\\
+X_{n-1} & X_{n-2} & \cdots & X_{n-p}
+\end{pmatrix},
+\quad
+\boldsymbol\phi=\begin{pmatrix}\phi_1\\ \vdots\\ \phi_p\end{pmatrix}.
+\]
+The \textbf{forward least-squares estimator} minimises
+\[
+\mathrm{SS}_F(\boldsymbol\phi)=\norm{\mathbf X_F-F\boldsymbol\phi}^2
+=\sum_{t=p+1}^n\Big(X_t-\sum_{k=1}^p\phi_kX_{t-k}\Big)^2
+=\sum_{t=p+1}^n\eps_t^2,
+\]
+and equals the ordinary least-squares solution
+\[
+\hat{\boldsymbol\phi}_F=(F\Tr F)^{-1}F\Tr\mathbf X_F,
+\qquad
+\hat\sigma_F^2=\frac{\norm{\mathbf X_F-F\hat{\boldsymbol\phi}_F}^2}{\,n-2p\,}.
+\]
+The first $p$ observations $X_1,\dots,X_p$ are discarded as conditioning values.
+\end{definition}
+
+\begin{definition}{Backward least-squares estimators (AR$(p)$)}{p4-bls}
+Exploiting time reversibility of a Gaussian AR process, regress the
+\emph{first} $n-p$ values on their \emph{future} lags: for $t=1,\dots,n-p$,
+$X_t=\sum_{j=1}^p\phi_jX_{t+j}+\nu_t$. In matrix form
+$\mathbf X_B=B\boldsymbol\phi+\boldsymbol\nu$ with
+\[
+\mathbf X_B=\begin{pmatrix}X_1\\ \vdots\\ X_{n-p}\end{pmatrix},
+\qquad
+B=\begin{pmatrix}
+X_2 & X_3 & \cdots & X_{p+1}\\
+X_3 & X_4 & \cdots & X_{p+2}\\
+\vdots & \vdots & & \vdots\\
+X_{n-p+1} & X_{n-p+2} & \cdots & X_n
+\end{pmatrix}.
+\]
+The \textbf{backward least-squares estimator} minimises
+$\mathrm{SS}_B(\boldsymbol\phi)=\norm{\mathbf X_B-B\boldsymbol\phi}^2
+=\sum_{t=1}^{n-p}\big(X_t-\sum_{k=1}^p\phi_kX_{t+k}\big)^2$ and is
+\[
+\hat{\boldsymbol\phi}_B=(B\Tr B)^{-1}B\Tr\mathbf X_B,
+\qquad
+\hat\sigma_B^2=\frac{\norm{\mathbf X_B-B\hat{\boldsymbol\phi}_B}^2}{\,n-2p\,}.
+\]
+The same $\phi$-parameters appear because $Y_t=X_{-t}$ is an AR$(p)$ with
+identical coefficients and an innovation $\tilde\nu_t\eqdist\eps_t$.
+\end{definition}
+
+\begin{definition}{Forward--backward least-squares estimator}{p4-fbls}
+The \textbf{forward--backward} estimator $\hat{\boldsymbol\phi}_{FB}$ is the
+minimiser of the \emph{combined} criterion
+\[
+\mathrm{SS}_F(\boldsymbol\phi)+\mathrm{SS}_B(\boldsymbol\phi).
+\]
+Equivalently it is the OLS solution of the stacked system obtained by piling
+$\mathbf X_F,\mathbf X_B$ and $F,B$ on top of each other. Simulation studies
+show it typically outperforms both the forward and the backward estimator.
+\end{definition}
+
+\begin{definition}{Least squares for general ARMA via residual reconstruction}{p4-lsarma}
+For an ARMA$(p,q)$ model $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ the innovations
+$\{\eps_t\}$ are unobserved. The least-squares estimator chooses the parameters
+minimising $S(\boldsymbol\phi,\boldsymbol\theta)=\sum_t\hat\eps_t^{\,2}$, where
+for each candidate parameter value the residuals are \textbf{reconstructed
+recursively} from the model equation after fixing the $q$ pre-sample
+innovations (and any pre-sample data) to zero, e.g.\
+$\eps_0=\eps_{-1}=\cdots=0$. The minimisation is nonlinear (no closed form)
+except in the pure-AR case, where it reduces to the linear forward least squares
+above.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Yule--Walker equations}{p4-yweq}
+Let $\{X_t\}$ be a mean-zero causal AR$(p)$ process with ACVS $\acvs_\tau$.
+Then for every $k\ge1$,
+\[
+\acvs_k=\sum_{j=1}^p\phi_j\,\acvs_{k-j},
+\]
+and in particular, taking $k=1,\dots,p$ and using $\acvs_{-\tau}=\acvs_\tau$,
+\[
+\boldsymbol\acvs=\Gamma\boldsymbol\phi,
+\qquad
+\boldsymbol\acvs=(\acvs_1,\dots,\acvs_p)\Tr,\quad
+\Gamma=(\acvs_{i-j})_{i,j=1}^p .
+\]
+Moreover $\acvs_0=\sum_{j=1}^p\phi_j\acvs_j+\sigma_\eps^2$.\\[2pt]
+\textit{Proof idea:} multiply $X_t=\sum_j\phi_jX_{t-j}+\eps_t$ by $X_{t-k}$ and
+take expectations. Because the process is \emph{causal}, $X_{t-k}$ depends only
+on $\eps_{t-k},\eps_{t-k-1},\dots$, so for $k>0$ we have $\E[\eps_tX_{t-k}]=0$;
+with mean zero $\E[X_{t-j}X_{t-k}]=\acvs_{k-j}$, giving the recursion. For the
+variance, multiply by $X_t$ instead: the cross term becomes
+$\E[\eps_tX_t]=\E[\eps_t(\sum_j\phi_jX_{t-j}+\eps_t)]=\sigma_\eps^2$ (all
+$\E[\eps_tX_{t-j}]=0$, $j\ge1$).\\
+\textit{Why:} these $p+1$ equations express the $p+1$ unknowns
+$(\phi_1,\dots,\phi_p,\sigma_\eps^2)$ purely in terms of $\acvs_0,\dots,\acvs_p$;
+replacing the population ACVS by its sample version yields the Yule--Walker
+estimators. It is the canonical method-of-moments fit for AR models.
+\end{proposition}
+
+\begin{proposition}{Minimising the prediction MSE gives Yule--Walker}{p4-mse}
+Let $\{Y_t\}$ be mean-zero stationary with ACVS $\acvs$. The coefficients
+$\phi_1,\dots,\phi_k$ minimising the one-step mean-square prediction error
+\[
+\E\Big[\big(Y_t-\textstyle\sum_{i=1}^k\phi_iY_{t-i}\big)^2\Big]
+\]
+satisfy the Yule--Walker equations $\acvs_j=\sum_{i=1}^k\phi_i\,\acvs_{j-i}$ for
+$j=1,\dots,k$.\\[2pt]
+\textit{Proof idea:} since $\{Y_t\}$ is mean-zero, the objective equals the
+variance
+$\acvs_0-2\sum_i\phi_i\acvs_i+\sum_{i,j}\phi_i\phi_j\acvs_{i-j}$, a positive
+quadratic in $\boldsymbol\phi$. Setting $\partial/\partial\phi_i=0$ gives
+$-2\acvs_i+2\sum_j\phi_j\acvs_{i-j}=0$, i.e.\ the Yule--Walker equations.\\
+\textit{Why:} it shows Yule--Walker is not merely a moment trick but the
+\emph{best linear predictor}: the AR coefficients are exactly the optimal
+linear-prediction weights, which is why YW and least squares agree
+asymptotically for AR models.
+\end{proposition}
+
+\begin{proposition}{Forward / backward least squares are the OLS estimators}{p4-ols}
+With the design matrices of Definitions~\ref{def:p4-fls}--\ref{def:p4-bls}, the
+minimisers of $\mathrm{SS}_F$ and $\mathrm{SS}_B$ are
+\[
+\hat{\boldsymbol\phi}_F=(F\Tr F)^{-1}F\Tr\mathbf X_F,
+\qquad
+\hat{\boldsymbol\phi}_B=(B\Tr B)^{-1}B\Tr\mathbf X_B,
+\]
+with residual-variance estimators
+$\hat\sigma^2=\norm{\text{residuals}}^2/(n-2p)$.\\[2pt]
+\textit{Proof idea:} each is a standard linear-regression sum of squares
+$\norm{\mathbf y-A\boldsymbol\phi}^2$; the normal equations
+$A\Tr A\,\boldsymbol\phi=A\Tr\mathbf y$ give the stated solution, and the
+mean-square residual divides by the degrees of freedom $(n-p)-p$.\\
+\textit{Why:} it places AR estimation inside the familiar OLS framework, so all
+regression machinery (existence, uniqueness when $A\Tr A$ is invertible,
+$\hat\sigma^2$) applies directly.
+\end{proposition}
+
+\begin{proposition}{Time reversibility of a Gaussian AR process}{p4-timerev}
+If $\{X_t\}$ is a stationary Gaussian AR$(p)$ process with coefficients
+$\phi_1,\dots,\phi_p$ and innovation variance $\sigma_\eps^2$, then the
+time-reversed process $Y_t=X_{-t}$ is an AR$(p)$ process with the
+\emph{same} coefficients and innovation variance:
+\[
+Y_t=\sum_{j=1}^p\phi_jY_{t-j}+\tilde\nu_t,\qquad \tilde\nu_t\eqdist\eps_t,
+\]
+equivalently $X_t=\sum_{j=1}^p\phi_jX_{t+j}+\nu_t$ with $\nu_t=\tilde\nu_{-t}$.\\[2pt]
+\textit{Proof idea:} a stationary Gaussian process is determined by its ACVS,
+and the ACVS is symmetric, $\acvs_{-\tau}=\acvs_\tau$; hence the forward and
+reversed processes have identical second-order structure and (being Gaussian)
+identical distributions. The full argument is given later via frequency-domain
+methods (the spectral density is even in $f$).\\
+\textit{Why:} it justifies the backward least-squares regression --- predicting
+the present from the future uses the very same parameters --- and underpins the
+forward--backward estimator.
+\end{proposition}
+
+\begin{proposition}{Levinson--Durbin: solving Yule--Walker in $O(p^2)$}{p4-ld}
+The Yule--Walker system
+$\hat\Gamma_p\hat{\boldsymbol\phi}_p=\hat{\boldsymbol\acvs}_p$ has a symmetric
+Toeplitz coefficient matrix. The \textbf{Levinson--Durbin algorithm} exploits
+this structure to solve it recursively in $k=1,\dots,p$, costing $O(p^2)$
+operations rather than the $O(p^3)$ of a naive matrix inversion. As a
+by-product it produces the partial autocorrelations
+$\hat\pacf_k=\hat\phi_{k,k}$ and the prediction-error variances at every order.\\[2pt]
+\textit{Proof idea:} the order-$k$ solution is obtained from the order-$(k-1)$
+solution by one rank-one update governed by the reflection coefficient
+$\hat\phi_{k,k}=(\hat\acvs_k-\sum_{j=1}^{k-1}\hat\phi_{k-1,j}\hat\acvs_{k-j})/
+v_{k-1}$, where $v_{k-1}$ is the running error variance; the remaining
+coefficients update as
+$\hat\phi_{k,j}=\hat\phi_{k-1,j}-\hat\phi_{k,k}\hat\phi_{k-1,k-j}$.\\
+\textit{Why:} for high-order AR fits, spectral estimation, or repeatedly
+solving nested systems, the quadratic cost (and the free PACF) makes
+Levinson--Durbin the standard solver.
+\end{proposition}
+
+\begin{proposition}{Least-squares fits need not be stationary}{p4-nonstat}
+The forward, backward and forward--backward least-squares estimators
+$\hat{\boldsymbol\phi}_F,\hat{\boldsymbol\phi}_B,\hat{\boldsymbol\phi}_{FB}$ are
+\emph{not} constrained to yield a stationary (causal) model: the implied
+polynomial $\hat\Phi(z)$ may have roots inside the unit circle.\\[2pt]
+\textit{Proof idea:} the OLS objective places no constraint on the root moduli;
+it only minimises the residual sum of squares, which can be smaller for a
+non-causal parameter vector.\\
+\textit{Why:} non-stationary estimates are a problem for \emph{prediction}, but
+acceptable for some uses such as \emph{spectral estimation}, where they still
+produce a valid spectral density estimate. The Yule--Walker estimator, by
+contrast, always yields a stationary fit.
+\end{proposition}
+
+% ----------------------------------------------------------------------
+% ----------------------------------------------------------------------

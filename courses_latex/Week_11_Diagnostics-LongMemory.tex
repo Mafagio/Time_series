@@ -1,0 +1,169 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{11}{7 May 2026}{Diagnostics, Model Selection \& Long Memory}{Validate a model through its residuals (Ljung--Box), select via AIC/AICc/BIC (Box--Jenkins); long memory describes slowly decaying autocovariances.}
+
+Once an ARIMA model is fitted, two questions remain: \emph{does it fit?} (diagnostics, from the residuals) and \emph{is it best among candidates?} (selection, from information criteria). We then leave the ARMA world: ARMA covariances decay \emph{exponentially}, but many real series decay only \emph{polynomially} --- this is \textbf{long memory}.
+
+\section*{Key definitions}
+
+\begin{defn}{Residuals}
+For a fitted model with one-step fitted value $\hat X_t$, the \textbf{residuals} and \textbf{standardized residuals} are
+\[
+e_t = X_t - \hat X_t,
+\qquad
+\tilde e_t = \frac{e_t}{\sqrt{\Var(e_t)}}.
+\]
+If the model is right, the $e_t$ should behave like the driving white noise. Four checks: constant zero \textbf{mean}, constant \textbf{variance} (homoscedasticity), \textbf{uncorrelated} in $t$, and \textbf{Gaussian}.
+\end{defn}
+
+\begin{intu}[Why residuals \emph{are} the test]
+A correct model has captured all the linearly predictable structure, so what is left over, $e_t=X_t-\hat X_t$, should be the unpredictable innovation $\eps_t$. Every property we required of the white-noise input is exactly what we now test in the residuals. Each failure points at one flaw: a trend left in (mean), volatility clustering (variance), an unmodelled AR/MA term (correlation), or non-normal innovations (Gaussianity).
+\end{intu}
+
+Three checks are visual: plot $\{(t,\tilde e_t)\}$ for the mean (no trend, hover at $0$) and variance (constant spread, no fanning); a \textbf{Q--Q plot} vs.\ normal quantiles checks (marginal) Gaussianity --- straight line if Gaussian, curling tails if heavy-tailed. The fourth is quantitative.
+
+\begin{defn}{Residual correlogram \& its band}
+The residual sample autocorrelation at lag $\tau$ is
+\[
+\hat r_\tau
+= \frac{\sum_{t=1}^{n-\tau}(e_{t+\tau}-\bar e)(e_t-\bar e)}
+       {\sum_{t=1}^{n}(e_t-\bar e)^2}.
+\]
+Under whiteness each $\hat r_\tau \approx \mathcal N(0,1/n)$, so compare against the pointwise $95\%$ band $\bigl(-1.96/\sqrt n,\; 1.96/\sqrt n\bigr)$.
+\end{defn}
+
+\begin{defn}{Information criteria: AIC, AICc, BIC}
+For $k$ estimated parameters, $n$ observations, maximized likelihood $L$:
+\[
+\begin{aligned}
+\mathrm{AIC}  &= -2\log L + 2k, \\
+\mathrm{AICc} &= -2\log L + 2k\,\tfrac{n}{n-k-1}
+              = \mathrm{AIC} + \tfrac{2k(k+1)}{n-k-1}, \\
+\mathrm{BIC}  &= -2\log L + k\log n.
+\end{aligned}
+\]
+\textbf{Smaller is better.} For ARMA$(p,q)$, $k=p+q+1$ ($p$ AR, $q$ MA, plus $\sigma^2$). AIC tends to \emph{over-estimate} $p$; AICc corrects the small-sample bias (and $\to$ AIC as $n\to\infty$); BIC penalizes more (for $n>e^2$) and favours parsimony.
+\end{defn}
+
+\begin{defn}{Long memory (covariance \& spectrum)}
+A stationary process has \textbf{long memory} if its ACVS decays only polynomially,
+\[
+\acvs_\tau \sim L_\gamma(\tau)\,\abs\tau^{-\alpha},\qquad \abs\tau\to\infty,\quad 0<\alpha<1,
+\]
+with $L_\gamma$ slowly varying. Equivalently, the spectrum blows up at the origin:
+\[
+\sdf(f)\sim L_S(f)\,\abs f^{\alpha-1}\xrightarrow[f\to0]{}\infty
+\quad(\text{a spectral pole}).
+\]
+The full range $0<\alpha<2$ gives three regimes: long memory ($0<\alpha<1$), short-range dependence ($\alpha=1$, the ARMA case, $\sdf(0)$ finite), and anti-persistence ($1<\alpha<2$, with $\sum_k\acvs_k=0$).
+\end{defn}
+
+\begin{defn}{Fractional differencing \& FARIMA}
+The \textbf{fractional differencing operator} expands $(1-\Bsh)^d$ for real $d$:
+\[
+(1-\Bsh)^d=\sum_{j=0}^{\infty}\frac{\Gamma(j-d)}{\Gamma(-d)\,\Gamma(j+1)}\,\Bsh^{\,j}.
+\]
+The pure fractionally differenced process is $(1-\Bsh)^d X_t=\eps_t$; the \textbf{FARIMA} class is the stationary solution of
+\[
+(1-\Bsh)^d\,\phi(\Bsh)\,X_t=\psi(\Bsh)\,\eps_t,\qquad d=\tfrac{1-\alpha}{2}\in(-\tfrac12,\tfrac12),
+\]
+with $\eps_t$ i.i.d., $\phi,\psi$ of degrees $p,q$ with roots outside the unit circle. Integer $d$ gives ordinary ARIMA; $d\in(0,\tfrac12)$ gives long memory.
+\end{defn}
+
+\begin{defn}{Self-similarity \& fractional Brownian motion}
+$\{Y_t\}$ is \textbf{self-similar} with Hurst exponent $H$ if $Y_{ct}\overset{d}{=}c^H Y_t$ for all $c>0$. With stationary increments this forces
+\[
+\Cov(Y_t,Y_s)=\tfrac{\sigma^2}{2}\bigl(\abs t^{2H}+\abs s^{2H}-\abs{t-s}^{2H}\bigr).
+\]
+The Gaussian process with this covariance is \textbf{fractional Brownian motion} $B_H(t)$ (the \emph{only} self-similar Gaussian process); its increments are \textbf{fractional Gaussian noise}, with $\acvs_X(\tau)\sim H(2H-1)\abs\tau^{2H-2}$. The graph has fractal dimension $D=2-H$.
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Proposition --- AR(1) residuals are the noise}
+For a correctly specified AR(1), $X_t=\phi X_{t-1}+\eps_t$ with known $\phi$, the fitted value is $\hat X_t=\phi X_{t-1}$, so
+\[
+e_t = X_t-\phi X_{t-1}=\eps_t.
+\]
+\emph{Idea:} the AR structure cancels exactly, leaving the innovation. This is the template for \emph{all} diagnostics: right model $\Rightarrow$ residuals reproduce the white noise.
+\end{result}
+
+\begin{result}{Proposition --- Box--Pierce \& Ljung--Box portmanteau}
+To test $H_0:\acf_1=\cdots=\acf_m=0$ (residuals white up to lag $m$):
+\[
+\begin{aligned}
+\text{Box--Pierce:}\quad & Q_m = n\sum_{\tau=1}^{m}\hat r_\tau^{\,2},\\
+\text{Ljung--Box:}\quad  & Q_m = n(n+2)\sum_{\tau=1}^{m}\frac{\hat r_\tau^{\,2}}{n-\tau}.
+\end{aligned}
+\]
+Both are approximately $\chi^2_{m-p-q}$ for an ARMA$(p,q)$ fit. \emph{Idea:} under $H_0$, $\sqrt n\,\hat r_\tau\todist\mathcal N(0,1)$ and asymptotically independent, so a sum of squared normals; fitting $p+q$ parameters costs $p+q$ degrees of freedom. Ljung--Box rescales each term to match the $\chi^2$ better at finite $n$ and is the version used in practice.
+\end{result}
+
+\begin{intu}[Reading the Ljung--Box test]
+It tests \emph{many} lags at once, dodging the multiple-testing trap of eyeballing the correlogram lag by lag. \textbf{Reject} $\Rightarrow$ leftover autocorrelation $\Rightarrow$ model inadequate (go back and re-specify). \textbf{Fail to reject} $\Rightarrow$ no evidence against whiteness $\Rightarrow$ model adequate. Watch the df: it is $m-p-q$, \textbf{not} $m$ --- the noise variance is \emph{not} subtracted, and you need $m>p+q$.
+\end{intu}
+
+\begin{result}{Proposition --- the danger of $R^2$}
+With $R^2=1-s_e^2/s_y^2$: for an AR(1), $s_y^2=\sigma^2/(1-\phi^2)$ and $s_e^2=\sigma^2$, so
+\[
+R^2 = 1-\frac{\sigma^2(1-\phi^2)}{\sigma^2}=\phi^2.
+\]
+Even the \emph{true} model caps at $\phi^2$ (e.g.\ $\phi=0.4\Rightarrow R^2=0.16$, which "looks bad" but is optimal). Adding parameters can only inflate $R^2$. \textbf{Use information criteria, not $R^2$.}
+\end{result}
+
+\begin{result}{Proposition --- penalty comparisons}
+Per parameter, AICc charges more than AIC by $\frac{2k(k+1)}{n-k-1}>0$ (vanishes as $n\to\infty$, $k$ fixed). BIC charges $\log n$ vs.\ AIC's $2$, so BIC penalizes more iff
+\[
+\log n > 2 \iff n>e^2\approx 7.39.
+\]
+Hence for any realistic $n$, BIC is the conservative/consistent choice and AIC the permissive (predictive) one; AICc is the safe default when $n$ is small or $k$ is comparable to $n$.
+\end{result}
+
+\begin{result}{Proposition / Theorem --- long-memory fingerprints}
+\emph{Variance of the sample mean.} Short-range: $\Var(\bar X)\sim\sdf(0)/n$. Under long memory ($\acvs_\tau\sim\abs\tau^{-\alpha}$, $0<\alpha<1$),
+\[
+\Var(\bar X)\sim c\,n^{-\alpha}\quad(\text{slower than }1/n),
+\]
+so naive standard errors are far too small. \emph{FARIMA spectrum.} The fractional difference contributes $\abs{1-e^{-2\pi if}}^{-2d}\sim\abs{2\pi f}^{-2d}$ near $0$, so
+\[
+\sdf(f)\;\overset{f\to0}{\sim}\;c_f\,\abs f^{-2d},\qquad c_f=\sigma_\eps^2\frac{\abs{\psi(1)}^2}{\abs{\phi(1)}^2}.
+\]
+The slope of $\log\sdf$ vs.\ $\log\abs f$ near $0$ is $-2d=\alpha-1$ --- the basis of log-periodogram (GPH) estimation of $d$.
+\end{result}
+
+\section*{Intuition}
+
+\begin{intu}[Box--Jenkins loop + the ACF/PACF cut-offs]
+Four iterated steps: \textbf{Identify} $p,d,q$ (smallest $d$ that stabilizes the series; read $p,q$ from cut-offs) $\to$ \textbf{Estimate} $\to$ \textbf{Diagnose} (residual plots + Ljung--Box; if inadequate, restart) $\to$ \textbf{Use} (forecast/inference). On the differenced series: AR$(p)$ has ACF \emph{tailing off}, PACF \textbf{cutting off after lag $p$}; MA$(q)$ is the mirror; ARMA both tail off; very slow decay $\Rightarrow$ re-difference. "Cuts off" = inside $\pm1.96/\sqrt n$ beyond the order.
+\end{intu}
+
+\begin{intu}[Where the spectral pole comes from]
+Differencing $(1-\Bsh)$ has transfer function $1-e^{-2\pi if}$, \emph{zero} at $f=0$: it kills the trend (high-pass). A \emph{fractional negative} power $(1-\Bsh)^{-|d|}$ inverts a fraction of that, leaving a mild \emph{pole} at $f=0$. So long memory is "a little bit non-stationary": more low-frequency power than any ARMA, yet still stationary while $d<\tfrac12$.
+\end{intu}
+
+\begin{intu}[One phenomenon, three parameters]
+Long memory is described by $\alpha$, $d$, or $H$, linked by $d=\tfrac{1-\alpha}{2}$ and $H=d+\tfrac12=1-\tfrac{\alpha}{2}$. Persistent: $0<\alpha<1$, $0<d<\tfrac12$, $\tfrac12<H<1$, $\sdf(0)=\infty$. Short-range: $\alpha=1$, $d=0$, $H=\tfrac12$ (ARMA / Brownian boundary). Anti-persistent: $1<\alpha<2$, $-\tfrac12<d<0$, $0<H<\tfrac12$, $\sdf(0)=0$.
+\end{intu}
+
+\begin{exmpl}[Ljung--Box test, $n=150$, ARMA$(1,1)$]
+Residual autocorrelations $\hat r_{1:4}=0.03,-0.09,0.11,-0.05$. With $n(n+2)=22800$,
+\[
+Q_4 = 22800\!\left(\tfrac{0.03^2}{149}+\tfrac{0.09^2}{148}+\tfrac{0.11^2}{147}+\tfrac{0.05^2}{146}\right)\approx 3.65.
+\]
+Degrees of freedom $=m-p-q=4-1-1=2$; the $5\%$ critical value is $\chi^2_{2,0.95}=5.99$. Since $3.65<5.99$ we \textbf{do not reject}: no evidence of residual autocorrelation, the ARMA$(1,1)$ is adequate.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Diagnose on residuals:} they should look like the white-noise input --- zero mean, constant variance, uncorrelated, Gaussian. Check with time plots, a Q--Q plot, and the residual correlogram ($\pm1.96/\sqrt n$).
+  \item \textbf{Run Ljung--Box} $Q_m=n(n+2)\sum_\tau \hat r_\tau^2/(n-\tau)$ with df $=m-p-q$ (subtract $p+q$, not the variance). Small $p$-value $\Rightarrow$ refit.
+  \item \textbf{Select with information criteria}, never $R^2$ (which only grows with $k$): smallest AIC/AICc/BIC wins. AICc for small samples, BIC for parsimony, AIC for prediction.
+  \item \textbf{Box--Jenkins loop:} identify ($d$, then $p,q$ from ACF/PACF) $\to$ estimate $\to$ diagnose $\to$ use.
+  \item \textbf{Long memory} $=$ polynomially decaying $\acvs_\tau\sim\abs\tau^{-\alpha}$ and a spectral pole $\sdf(f)\sim\abs f^{\alpha-1}$; model it with fractional differencing / FARIMA, $d=(1-\alpha)/2$. Convert freely between $\alpha,d,H$ and read the regime; $\Var(\bar X)\sim n^{-\alpha}$ is its empirical signature.
+\end{itemize}
+\end{retenir}
+
+\end{document}

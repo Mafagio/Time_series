@@ -1,0 +1,237 @@
+% ======================================================================
+%  PART 12 -- Exam Strategy Checklist + Classic Pitfalls
+% ======================================================================
+\section{Exam Strategy Checklist}
+\label{sec:strategy}
+
+The exam (cf.\ the mock) is \textbf{closed-book, no calculator}, and made of a
+few multi-part questions mixing \emph{stated definitions}, \emph{short proofs},
+and \emph{calculations}. The recurring tasks are: write down a definition;
+compute an ACVS/ACF; find an MA$(\infty)$ representation; check
+causality/invertibility; derive a spectral density; forecast and give the
+error; prove (joint) second-order stationarity; and read cross-spectra. This
+checklist maps a \emph{question cue} to the \emph{tool} you deploy.
+
+\begin{tcolorbox}[enhanced,breakable,colback=orange!6!white,colframe=orange!75!black,
+  arc=1.5mm,boxrule=0.7pt,title=\textbf{Cue $\rightarrow$ Tool: the decision table},
+  coltitle=white,colbacktitle=orange!75!black,fonttitle=\bfseries]
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}p{0.46\textwidth}@{\hspace{0.5em}}p{0.5\textwidth}@{}}
+\toprule
+\textbf{When the question says\dots} & \textbf{Deploy\dots}\\
+\midrule
+``State the definition of (weak/strict) stationarity'' &
+The three moment conditions (mean const, finite const variance, covariance a
+function of $\tau$ only) / equality of all finite-dim.\ distributions under
+shift.\\
+``Is $\{X_t\}$ (weakly) stationary?'' &
+Check the 3 conditions in order; stop at first failure. Watch for undefined
+moments and a residual $t$-dependence in the covariance.\\
+``Compute the ACVS/ACF of an MA$(q)$'' &
+$\acvs_\tau=\sigma^2\sum_j\theta_j\theta_{j+\abs\tau}$ for $\abs\tau\le q$, else
+$0$. ACF \emph{cuts off} after lag $q$.\\
+``Compute the ACVS of an AR/ARMA'' &
+Multiply the defining equation by $X_{t-\tau}$, take expectations $\Rightarrow$
+a \textbf{difference equation} $\acvs_\tau=\sum\phi_j\acvs_{\tau-j}$; solve with
+initial conditions (handle small $\tau$ separately because of the MA/noise
+terms).\\
+``Find $\psi_j$ in $X_t=\sum\psi_j\eps_{t-j}$'' &
+Write $X_t=\Theta(B)/\Phi(B)\,\eps_t$; expand by partial fractions /
+$1/(1-gB)=\sum g^kB^k$, or match coefficients in $\Phi(B)\sum\psi_jB^j=\Theta(B)$.\\
+``Is it causal/stationary? invertible?'' &
+\textbf{Roots of $\Phi(z)$ outside the unit circle} $\Rightarrow$
+causal/stationary; \textbf{roots of $\Theta(z)$ outside} $\Rightarrow$
+invertible. (AR always invertible; MA always stationary.)\\
+``Find the PACF'' &
+Durbin--Levinson recursion on the ACF; for AR$(p)$, $\pacf_\tau=0$ for
+$\tau>p$. PACF \emph{cuts off} after $p$.\\
+``Identify a model from ACF/PACF plots'' &
+ACF cuts at $q$ \& PACF tails $\Rightarrow$ MA$(q)$; PACF cuts at $p$ \& ACF
+tails $\Rightarrow$ AR$(p)$; both tail $\Rightarrow$ ARMA; slow ACF decay
+$\Rightarrow$ difference (non-stationary).\\
+``Estimate AR parameters'' &
+Yule--Walker $\hat\phi=\hat\Gamma^{-1}\hat\gamma$,
+$\hat\sigma^2=\hat\gamma_0-\sum\hat\phi_j\hat\gamma_j$; or (forward/backward) LS.\\
+``Estimate MA/ARMA by LS'' &
+Reconstruct innovations recursively ($\eps_0=0$), minimise $\sum\hat\eps_t^2$.\\
+``Remove a trend / make stationary'' &
+Difference: $\diff^q$ kills a degree-$(q-1)$ polynomial trend; $\diff_{(s)}$
+removes period-$s$ seasonality.\\
+``Forecast $X_{n+h}$ (causal ARMA)'' &
+$X^n_{n+h}=\sum_{j\ge h}\psi_j\eps_{n+h-j}$ (future $\eps\equiv0$); MSE
+$=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$. Or the recursive truncated recipe.\\
+``Forecast an ARIMA'' &
+Forecast the differenced ARMA $Z=\diff^dX$, then un-difference (cumulate).
+$P^n_{n+h}\to\infty$.\\
+``Give a prediction interval'' &
+$X^n_{n+h}\pm z_{1-\alpha/2}\sqrt{\Var(e_n(h))}$ (Gaussian).\\
+``Find the spectral density'' &
+$\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$; for ARMA use
+$\sdf(f)=\sigma^2\abs{\Theta(e^{-2\pi i f})}^2/\abs{\Phi(e^{-2\pi i f})}^2$.\\
+``Spectrum of a filtered series $Y=\filt X$'' &
+$\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$, $H(f)=\sum_m h_m e^{-2\pi i f m}$.\\
+``Periodogram expectation/variance'' &
+$\E[\hat\sdf^{(p)}]=\Fej_n*\sdf$ (biased, blurring); $\Var\to\sdf(f)^2$ (does
+not vanish). Taper for bias, multitaper for variance.\\
+``Is this $\acvs_\tau$ a valid ACVS?'' &
+Compute its SDF; it is valid \emph{iff} $\sdf(f)\ge0$ for all $f$ (equivalently
+$\acvs$ is positive semi-definite).\\
+``Cross-spectrum / coherence of a delay'' &
+$S_{1,2}(f)=c\,e^{-2\pi i f d}S_{2,2}(f)$: amplitude $\abs c\,S_{2,2}$, phase
+$-2\pi f d$.\\
+``Is the VAR stable?'' &
+Roots of $\det(I-\Phi_1z-\cdots-\Phi_pz^p)$ outside unit circle (companion
+eigenvalues inside).\\
+``Test residual autocorrelation'' &
+Ljung--Box $Q_m=n(n+2)\sum_{\tau=1}^m\hat r_\tau^2/(n-\tau)\sim\chi^2_{m-p-q}$.\\
+``Compare models'' &
+AIC/AICc/BIC ($k=p+q+1$); smaller is better; BIC penalises complexity more.\\
+``Model changing variance / volatility'' &
+ARCH/GARCH on the conditional variance; recall it is uncorrelated but
+dependent; stationarity $\sum\alpha+\sum\beta<1$.\\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+\begin{keytech}{The six moves you will almost certainly need}{p12-six}
+\begin{enumerate}
+  \item \textbf{Stationarity check} (3 conditions).
+  \item \textbf{ACVS via the white-noise filter trick} (only equal noise
+        indices survive) or via the \textbf{difference equation} (multiply by
+        $X_{t-\tau}$, take expectations).
+  \item \textbf{Root test} for causality/invertibility/stability.
+  \item \textbf{$\Theta/\Phi$ expansion} for $\psi$-weights (partial fractions
+        or coefficient matching).
+  \item \textbf{Recursive forecasting} and its MSE.
+  \item \textbf{Spectral density} from ACVS, from a filter, or from ARMA
+        polynomials.
+\end{enumerate}
+\end{keytech}
+
+\begin{keytech}{Exam hygiene}{p12-hygiene}
+\begin{itemize}
+  \item State which \emph{theorem/definition} you invoke (examiners reward
+        naming the tool: ``by causality $\E[\eps_tX_{t-k}]=0$''; ``by Herglotz
+        / the prediction equations / Isserlis'').
+  \item No calculator: keep fractions exact; factor polynomials by hand
+        ($z=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$) and report $\abs{z}$ vs $1$.
+  \item For ``$\abs z>1$?'' with complex roots, compare
+        $\abs z^2=(\Re z)^2+(\Im z)^2$ to $1$ --- no need to take the square
+        root.
+  \item Always sanity-check: $\acvs_0\ge0$, $\abs{\acf_\tau}\le1$, MA(1) has
+        $\abs{\acf_1}\le\tfrac12$, an SDF must be $\ge0$ and real, a spectral
+        \emph{matrix} must be Hermitian.
+\end{itemize}
+\end{keytech}
+
+% ======================================================================
+\section{Classic Pitfalls to Avoid}
+\label{sec:pitfalls}
+
+\begin{pitfall}
+\textbf{Roots inside vs outside the unit circle.} Stationarity/causality
+requires the roots of $\Phi(z)$ to lie \emph{outside} $\abs z=1$ (equivalently
+$\Phi(z)\ne0$ for $\abs z\le1$). Students routinely flip this. The
+\emph{characteristic} root condition (``$\abs z>1$'') is the opposite of the
+companion-eigenvalue condition (``$\abs\lambda<1$''): both say the same thing,
+so do not mix the two phrasings in one argument.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Strict vs weak stationarity.} They do not imply each other. Strict but
+not weak: i.i.d.\ Cauchy (no finite variance). Weak but not strict: a process
+with matched first two moments but non-Gaussian higher structure. They coincide
+\emph{only} for Gaussian processes.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Lag goes in the FIRST argument (multivariate).}
+$\Gamma_\tau=\Cov(X_{t+\tau},X_t)$, so $\Gamma_{-\tau}=\Gamma_\tau\Tr$ (not
+$\Gamma_\tau$). Cross-covariance sequences are \emph{not} symmetric in $\tau$:
+$\gamma^{(j,k)}_\tau=\gamma^{(k,j)}_{-\tau}$. In the univariate real case this
+distinction is invisible, which is exactly why it trips people in the
+multivariate case.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{ACF cut-off, PACF cut-off --- which is which.} MA$(q)$: \emph{ACF} cuts
+off after $q$ (PACF tails). AR$(p)$: \emph{PACF} cuts off after $p$ (ACF tails).
+ARMA: both tail off. Swapping these is the single most common identification
+error.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Identifiability of MA / sign of $\theta_0$.} Fixing $\theta_0=-1$ is not
+cosmetic: without it, scaling
+$(\theta_j,\sigma^2)\mapsto(c\theta_j,c^{-2}\sigma^2)$ gives the \emph{same}
+ACVS, so the model is unidentifiable. Likewise a non-invertible MA and its
+invertible ``twin'' (root $g$ vs $1/g$) share the same ACF --- pick the
+invertible one.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Biased is not bad.} The divide-by-$n$ ACVS estimator $\hat\acvs_\tau$ is
+biased yet positive semi-definite and has \emph{smaller} MSE than the unbiased
+$\tilde\acvs_\tau$. Unbiasedness is not the objective; positive
+semi-definiteness and low MSE are. Do not ``correct'' the estimator on autopilot.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{The periodogram is not consistent.} Its variance tends to $\sdf(f)^2$
+and does \emph{not} shrink with $n$ --- more data makes it wigglier, not
+smoother. Reducing bias needs \emph{tapering}; reducing variance needs
+\emph{smoothing/multitapering} ($\Var\approx\sdf(f)^2/K$).
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Forecasts of stationary vs integrated processes.} A stationary ARMA
+forecast reverts to the mean and its error variance saturates at $\gamma_0$. An
+\emph{integrated} (ARIMA, $d\ge1$) forecast does \emph{not} revert and its error
+variance $\to\infty$. Quoting a finite long-horizon variance for a random walk
+is wrong.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Setting future innovations to zero (only).} In the $\psi$-weight
+forecast, set $\eps_{n+1},\dots,\eps_{n+h}=0$ but keep the \emph{observed past}
+innovations as residuals; in the recursive recipe, replace future
+\emph{observations} by their forecasts, future errors by $0$, and past errors by
+residuals --- do not zero the past errors.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{ARCH/GARCH are uncorrelated but dependent.} $\Corr(r_{t+\tau},r_t)=0$,
+yet $\Corr(r^2_{t+\tau},r^2_t)\ne0$ (geometric for ARCH(1):
+$\alpha_1^{\abs\tau}$). ``Uncorrelated'' $\ne$ ``independent'' here. Also check
+\emph{moment} conditions ($\alpha_1<1$ for variance, $\alpha_1^2<1/3$ for finite
+kurtosis under Gaussian noise) separately from stationarity.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Ljung--Box degrees of freedom.} Use $\chi^2_{m-p-q}$, subtracting the
+number of fitted ARMA parameters --- not $\chi^2_m$. Forgetting the $-(p+q)$
+shifts the critical value and can flip the conclusion.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{Angular vs ordinary frequency.} This course uses ordinary frequency $f$
+(period $1/f$), so the SDF integrates over $[-\tfrac12,\tfrac12]$ and
+$\sdf(f)=\sum\acvs_\tau e^{-2\pi i f\tau}$. Switching to $\omega=2\pi f$ scatters
+stray $2\pi$ factors --- keep one convention.
+\end{pitfall}
+
+\begin{pitfall}
+\textbf{A valid ACVS must be positive semi-definite.} A plausible-looking
+sequence (e.g.\ $\acvs_\tau=1$ for $\abs\tau\le K$, else $0$) need \emph{not} be
+a real ACVS: its SDF can go negative. Always test via $\sdf(f)\ge0$ before
+claiming a sequence is an autocovariance.
+\end{pitfall}
+
+\begin{center}
+\begin{tcolorbox}[width=0.9\textwidth,colback=green!5!white,colframe=green!48!black,
+  arc=2mm,boxrule=0.8pt,halign=center,fontupper=\large\bfseries]
+You are ready when you can do every \textcolor{cyan!55!black}{Exercise} in this
+document unaided, name the tool behind every \textcolor{red!62!black}{Theorem},
+and avoid every \textcolor{red!70!black}{Pitfall} above. Good luck!
+\end{tcolorbox}
+\end{center}

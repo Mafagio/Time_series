@@ -1,0 +1,156 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 2: ARMA Models and the PACF}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} $\{\eps_t\}$ is \emph{white noise} if it is a sequence of mean-zero, finite-variance, \emph{uncorrelated} random variables: $\E[\eps_t]=0$, $\Var(\eps_t)=\sigma^2<\infty$, and $\Cov(\eps_s,\eps_t)=0$ for $s\ne t$. Its second-order structure is
+\[
+\acvs_\tau=\begin{cases}\sigma^2,&\tau=0,\\ 0,&\tau\ne0,\end{cases}
+\qquad
+\acf_\tau=\begin{cases}1,&\tau=0,\\ 0,&\tau\ne0.\end{cases}
+\]
+``Uncorrelated'' only constrains the first two moments, whereas ``independent'' constrains the entire joint law; hence a white-noise process need not be i.i.d.\ (and need not be Gaussian).
+
+\textbf{(b)} The constant mean is $\E[X_t]=\E[\eps_t]-\theta_1\E[\eps_{t-1}]-\theta_2\E[\eps_{t-2}]=0$. The filter taps are $(\psi_0,\psi_1,\psi_2)=(1,-\theta_1,-\theta_2)$. Using bilinearity and $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$, the ACVS is $\acvs_\tau=\sigma^2\sum_j\psi_j\psi_{j+\abs\tau}$ (only matching noise indices survive):
+\[
+\begin{aligned}
+\acvs_0&=\sigma^2\big(1+\theta_1^2+\theta_2^2\big),\\
+\acvs_{\pm1}&=\sigma^2\big[(1)(-\theta_1)+(-\theta_1)(-\theta_2)\big]=\sigma^2\,\theta_1(\theta_2-1),\\
+\acvs_{\pm2}&=\sigma^2\big[(1)(-\theta_2)\big]=-\sigma^2\,\theta_2,\\
+\acvs_\tau&=0\qquad(\abs\tau\ge3).
+\end{aligned}
+\]
+Dividing by $\acvs_0$,
+\[
+\acf_1=\frac{\theta_1(\theta_2-1)}{1+\theta_1^2+\theta_2^2},
+\qquad
+\acf_2=\frac{-\theta_2}{1+\theta_1^2+\theta_2^2}.
+\]
+
+\textbf{(c)} For an MA($q$) with taps $\psi_0,\dots,\psi_q$ one has $\acvs_\tau=\sigma^2\sum_{j}\psi_j\psi_{j+\abs\tau}$, and for $\abs\tau>q$ no pair of taps overlaps (the filter has length $q+1$), so $\acvs_\tau=0$ for $\abs\tau>q$. Thus the \textbf{ACVS of an MA($q$) cuts off after lag $q$}: the largest lag at which the (sample) ACF is still significant --- beyond the $\pm1.96/\sqrt n$ band --- identifies the order $q$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The process is \emph{causal} iff $\abs\phi<1$. The AR polynomial $\Phi(z)=1-\phi z$ has its single root at $z=1/\phi$, and the causality condition ``root outside the unit circle'' reads $\abs{1/\phi}>1\iff\abs\phi<1$.
+
+\textbf{(b)} Iterating $X_t=\phi X_{t-1}+\eps_t$, with $X_{t-1}=\phi X_{t-2}+\eps_{t-1}$, etc.:
+\[
+\begin{aligned}
+X_t&=\eps_t+\phi X_{t-1}
+   =\eps_t+\phi\eps_{t-1}+\phi^2 X_{t-2}\\
+   &=\eps_t+\phi\eps_{t-1}+\phi^2\eps_{t-2}+\cdots+\phi^{n-1}\eps_{t-n+1}+\phi^{n}X_{t-n}.
+\end{aligned}
+\]
+Since $\abs\phi<1$ and $\Var(X_{t-n})=\acvs_0$ is constant, the remainder satisfies $\E[(\phi^n X_{t-n})^2]=\phi^{2n}\acvs_0\to0$, so it vanishes in mean square and
+\[
+X_t=\sum_{k=0}^{\infty}\phi^{k}\eps_{t-k},
+\qquad \psi_k=\phi^k.
+\]
+The weights are absolutely summable: $\sum_{k\ge0}\abs{\psi_k}=\sum_{k\ge0}\abs\phi^{k}=\dfrac{1}{1-\abs\phi}<\infty$, confirming a valid causal MA($\infty$) representation.
+
+\textbf{(c)} With $\E[X_t]=0$ and $\Cov(\eps_{t-k},\eps_{t-\tau-l})=\sigma^2\ind_{\{t-k=t-\tau-l\}}$, take $\tau\ge0$:
+\[
+\begin{aligned}
+\acvs_\tau
+&=\Cov\!\Big(\sum_{k\ge0}\phi^{k}\eps_{t-k},\ \sum_{l\ge0}\phi^{l}\eps_{t-\tau-l}\Big)
+ =\sigma^2\sum_{l\ge0}\phi^{\,l+\tau}\phi^{\,l}\\
+&=\sigma^2\phi^{\tau}\sum_{l\ge0}\phi^{2l}
+ =\frac{\sigma^2\,\phi^{\tau}}{1-\phi^2},
+\end{aligned}
+\]
+where the surviving terms are those with $k=l+\tau$, and the geometric series converges since $\phi^2<1$. By symmetry $\acvs_\tau=\dfrac{\sigma^2}{1-\phi^2}\phi^{\abs\tau}$, and $\acf_\tau=\acvs_\tau/\acvs_0=\phi^{\abs\tau}$.
+
+The ACF $\phi^{\abs\tau}$ decays geometrically but is never exactly $0$ for $\abs\phi\in(0,1)$, so it \emph{tails off} rather than cuts off. Consequently the order $p$ of an AR cannot be read from the ACF; it is the \textbf{PACF} that cuts off at lag $p$ (here $p=1$).
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} With $\phi_1=\tfrac12,\ \phi_2=-\tfrac14$:
+\[
+\phi_1+\phi_2=\tfrac14<1,\qquad
+\phi_2-\phi_1=-\tfrac34<1,\qquad
+\abs{\phi_2}=\tfrac14<1.
+\]
+All three causality conditions hold, so the AR(2) is causal (both roots of $\Phi(z)=1-\tfrac12 z+\tfrac14 z^2$ lie outside the unit circle).
+
+\textbf{(b)} The Yule--Walker recursion $\acf_\tau=\phi_1\acf_{\tau-1}+\phi_2\acf_{\tau-2}$. At $\tau=1$, using $\acf_{-1}=\acf_1$, we get $\acf_1=\phi_1\acf_0+\phi_2\acf_1=\phi_1+\phi_2\acf_1$, so
+\[
+\acf_1=\frac{\phi_1}{1-\phi_2}=\frac{1/2}{1+1/4}=\frac{1/2}{5/4}=\frac25.
+\]
+Then
+\[
+\acf_2=\phi_1\acf_1+\phi_2=\tfrac12\cdot\tfrac25-\tfrac14=\tfrac15-\tfrac14=-\tfrac1{20},
+\]
+\[
+\acf_3=\phi_1\acf_2+\phi_2\acf_1
+=\tfrac12\!\cdot\!\big(-\tfrac1{20}\big)-\tfrac14\!\cdot\!\tfrac25
+=-\tfrac1{40}-\tfrac1{10}=-\tfrac1{40}-\tfrac4{40}=-\tfrac18.
+\]
+
+\textbf{(c)} Durbin--Levinson with $\acf_1=\tfrac25,\ \acf_2=-\tfrac1{20},\ \acf_3=-\tfrac18$.
+
+\emph{Lag 1:} $\pacf_{1,1}=\acf_1=\dfrac25$.
+
+\emph{Lag 2:}
+\[
+\pacf_{2,2}=\frac{\acf_2-\pacf_{1,1}\acf_1}{1-\pacf_{1,1}\acf_1}
+=\frac{-\frac1{20}-\frac25\cdot\frac25}{1-\frac25\cdot\frac25}
+=\frac{-\frac1{20}-\frac4{25}}{1-\frac4{25}}
+=\frac{-\frac{21}{100}}{\frac{84}{100}}
+=-\frac{21}{84}=-\frac14.
+\]
+Update: $\pacf_{2,1}=\pacf_{1,1}-\pacf_{2,2}\,\pacf_{1,1}=\tfrac25-\big(-\tfrac14\big)\tfrac25=\tfrac25+\tfrac1{10}=\tfrac12$.
+
+\emph{Lag 3:}
+\[
+\pacf_{3,3}=\frac{\acf_3-\pacf_{2,1}\acf_2-\pacf_{2,2}\acf_1}{1-\pacf_{2,1}\acf_1-\pacf_{2,2}\acf_2}.
+\]
+The numerator is
+\[
+-\tfrac18-\tfrac12\!\cdot\!\big(-\tfrac1{20}\big)-\big(-\tfrac14\big)\!\cdot\!\tfrac25
+=-\tfrac18+\tfrac1{40}+\tfrac1{10}
+=-\tfrac5{40}+\tfrac1{40}+\tfrac4{40}=0,
+\]
+so $\pacf_{3,3}=0$ (the denominator $1-\tfrac12\cdot\tfrac25-(-\tfrac14)(-\tfrac1{20})=1-\tfrac15-\tfrac1{80}>0$ is nonzero). Hence
+\[
+\pacf_1=\tfrac25,\qquad \pacf_2=-\tfrac14,\qquad \pacf_3=0.
+\]
+The PACF cuts off after lag $2$ while the ACF in (b) tails off: this is the \textbf{AR($p$) signature with $p=2$}. Indeed the diagonal coefficients recover the AR coefficients, $\pacf_{2,1}=\tfrac12=\phi_1$ and $\pacf_{2,2}=-\tfrac14=\phi_2$. (Identification rule: PACF cuts after lag $p$, ACF tails off $\Rightarrow$ AR($p$).)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} In backshift form $X_t-\phi X_{t-1}=\eps_t+\vartheta\eps_{t-1}$ reads $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ with
+\[
+\Phi(z)=1-\phi z=1-\tfrac12 z,
+\qquad
+\Theta(z)=1+\vartheta z=1+\tfrac14 z.
+\]
+$\Phi(z)$ has root $z=1/\phi=2$, with $\abs2>1$ $\Rightarrow$ \textbf{causal}. $\Theta(z)$ has root $z=-1/\vartheta=-4$, with $\abs{-4}>1$ $\Rightarrow$ \textbf{invertible}.
+
+\textbf{(b)} Write $\psi(z)=\sum_{j\ge0}\psi_j z^j$ and match coefficients in $\Phi(z)\psi(z)=\Theta(z)$, i.e.
+\[
+(1-\phi z)\sum_{j\ge0}\psi_j z^j=1+\vartheta z.
+\]
+Coefficient of $z^0$: $\psi_0=1$. Coefficient of $z^1$: $\psi_1-\phi\psi_0=\vartheta$, so $\psi_1=\phi+\vartheta$. Coefficient of $z^j$ for $j\ge2$: $\psi_j-\phi\psi_{j-1}=0$, so $\psi_j=\phi\,\psi_{j-1}$. Solving the recursion gives the general formula
+\[
+\psi_0=1,\qquad \psi_j=(\phi+\vartheta)\,\phi^{\,j-1}\quad(j\ge1).
+\]
+With $\phi=\tfrac12,\ \vartheta=\tfrac14$ we have $\phi+\vartheta=\tfrac34$, hence
+\[
+\psi_0=1,\qquad
+\psi_1=\tfrac34,\qquad
+\psi_2=\tfrac34\cdot\tfrac12=\tfrac38.
+\]
+(The weights decay like $\phi^{j}$, so $\sum_j\abs{\psi_j}=1+\tfrac34\sum_{j\ge0}(\tfrac12)^j=1+\tfrac34\cdot2=\tfrac52<\infty$, confirming causality.)
+
+\textbf{(c)} \textbf{No}, the sequence is not a valid ACVS. A valid ACVS must be positive semi-definite, equivalently have a non-negative spectral density. Here, using $\acvs_{-1}=\acvs_1$,
+\[
+\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}
+=\acvs_0+2\acvs_1\cos(2\pi f)
+=1+1.4\cos(2\pi f).
+\]
+At $f=\tfrac12$ this equals $1+1.4\cos(\pi)=1-1.4=-0.6<0$. Since the spectral density goes negative, the sequence fails positive semi-definiteness and \emph{cannot} be the ACVS of any stationary process. (Equivalently $\acf_1=0.7>\tfrac12$, which is impossible for an MA(1)-type two-tap correlation.)
+
+\end{document}

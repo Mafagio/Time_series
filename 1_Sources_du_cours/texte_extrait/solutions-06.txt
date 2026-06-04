@@ -1,0 +1,189 @@
+
+===== PAGE 1/3 =====
+Time Series Exercise Sheet 6
+Sofia Olhede
+March 26, 2026
+Exercise 6.1
+Let g ∈L1, have Fourier transform denoted by G . Prove the following relations (where H is taken to be the
+Fourier transform of h).
+1. If h(t) = g(t)∗for all t ∈R then
+H (f) = G (−f)∗
+for all f ∈R.
+2. If h(t) = g(αt) for all t ∈R then
+H (f) = G (f/α)/ |α|
+for all f ∈R.
+3. If h(t) = g(t + τ) for all t ∈R then
+H (f) = G (f)e2πifτ
+for all f ∈R.
+4. Let p ∈L1 with Fourier transform P. If h(t) = αg(t) + p(t) for all t ∈R then
+H (f) = αG (f) + P(f)
+for all f ∈R.
+Solution 6.1
+1. We have h(t) = g(t)∗
+H(f) =
+Z ∞
+−∞
+h(t)e−2πitfdt
+=
+Z ∞
+−∞
+g(t)∗e−2πitfdt
+=
+Z ∞
+−∞
+g(t)e2πitfdt∗
+= G(−f)∗.
+2. We have h(t) = g(αt), then
+H(f) =
+Z ∞
+−∞
+h(t)e−2πitfdt
+=
+Z ∞
+−∞
+g(αt)e−2πitfdt
+=
+Z ∞
+−∞
+g(t′)e−i f
+α t′ 1
+|α|dt′
+= G(f/α)/ |α|
+1
+
+===== PAGE 2/3 =====
+3. We have h(t) = g(t + τ), we have
+H(f) =
+Z ∞
+−∞
+h(t)e−2πiftdt
+=
+Z ∞
+−∞
+g(t + τ)e−2πiftdt
+=
+Z ∞
+−∞
+g(t + τ)e−2πif(t+τ)dte2πifτ
+= G(f)e2πifτ
+4. This follows from linearity of integration.
+Exercise 6.2
+Prove the continuous time version of the convolution theorem, i.e. let h, g ∈L1, and let u = g ∗h, then
+U = G · H .
+Solution 6.2
+We have for any f ∈R
+U(f) =
+Z ∞
+−∞
+u(x)e−2πixfdx
+=
+Z ∞
+−∞
+Z ∞
+−∞
+g(x −y)h(y)dy e−2πixfdx
+=
+Z ∞
+−∞
+Z ∞
+−∞
+g(x −y)e−2πixfdx h(y)dy
+=
+Z ∞
+−∞
+Z ∞
+−∞
+g(s)e−2πisfdx h(y)e−2πiyfdy
+= G(f)H(f).
+The interchange of integrals is justified because
+Z ∞
+−∞
+Z ∞
+−∞
+|g(x −y)h(y)| dxdy =
+Z ∞
+−∞
+Z ∞
+−∞
+|g(s)h(y)| dsdy
+=
+Z ∞
+−∞
+|g(s)| ds
+Z ∞
+−∞
+|h(y)| dy
+< ∞
+by assumption, and so we may apply Fubini’s theorem.
+Exercise 6.3
+Prove the following theorem. Consider a continuous function g ∈L1. Then writing G for its Fourier transform
+and G for the Fourier transform of the sequence {g(t)}t∈∆Z and assuming that G ∈L1 and {g(t)}t∈∆Z ∈ℓ1 and
+the sequence {G (f + k/∆)}k∈Z ∈ℓ1 for all f ∈R. Then we have
+G(f) =
+X
+k∈Z
+G (f + k/∆).
+(1)
+Solution 6.3
+Firstly, recall that we have the Fourier inverse results so that for any t ∈∆Z
+g(t) =
+Z ∞
+−∞
+G (f)e2πiftdf,
+g(t) =
+Z 1/2∆
+−1/2∆
+G(f)e2πiftdf.
+2
+
+===== PAGE 3/3 =====
+Now notice that
+g(t) =
+Z ∞
+−∞
+G (f)e2πiftdf
+=
+X
+k∈Z
+Z k/∆+1/2∆
+k/∆−1/2∆
+G (f)e2πiftdf
+=
+X
+k∈Z
+Z 1/2∆
+−1/2∆
+G (f + k/∆)e2πiftdfe2πitk/∆
+=
+X
+k∈Z
+Z 1/2∆
+−1/2∆
+G (f + k/∆)e2πiftdf
+because t = z∆for some ∆∈Z and e2πix = 1 for any x ∈Z. Now we may swap the order of summation and
+integration since
+X
+k∈Z
+Z 1/2∆
+−1/2∆
+|G (f + k/∆)| df < ∞
+by assumption. Therefore we have
+Z 1/2∆
+−1/2∆
+X
+k∈Z
+G (f + k/∆)e2πiftdf = g(t) =
+Z 1/2∆
+−1/2∆
+G(f)e2πiftdf.
+It therefore follows that
+X
+k∈Z
+G (f + k/∆) = G(f)
+for almost every f ∈[−1/2∆, 1/2∆]. Finally, we have that G is continuous because {g(t)}t∈∆Z ∈ℓ1. The sum
+on the right hand side is also continuous because
+X
+k∈Z
+|G (f + k/∆)| < ∞
+by assumption. Therefore, the result holds for all f ∈[−1/2∆, 1/2∆].
+3

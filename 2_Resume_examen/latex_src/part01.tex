@@ -1,0 +1,309 @@
+% ======================================================================
+%  PART 1 -- Foundations: Stationarity, Autocovariance, Ergodicity
+% ======================================================================
+\section{Foundations: Stationarity, Autocovariance \& Ergodicity}
+\label{sec:foundations}
+
+A \emph{time series} $\{X_t\}$ is both the data recorded in time order and the
+stochastic process $\{X_t : t\in T\}$ on a probability space
+$(\Omega,\mathcal F,\Prob)$ it is a realisation of. The index set $T$ is a set
+of time points (here $T=\Ints$ unless stated otherwise; we take the sampling
+step $\Delta=1$). Time series differ from classical statistics because the
+observations are \textbf{dependent}: ``there are many more ways to be dependent
+than to be independent''. Everything in this course is built on describing that
+dependence through second-order structure.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{(Weak / second-order) stationarity}{wkstat}
+$\{X_t\}$ is \textbf{second-order} (equivalently \textbf{weakly} or
+\textbf{covariance}) \textbf{stationary} if all first- and second-order joint
+moments exist, are finite, and are invariant to time shifts. Concretely, for
+all $t,s\in T$ and all admissible shifts $\tau$:
+\[
+\text{(i) } \E[X_t]=\mu;\qquad
+\text{(ii) } \Var(X_t)=\sigma^2<\infty;\qquad
+\text{(iii) } \E[X_tX_{t+\tau}]=\E[X_sX_{s+\tau}].
+\]
+Condition (iii) forces $\E[X_tX_{t+\tau}]$ to be a function of the lag $\tau$
+only.
+\end{definition}
+
+\begin{definition}{Strong / strict stationarity}{ststat}
+$\{X_t\}$ is \textbf{strictly} (completely) \textbf{stationary} if for every
+$n\ge1$, every $t_1,\dots,t_n$ and every shift $\tau$, the joint distribution
+of $(X_{t_1},\dots,X_{t_n})$ equals that of
+$(X_{t_1+\tau},\dots,X_{t_n+\tau})$.
+\end{definition}
+
+\begin{intuition}
+Neither notion implies the other in general.
+\textbf{Strict $\not\Rightarrow$ weak}: i.i.d.\ Student-$t$ on $1$ d.o.f.\
+(Cauchy) is strictly stationary but has no finite moments, so it is not weakly
+stationary. \textbf{Weak $\not\Rightarrow$ strict}: weak stationarity only
+constrains the first two moments and says nothing about higher ones. The two
+coincide for \emph{Gaussian} processes (Definition~\ref{def:gauss:gp}).
+\end{intuition}
+
+\begin{definition}{Gaussian process}{gauss:gp}
+$\{X_t\}$ is a \textbf{Gaussian process} if for all $n$ and $t_1,\dots,t_n$ the
+vector $(X_{t_1},\dots,X_{t_n})$ is multivariate normal. Such a process is
+completely characterised by its (finite) first two moments; hence for Gaussian
+processes \textbf{weak $\Leftrightarrow$ strict stationarity}.
+\end{definition}
+
+\begin{definition}{Autocovariance sequence (ACVS)}{acvs}
+For a discrete-time second-order stationary $\{X_t\}$, the \textbf{ACVS} is
+\[
+\acvs_\tau=\Cov(X_0,X_\tau)=\Cov(X_t,X_{t+\tau}),\qquad \tau\in\Ints .
+\]
+Immediate properties: $\acvs_0=\Var(X_t)\ge0$, symmetry $\acvs_{-\tau}=\acvs_\tau$,
+and (Proposition~\ref{prop:psd}) positive semi-definiteness.
+\end{definition}
+
+\begin{definition}{Autocorrelation sequence (ACF)}{acf}
+The \textbf{ACF} is $\acf_\tau=\Corr(X_t,X_{t+\tau})=\acvs_\tau/\acvs_0$, with
+$\acf_0=1$ and $\abs{\acf_\tau}\le1$.
+\end{definition}
+
+\begin{definition}{Sample autocovariance estimators}{sampleacvs}
+Given $X_1,\dots,X_n$ with sample mean $\bar X$, two estimators are used for
+$\abs{\tau}\le n-1$ (both $0$ otherwise):
+\[
+\tilde\acvs_\tau=\frac{1}{n-\abs\tau}\sum_{t=1}^{n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X),
+\qquad
+\hat\acvs_\tau=\frac{1}{n}\sum_{t=1}^{n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X).
+\]
+With known mean, $\tilde\acvs_\tau$ is \emph{unbiased} but need not be
+positive semi-definite; $\hat\acvs_\tau$ is \emph{biased}
+($\E[\hat\acvs_\tau]=\tfrac{n-\abs\tau}{n}\acvs_\tau$) but \emph{is} positive
+semi-definite, which is why it is the default. The plug-in ACF estimator is
+$\hat\acf_\tau=\hat\acvs_\tau/\hat\acvs_0$.
+\end{definition}
+
+\begin{definition}{Mean ergodicity}{ergodic}
+$\{X_t\}$ is \textbf{mean ergodic} if its first two moments are finite and
+$\bar X\toprob \E[X_t]$ as $n\to\infty$ (``temporal averages
+$=$ population averages''). Ergodicity and stationarity are \emph{not}
+equivalent.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{theorem}{Kolmogorov existence theorem}{kolmo}
+A family of finite-dimensional distribution functions $\{F_{\mathbf t}\}$ are
+the f.d.d.'s of a stochastic process \emph{iff} they are
+\textbf{consistent}: for every $n$, every $\mathbf t$ and every $1\le i\le n$,
+\[
+\lim_{x_i\to\infty}F_{\mathbf t}(\mathbf x)=F_{\mathbf t(i)}(\mathbf x(i)),
+\]
+where $\mathbf t(i),\mathbf x(i)$ delete the $i$-th coordinate.\\[2pt]
+\textit{Why:} it guarantees an infinite-index stochastic process actually
+exists given only its finite-dimensional ``marginals'', justifying modelling
+$\{X_t\}_{t\in\Ints}$ even though we observe finitely many points.
+\end{theorem}
+
+\begin{proposition}{The ACVS is positive semi-definite}{psd}
+For any $n$, any $t_1,\dots,t_n\in\Ints$ and any $a_1,\dots,a_n\in\Reals$,
+\[
+\sum_{j=1}^n\sum_{k=1}^n a_ja_k\,\acvs_{j-k}\ge0 .
+\]
+\textit{Proof idea:} set $W=\sum_j a_jX_j$; then
+$0\le\Var(W)=\sum_{j,k}a_ja_k\Cov(X_j,X_k)=\sum_{j,k}a_ja_k\acvs_{j-k}$.\\
+\textit{Why:} p.s.d.\ is the defining algebraic property of a valid ACVS; a
+candidate sequence that is \emph{not} p.s.d.\ \textbf{cannot} be an
+autocovariance (used constantly to reject ``fake'' ACVS, see
+Exercise in Part~\ref{sec:spectral}).
+\end{proposition}
+
+\begin{proposition}{Variance of the sample mean \& consistency}{xbarvar}
+If $\sum_{\tau}\abs{\acvs_\tau}<\infty$ then $\bar X$ is unbiased and
+\[
+\Var(\bar X)=\frac1{n^2}\sum_{i,j=1}^n\acvs_{j-i}
+=\frac1{n}\sum_{\tau=-(n-1)}^{n-1}\Big(1-\tfrac{\abs\tau}{n}\Big)\acvs_\tau,
+\qquad
+n\Var(\bar X)\xrightarrow[n\to\infty]{}\sum_{\tau=-\infty}^{\infty}\acvs_\tau .
+\]
+Hence $\Var(\bar X)\to0$ and $\bar X\toprob\mu$ (consistency).\\
+\textit{Proof idea:} expand the double sum, collect by lag $\tau$, then apply
+the \textbf{Ces\`aro summability theorem} to replace
+$\sum(1-\tfrac{\abs\tau}{n})\acvs_\tau$ by $\sum\acvs_\tau$.\\
+\textit{Why:} this is the prototype ``when can a sample average replace a
+population average?''. Strong positive correlation inflates $\Var(\bar X)$
+(e.g.\ AR(1) with $\phi\to1$): dependence, not just sample size, controls
+estimation accuracy.
+\end{proposition}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Proving (or disproving) weak stationarity}{checkstat}
+Check the three conditions \emph{in order}, and stop at the first failure:
+\begin{enumerate}
+  \item \textbf{Mean constant in $t$:} compute $\E[X_t]$; it must not depend on $t$.
+  \item \textbf{Variance finite \& constant:} compute $\Var(X_t)$; must be
+        finite and $t$-free.
+  \item \textbf{Covariance shift-invariant:} compute $\Cov(X_t,X_{t+\tau})$ and
+        check it depends on $\tau$ only.
+\end{enumerate}
+Common disqualifiers: undefined moments (Cauchy), or a covariance that retains
+a $t$-dependence such as $\cos(ct)\cos(c(t+\tau))$.
+\end{keytech}
+
+\begin{keytech}{ACVS of a finite linear filter of white noise}{acvsfilter}
+For $X_t=\sum_k\theta_k\eps_{t-k}$ with $\eps$ white noise of variance
+$\sigma^2$, use bilinearity and $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$:
+\[
+\acvs_\tau=\Cov\!\Big(\sum_k\theta_k\eps_{t+\tau-k},\sum_j\theta_j\eps_{t-j}\Big)
+=\sigma^2\sum_{j}\theta_j\theta_{j+\abs\tau}.
+\]
+Only the terms whose noise indices coincide survive --- this single move powers
+\emph{all} MA covariance computations.
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{Student-$t$ noise \quad\textnormal{[Sheet 1]}}{e1}
+Let $X_t$ be i.i.d.\ Student-$t$ on one degree of freedom. Is $\{X_t\}$ weakly
+stationary?
+\end{exercise}
+\begin{solution}
+A Student-$t$ on $1$ d.o.f.\ is a standard Cauchy: its mean and variance are
+\emph{undefined}. Condition (ii) of weak stationarity (finite, constant
+variance) fails, so $\{X_t\}$ is \textbf{not} weakly stationary --- even though
+it is strictly stationary (i.i.d.). A clean illustration that strict
+$\not\Rightarrow$ weak.
+\end{solution}
+
+\begin{exercise}{Four candidate processes \quad\textnormal{[Sheet 1]}}{e2}
+Let $Y_t\iid \mathcal N(0,\sigma_Y^2)$ and $a,b,c$ constants. Classify each as
+weakly / strongly stationary and give the mean and ACVS:
+(1) $X_t=a+bY_t+cY_{t-1}$;\;
+(2) $X_t=a+bY_0$;\;
+(3) $X_t=Y_1\cos(ct)+Y_2\sin(ct)$;\;
+(4) $X_t=Y_0\cos(ct)$.
+\end{exercise}
+\begin{solution}
+\textbf{(1)} $\E[X_t]=a$ and, using independence,
+\[
+\acvs_\tau=\begin{cases}(b^2+c^2)\sigma_Y^2 & \tau=0,\\ bc\,\sigma_Y^2 & \tau=\pm1,\\ 0 &\text{else.}\end{cases}
+\]
+Depends on $\tau$ only, finite $\Rightarrow$ weakly stationary; a linear
+combination of Gaussians $\Rightarrow$ Gaussian $\Rightarrow$ also strongly
+stationary. (This is an MA(1).)\\
+\textbf{(2)} $\E[X_t]=a$, $\acvs_\tau=\Cov(bY_0,bY_0)=b^2\sigma_Y^2$ for
+\emph{all} $\tau$ (the process is constant in randomness across $t$). Weakly and
+strongly stationary.\\
+\textbf{(3)} $\E[X_t]=0$ and, using
+$\cos\alpha\cos\beta+\sin\alpha\sin\beta=\cos(\alpha-\beta)$,
+\[
+\acvs_\tau=\sigma_Y^2\big[\cos(ct)\cos(c(t{+}\tau))+\sin(ct)\sin(c(t{+}\tau))\big]
+=\sigma_Y^2\cos(c\tau),
+\]
+a function of $\tau$ only $\Rightarrow$ weakly (and, being Gaussian, strongly)
+stationary.\\
+\textbf{(4)} $\E[X_t]=0$ but
+$\acvs_\tau=\sigma_Y^2\cos(ct)\cos(c(t+\tau))$ \emph{depends on $t$}
+$\Rightarrow$ \textbf{not} stationary. The contrast (3) vs (4) is the classic
+trap: two random coefficients (3) restore stationarity that a single one (4)
+destroys.
+\end{solution}
+
+\begin{exercise}{Sum of uncorrelated stationary series \quad\textnormal{[Sheet 1]}}{e3}
+Let $\{X_t\},\{Y_t\}$ be stationary and mutually uncorrelated ($X_t,Y_s$
+uncorrelated for all $t,s$). Show $\{X_t+Y_t\}$ is stationary with
+$\acvs^{X+Y}_\tau=\acvs^X_\tau+\acvs^Y_\tau$.
+\end{exercise}
+\begin{solution}
+Mean: $\E[X_t+Y_t]=\E[X_t]+\E[Y_t]$ is constant. Variance:
+$\Var(X_t+Y_t)=\Var(X_t)+\Var(Y_t)<\infty$ since $\Cov(X_t,Y_t)=0$.
+Covariance, by bilinearity and uncorrelatedness of the cross terms,
+\[
+\Cov(X_t+Y_t,X_{t+\tau}+Y_{t+\tau})=\acvs^X_\tau+\underbrace{\Cov(X_t,Y_{t+\tau})}_{0}
++\underbrace{\Cov(Y_t,X_{t+\tau})}_{0}+\acvs^Y_\tau=\acvs^X_\tau+\acvs^Y_\tau,
+\]
+a function of $\tau$ only. Hence stationary with additive ACVS.
+\end{solution}
+
+\begin{exercise}{Superposition of $m$ orthogonal series \quad\textnormal{[Sheet 1]}}{e4}
+Let $\{X_{t,1}\},\dots,\{X_{t,m}\}$ be zero-mean stationary with
+$\acvs_j(\tau)=\Cov(X_{t,j},X_{t+\tau,j})$, and $\E[X_{t,j}X_{t+\tau,k}]=0$ for
+$j\ne k$. Find the ACVS of $X_t=\sum_{j=1}^m X_{t,j}$.
+\end{exercise}
+\begin{solution}
+By bilinearity, $\acvs_X(\tau)=\sum_{j=1}^m\sum_{k=1}^m\Cov(X_{t,j},X_{t+\tau,k})$.
+The cross terms ($j\ne k$) vanish by orthogonality, leaving only the diagonal:
+$\acvs_X(\tau)=\sum_{j=1}^m\acvs_j(\tau)$. (Geometrically: sum a matrix that is
+zero off the diagonal.)
+\end{solution}
+
+\begin{exercise}{Signal plus independent noise \quad\textnormal{[Sheet 1]}}{e5}
+Let $\{X_t\}$ be second-order stationary with ACVS $\acvs_\tau$ and let
+$\eps_t$ be i.i.d.\ with variance $\sigma^2$, independent of $\{X_t\}$. Find the
+ACVS of $Z_t=X_t+\eps_t$.
+\end{exercise}
+\begin{solution}
+Independence kills all cross-covariances. For $\tau\ne0$,
+$\acvs_Z(\tau)=\acvs_\tau$; at $\tau=0$, $\acvs_Z(0)=\acvs_0+\sigma^2$:
+\[
+\acvs_Z(\tau)=\acvs_\tau+\sigma^2\ind_{\{\tau=0\}} .
+\]
+Adding white noise inflates only the variance (the $\tau=0$ ``nugget''),
+leaving every other lag unchanged.
+\end{solution}
+
+\begin{exercise}{Bias, variance and MSE of the two ACVS estimators \quad\textnormal{[Sheet 2]}}{e6}
+For $X_t$ i.i.d.\ Gaussian white noise (variance $\sigma_X^2$, known mean
+replaced for $\bar X$), find the mean, variance and MSE of $\tilde\acvs_\tau$
+and $\hat\acvs_\tau$, and say which wins.
+\end{exercise}
+\begin{solution}
+Both are unbiased for white noise: $\E[\tilde\acvs_\tau]=\E[\hat\acvs_\tau]=0$
+for $\tau\ne0$ (and $\sigma_X^2$ at $\tau=0$). Using Isserlis' theorem for the
+fourth moments one finds, for $\tau\ne0$,
+\[
+\Var(\hat\acvs_\tau)=\frac{n-\abs\tau}{n^2}\sigma_X^4,
+\qquad
+\Var(\tilde\acvs_\tau)=\frac{1}{n-\abs\tau}\sigma_X^4 .
+\]
+Since the estimators are unbiased here, $\MSE=\Var$, and
+$\Var(\hat\acvs_\tau)=\big(\tfrac{n-\abs\tau}{n}\big)^2\Var(\tilde\acvs_\tau)
+\le\Var(\tilde\acvs_\tau)$. The \textbf{biased} divide-by-$n$ estimator
+$\hat\acvs_\tau$ has the \emph{smaller} MSE --- a recurring lesson that
+unbiasedness is not the goal, low MSE is.
+\end{solution}
+
+\begin{exercise}{Sample autocovariances sum to zero \quad\textnormal{[Sheet 2 / New angle]}}{e7}
+Show that for any data $\{x_1,\dots,x_n\}$, $\sum_{\abs\tau<n}\hat\acvs_\tau=0$.
+\end{exercise}
+\begin{solution}
+\[
+\sum_{\tau=-(n-1)}^{n-1}\hat\acvs_\tau
+=\frac1n\sum_{t_1=1}^n\sum_{t_2=1}^n(x_{t_1}-\bar x)(x_{t_2}-\bar x)
+=\frac1n\Big(\sum_{t=1}^n(x_t-\bar x)\Big)^2=0,
+\]
+because the double sum factorises and the centred data sum to zero. (The first
+equality just re-indexes the triangular lag sum as a full $t_1,t_2$ square.)
+\end{solution}
+
+\begin{exercise}{ACVS of a two-tap filter \quad\textnormal{[New]}}{e8}
+Let $\eps_t$ be mean-zero white noise with variance $\sigma^2$ and set
+$X_t=\theta_1\eps_t+\theta_2\eps_{t-1}$. Compute the ACVS and the ACF, and state
+for which $\theta_1,\theta_2$ the lag-1 correlation is maximised in magnitude.
+\end{exercise}
+\begin{solution}
+By the white-noise filter technique,
+\[
+\acvs_\tau=\begin{cases}(\theta_1^2+\theta_2^2)\sigma^2 & \tau=0,\\
+\theta_1\theta_2\sigma^2 & \tau=\pm1,\\ 0 &\text{else,}\end{cases}
+\qquad
+\acf_1=\frac{\theta_1\theta_2}{\theta_1^2+\theta_2^2}.
+\]
+Since $\abs{\theta_1\theta_2}\le\tfrac12(\theta_1^2+\theta_2^2)$ (AM--GM), we
+have $\abs{\acf_1}\le\tfrac12$, with equality iff $\abs{\theta_1}=\abs{\theta_2}$.
+So \textbf{no MA(1) can have $\abs{\acf_1}>\tfrac12$} --- a fact worth
+remembering as a sanity check on any claimed MA(1) ACF.
+\end{solution}

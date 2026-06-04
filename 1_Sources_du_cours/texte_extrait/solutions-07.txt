@@ -1,0 +1,251 @@
+
+===== PAGE 1/3 =====
+Time Series Exercise Sheet 7
+Sofia Olhede
+April 2, 2026
+Exercise 7.1
+Let {εt}t∈Z be a white noise process with variance σ2
+ε. Determine the spectral density function.
+Solution 7.1
+If εt is a white noise, then the process is uncorrelated so γτ = σ2
+ε if τ = 0, and 0 otherwise. Therefore, the
+spectral density of {εt} is for all f
+S (f) = σ2
+ε.
+Exercise 7.2
+Consider the sequence
+γτ =
+(
+1
+if |τ| ≤K
+0
+if |τ| > K
+where K is a positive integer. Is γτ an ACVS for some discrete parameter stationary process {Yt}? What would
+be the SDF?
+Solution 7.2
+Note first that P
+τ∈Z |γτ| < ∞and γτ = γ−τ, and that we can define the function S (·) such that for all
+f ∈[−1/2, 1/2]
+S (f) =
+∞
+X
+τ=−∞
+γτ exp(−2πiτf)
+=
+K
+X
+τ=−K
+exp(−2πiτf)
+= 1 + 2
+K
+X
+τ=1
+cos(2πτf)
+However, this does not satisfy S (f) ≥0 for all f ∈[−1/2, 1/2], so γτ cannot be an ACVS for a stationary time
+series. Indeed, if K is odd, i.e. K = 2q + 1 for q ∈Z, we have S (1/2) < 0.
+Exercise 7.3
+Determine the auto-covariance function of {Xt}t∈Z if it has spectrum
+S (f) = σ2 (1 −2 |f|)
+π
+1 (|f| ≤1/2)
+1
+
+===== PAGE 2/3 =====
+Solution 7.3
+We compute for |τ| > 0:
+γτ =
+Z 1/2
+−1/2
+e2πifτS (f) df
+= σ2
+π
+Z 1/2
+−1/2
+e2πifτ(1 −2 |f|)df
+= σ2
+π
+Z 1/2
+−1/2
+(cos(2πfτ) + i sin(2πfτ))(1 −2 |f|)df
+=σ2
+π
+Z 1/2
+−1/2
+cos(2πfτ)(1 −2 |f|)df
+(sin is odd)
+=2σ2
+π
+Z 1/2
+0
+cos(2πfτ)(1 −2f)df
+(Integrand is even)
+= 2σ2
+π
+n Z 1/2
+0
+cos(2πfτ)df
+|
+{z
+}
+I1
+−2
+Z 1/2
+0
+cos(2πfτ)fdf
+|
+{z
+}
+I2
+o
+.
+Then I1 = sin(πτ)
+2πτ
+, and after computing the second integral I2 = sin(πτ)
+4πτ
++ cos(πτ)−1
+4π2τ 2
+. Summing up both we end
+up with
+γτ = σ2
+π3
+1 −cos(πτ)
+τ 2
+	
+.
+For τ = 0, we compute γ0 = σ2
+2π.
+Exercise 7.4
+What is the spectral density function of an MA(q) process?
+Solution 7.4
+Recall that for an MA(q) we have autocovariance function given by
+γτ =
+
+
+
+σ2
+ε
+qP
+j=0
+θjθj+|τ|
+if |τ| ≤q,
+0
+otherwise,
+where θj = 0 for j > q. In fact, looking at how this was computed we have the more useful equation:
+γτ = σ2
+ε
+q
+X
+j=0
+q
+X
+k=0
+θjθk1τ=k−j.
+Clearly γ ∈ℓ1, so the spectral density function exists and can be computed by taking the Fourier transform of
+the ACVS. Thus the spectral density function is
+S (f) =
+X
+τ∈Z
+γτe−2πiτf
+=
+∞
+X
+τ=−∞
+σ2
+ε
+q
+X
+j=0
+q
+X
+k=0
+θjθk1τ=k−je−2πiτf
+= σ2
+ε
+q
+X
+j=0
+q
+X
+k=0
+θjθke−2πi(k−j)f
+= σ2
+ε
+
+q
+X
+j=0
+θje−2πijf
+
+2
+.
+2
+
+===== PAGE 3/3 =====
+Exercise 7.5
+Consider a harmonic process with a time varying amplitude
+Xt = ϵt cos (νt + Θ)
+where we assume that ν is fixed, Θ is a random phase, and ϵt is not constrained to be positive, but that its a
+mean-zero white noise process with variance σ2. Moreover, assume that ϵt is independent of Θ. The harmonic
+process in the lecture stipulated that Θ had to be uniformly distributed on [−π, π]. Suppose (instead) that Θ
+has a pdf given by
+fΘ (θ) = 1
+2π (1 + cos (θ)) ,
+|θ| ≤π
+Determine the first two moments of Xt. Are they still independent of t?
+Solution 7.5
+Using the independence between ϵt and Θ, we have
+E [Xt] = E [ϵt] E [cos (νt + Θ)] = 0 · E [cos (νt + Θ)] = 0
+which is constant in t, as the second expectation is finite since cos is bounded above by unity. Again we have
+for all t, τ ∈T
+E [XtXt+τ] = E [ϵtϵt+τ] E [cos (νt + Θ) cos (ν(t + τ) + Θ)]
+Since ϵt is uncorrelated, we have E [ϵtϵt+τ] = σ2 if τ = 0, and 0 if τ ̸= 0. Using the following identity,
+cos(A) cos(B) = 1
+2{cos(A −B) + cos(A + B)}
+we have
+E [cos (νt + Θ) cos {ν(t + τ) + Θ}] = 1
+2 [cos (ντ) + E [cos {ν(2t + τ) + 2Θ}]]
+and
+E [cos {ν(2t + τ) + 2Θ}] =
+Z π
+−π
+cos {ν(2t + τ) + 2θ} fΘ (θ) dθ
+= 1
+2π
+Z π
+−π
+cos {ν(2t + τ) + 2θ} dθ + 1
+2π
+Z π
+−π
+cos {ν(2t + τ) + 2θ} cos (θ) dθ
+=
+1
+4π sin {ν(2t + τ) + 2θ}
+
+π
+−π
++ 1
+4π
+Z π
+−π
+cos {ν(2t + τ) + θ} dθ
++ 1
+4π
+Z π
+−π
+cos {ν(2t + τ) + 3θ} dθ
+= 0 + 1
+4π sin {ν(2t + τ) + θ}
+
+π
+−π
++
+1
+12π sin {ν(2t + τ) + 3θ}
+
+π
+−π
+= 0 + 0 + 0
+= 0.
+We finally get E [XtXt+τ] = E [ϵtϵt+τ] cos (ντ) /2 = σ2/2 if τ = 0 and 0 otherwise, and therefore Xt is stationary.
+3

@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{10}{30 April 2026}{Forecasting}{The best predictor is the conditional expectation; for causal ARMA we forecast via the $\psi$-weights (future innovations $=0$) and the mean-square error grows with the horizon.}
+
+The whole point of fitting a model is to predict the future. We want $X_{n+h}$ from the
+observed data $X_1,\dots,X_n$: $h>0$ is the \textbf{horizon} (or \textbf{lead}), $n$ is the
+\textbf{origin}. Throughout we pretend the model \emph{and} its parameters are \textbf{known},
+so the only randomness left is that of the future innovations. The recurring message: optimal
+prediction needs nothing but the covariance structure $\{\acvs_\tau\}$, and for a causal ARMA
+it is computed by writing the future and \emph{erasing the future innovations}.
+
+\section*{Key definitions}
+
+\begin{defn}{Prediction mean square error (PMSE)}
+For any predictor $g(X_1,\dots,X_n)$ of $X_{n+h}$, its quality is
+\[
+P^{\,n}_{n+h}:=\E\!\left[\big(X_{n+h}-g(X_1,\dots,X_n)\big)^2\right].
+\]
+Smaller is better; minimising it over a class of predictors defines the ``best'' one in that class.
+\end{defn}
+
+\begin{defn}{Best linear predictor (BLP)}
+The best \emph{linear} predictor is the linear combination
+\[
+X^{\,n}_{n+h}=P_{X_1,\dots,X_n}(X_{n+h})=\sum_{j=1}^{n}\beta_j X_j
+\]
+minimising the PMSE. Here $P_{X_1,\dots,X_n}(\cdot)$ is the orthogonal projection onto the
+span of the data. For a \textbf{Gaussian} series the conditional expectation is already linear,
+so the BLP \emph{is} the overall best predictor; in general $\E[X_{n+h}\mid\cdot]$ is nonlinear and
+we restrict to linear predictors, which need only second-order information.
+\end{defn}
+
+\begin{defn}{$h$-step forecast error}
+$e_n(h):=X_{n+h}-X^{\,n}_{n+h}$. It is unbiased, $\E[e_n(h)]=0$, and its variance is exactly the
+PMSE: $\Var(e_n(h))=P^{\,n}_{n+h}$. For a causal ARMA, $e_n(h)=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}$.
+\end{defn}
+
+\begin{defn}{Three sources of uncertainty}
+A forecast carries (1) \textbf{model} uncertainty (wrong model form), (2) \textbf{estimation}
+uncertainty (parameters estimated, not known), (3) \textbf{innovation} uncertainty (random future
+$\eps$'s). We assume the model is known and parameters are exact, killing (1)\,\&\,(2) and leaving
+only innovation uncertainty. (Bootstrap can restore the others; not covered.)
+\end{defn}
+
+\begin{defn}{Gaussian prediction interval}
+For a Gaussian process $e_n(h)\sim\mathcal N(0,\Var(e_n(h)))$, so a $(1-\alpha)$ interval for
+$X_{n+h}$ is
+\[
+X^{\,n}_{n+h}\;\pm\;z_{1-\alpha/2}\,\sqrt{\Var\big(e_n(h)\big)},
+\qquad z_{0.975}\approx 1.96 .
+\]
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Lemma --- the conditional expectation is optimal}
+$g=\E[X_{n+h}\mid X_1,\dots,X_n]$ minimises the PMSE over \emph{all} predictors.\\
+\textit{Idea:} for any $Y$, $\E[(Y-c)^2]=\Var(Y)+(\E[Y]-c)^2$ is minimised at $c=\E[Y]$; apply this
+conditionally and take the tower expectation. This is the gold standard; for Gaussian data it is
+linear, motivating the BLP in general.
+\end{result}
+
+\begin{result}{Theorem --- prediction equations (zero-mean stationary)}
+The BLP coefficients $\beta$ solve the orthogonality conditions
+$\E[(X_{n+h}-X^{\,n}_{n+h})X_k]=0$ for $k=1,\dots,n$, i.e.\ \emph{the error is uncorrelated with
+every observation}. In matrix form $\Gamma_n\beta=\acvs_{[h]}$ with
+$\Gamma_n=[\acvs_{i-j}]$ (Toeplitz) and
+$\acvs_{[h]}=(\acvs_{n+h-1},\dots,\acvs_{h})\Tr$. If $\Gamma_n$ is invertible,
+\[
+\begin{aligned}
+X^{\,n}_{n+h}&=\acvs_{[h]}\Tr\,\Gamma_n^{-1}\,X,
+&P^{\,n}_{n+h}&=\acvs_0-\acvs_{[h]}\Tr\,\Gamma_n^{-1}\,\acvs_{[h]} .
+\end{aligned}
+\]
+Valid for \emph{any} stationary process; the BLP is always unique even if $\Gamma_n$ is singular.
+With mean $\mu$, just centre: $X^{\,n}_{n+h}=\mu+\acvs_{[h]}\Tr\Gamma_n^{-1}(X-\mu\mathbf 1_n)$,
+same PMSE.
+\end{result}
+
+\begin{result}{Theorem --- causal ARMA forecast via $\psi$-weights}
+For a causal ARMA, $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$, the BLP and its PMSE are
+\[
+\begin{aligned}
+X^{\,n}_{n+h}&=\sum_{j=h}^{\infty}\psi_j\,\eps_{n+h-j}=\psi_h\eps_n+\psi_{h+1}\eps_{n-1}+\cdots,
+&P^{\,n}_{n+h}&=\sigma^2\sum_{j=0}^{h-1}\psi_j^2 .
+\end{aligned}
+\]
+\textit{Idea:} every past-based predictor is a combination of $\eps_s,\,s\le n$; matching it to the
+observable part of $X_{n+h}$ kills all controllable error, leaving the $h$ future innovations.
+\textbf{Practical rule:} write $X_{n+h}=\sum_j\psi_j\eps_{n+h-j}$ and set
+$\eps_{n+1},\dots,\eps_{n+h}=0$.
+\end{result}
+
+\begin{result}{Proposition --- limiting behaviour}
+For causal ARMA, $\psi_j\to0$ exponentially, so as $h\to\infty$:
+\[
+X^{\,n}_{n+h}\longrightarrow\mu,
+\qquad
+\Var(e_n(h))=\sigma^2\sum_{j=0}^{h-1}\psi_j^2\longrightarrow\sigma^2\sum_{j\ge0}\psi_j^2=\acvs_0 .
+\]
+The far future is just the unconditional distribution: forecast $=$ mean, variance $=$ marginal
+variance.
+\end{result}
+
+\begin{result}{Proposition --- integrated (ARIMA) forecasts}
+For ARIMA$(p,d,q)$, $Z_t=\diff^{\,d}X_t$ is ARMA$(p,q)$; forecast $Z$, then \emph{re-integrate}:
+$\diff^{\,d}X^{\,n}_{n+h}=Z^{\,n}_{n+h}$. For $d=1$,
+\[
+X^{\,n}_{n+h}=X_n+\sum_{j=0}^{h-1}Z^{\,n}_{n+h-j}.
+\]
+If $\E[Z_t]=\alpha\ne0$ then $X^{\,n}_{n+h}\approx X_n+\alpha h$ (a drift line). Crucially the
+PMSE \textbf{diverges}, $P^{\,n}_{n+h}\to\infty$: no mean reversion.
+\end{result}
+
+\medskip
+\textbf{Truncated recipe (the hand method, ARMA \& ARIMA).}
+(1) Isolate $y_t$ on the left, everything else on the right. (2) Replace $t\to n+h$. (3) On the
+right substitute: future obs $\to$ their forecasts, future errors $\to 0$, past errors $\to$
+residuals $\hat\eps_s$ (pre-sample $\to0$). Run $h=1,2,\dots$ in order; each forecast feeds the
+next.
+
+\section*{Intuition}
+
+\begin{intu}[Why the interval widens, then saturates]
+A point forecast is useless without its spread. The error $e_n(h)$ accumulates the unknown
+$\eps_{n+1},\dots,\eps_{n+h}$, so the interval grows with $h$. For \emph{stationary} ARMA the
+growth saturates: as $h\to\infty$, $\Var(e_n(h))\to\acvs_0$, so the band converges to
+``mean $\pm$ a few marginal standard deviations'' --- forecasting far ahead beats nothing. For
+\emph{integrated} (ARIMA) processes it grows without bound.
+\end{intu}
+
+\begin{intu}[``Write the future, erase the future innovations'']
+The two ARMA theorems are one projection seen two ways. Prediction equations project onto
+$\mathrm{span}\{X_1,\dots,X_n\}$ using the ACVS; the $\psi$-weight formula projects onto the
+\emph{innovation} space $\mathrm{span}\{\eps_s:s\le n\}$. For invertible ARMA these spans coincide,
+so answers agree --- but the innovation view is far easier: take the MA$(\infty)$ form and drop every
+$\eps$ you have not yet seen.
+\end{intu}
+
+\begin{intu}[Mean reversion vs.\ memory length]
+Stationary models forget: an AR(1) gives $X^{\,n}_{n+h}=\phi^h X_n\to0$, decaying smoothly to the
+mean. An MA$(q)$ has memory only $q$: for $h>q$ the forecast jumps straight to $\mu$. Integrated
+models never forget --- a random walk with drift forecasts the drift line $X_n+\alpha h$ forever.
+\end{intu}
+
+\begin{intu}[AR$(p)$ shortcut]
+For an AR$(p)$ with $n\ge p$, the one-step forecast is simply
+$X^{\,n}_{n+1}=\sum_{i=1}^p\phi_i X_{n+1-i}$ --- no matrix to invert. Reason: subtracting the AR
+recursion leaves $\eps_{n+1}$, which is uncorrelated with the past, so the prediction equations are
+satisfied automatically.
+\end{intu}
+
+\begin{exmpl}[MA(2) one- to three-step forecast]
+Let $X_t=\eps_t-\theta_1\eps_{t-1}-\theta_2\eps_{t-2}$, $\eps_t\iid\mathcal N(0,\sigma^2)$. Here
+$\psi_0=1,\psi_1=-\theta_1,\psi_2=-\theta_2$, $\psi_j=0$ for $j\ge3$. Zeroing future innovations:
+\[
+X^{\,n}_{n+1}=-\theta_1\hat\eps_n-\theta_2\hat\eps_{n-1},\quad
+X^{\,n}_{n+2}=-\theta_2\hat\eps_n,\quad
+X^{\,n}_{n+3}=0\ (=\mu).
+\]
+Variances $\Var(e_n(h))=\sigma^2,\ \sigma^2(1+\theta_1^2),\ \sigma^2(1+\theta_1^2+\theta_2^2)=\acvs_0$.
+A 95\% interval for $X_{n+2}$: $-\theta_2\hat\eps_n\pm1.96\,\sigma\sqrt{1+\theta_1^2}$.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Best predictor} $=\E[X_{n+h}\mid\text{data}]$; for Gaussian data this is linear, so
+        it equals the BLP. Linear prediction needs only the ACVS.
+  \item \textbf{Solve} $\Gamma_n\beta=\acvs_{[h]}$ for the general BLP; centre by $\mu$ if the mean
+        is nonzero. The error is orthogonal to every observation.
+  \item \textbf{Causal ARMA:} write $X_{n+h}=\sum_j\psi_j\eps_{n+h-j}$ and set future
+        $\eps\to0$. PMSE $=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$; get $\psi$-weights from
+        $\Theta(B)/\Phi(B)$.
+  \item \textbf{Limits:} stationary $\Rightarrow X^{\,n}_{n+h}\to\mu$ and
+        $\Var(e_n(h))\to\acvs_0$ (band saturates). ARIMA $\Rightarrow$ drift line and PMSE
+        $\to\infty$ (band fans out).
+  \item \textbf{ARIMA:} difference $\to$ forecast the ARMA $\to$ re-integrate; or apply the
+        truncated recipe to the expanded unit-root equation directly.
+  \item \textbf{Interval:} $X^{\,n}_{n+h}\pm 1.96\,\sqrt{\Var(e_n(h))}$ for 95\% (Gaussian).
+\end{itemize}
+\end{retenir}
+
+\end{document}

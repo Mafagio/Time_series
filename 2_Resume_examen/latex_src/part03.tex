@@ -1,0 +1,733 @@
+% ======================================================================
+%  PART 3 -- ARMA Revisited: Backshift Operator, Wold Decomposition,
+%            Causality & Invertibility
+% ======================================================================
+\section{ARMA Revisited: Backshift Operator, Wold Decomposition, Causality \& Invertibility}
+\label{sec:armarev}
+
+Having met AR, MA and ARMA models as explicit sums of white noise, we now
+repackage them with the \textbf{backshift operator} $\Bsh$, which turns the
+difference equations into a clean algebra of \emph{polynomials} $\Phi(z)$ and
+$\Theta(z)$. The payoff is conceptual: questions about a process
+(``is it stationary? is it invertible? what is its $\mathrm{MA}(\infty)$
+representation?'') become questions about the \emph{roots} of these
+polynomials and the analyticity of a transfer function $G(z)$. Along the way
+the \textbf{Wold decomposition theorem} tells us that essentially every
+stationary process is a one-sided moving average of white noise, which is
+exactly why the linear/ARMA world is so central. Throughout,
+$\{\eps_t\}$ is mean-zero white noise with $\Var(\eps_t)=\sigma^2$, and we use
+the lecture-note conventions: ARMA written $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$,
+stationarity from roots of $\Phi$ \emph{outside} the unit circle, invertibility
+from roots of $\Theta$ \emph{outside} the unit circle.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Backshift operator $\Bsh$}{p3-backshift}
+The \textbf{backshift operator} maps a time series $\{X_t\}$ to the series
+$\{Y_t\}=\Bsh[\{X_t\}]$ shifted back one step in time,
+\[
+Y_t = X_{t-1}\qquad\text{for all }t\in\Ints .
+\]
+We write informally $\Bsh X_t = X_{t-1}$. Iterating, $\Bsh^k X_t = X_{t-k}$
+for $k\ge0$, with $\Bsh^0=I$ the identity. The operator is linear, and
+because shifts commute, products of polynomials in $\Bsh$ may be multiplied
+and reordered like ordinary polynomials.
+\end{definition}
+
+\begin{intuition}
+$\Bsh$ is just ``$X_{t}\mapsto X_{t-1}$'', but treating it as an algebraic
+symbol $z$ is what lets us \emph{factor}, \emph{invert} and \emph{expand}
+model equations. Every result in this part is a statement about the polynomial
+$\Phi(z)$ or $\Theta(z)$ obtained by replacing $\Bsh$ with the complex variable
+$z$.
+\end{intuition}
+
+\begin{definition}{ARMA polynomial notation}{p3-armapoly}
+An $\mathrm{ARMA}(p,q)$ process satisfies
+\[
+\sum_{j=0}^{p}\phi_j X_{t-j} \;=\; \sum_{k=0}^{q}\theta_k\eps_{t-k},
+\qquad \phi_0=-1,\ \theta_0=-1,
+\]
+which, with the backshift operator, becomes the compact statement
+\[
+\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t,\qquad
+\Phi(z)=\sum_{j=0}^{p}\phi_j z^{j},\quad
+\Theta(z)=\sum_{k=0}^{q}\theta_k z^{k}.
+\]
+In the common ``signed'' form one writes
+$X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\eps_{t-k}$;
+simple examples instead use $X_t=\eps_t-\theta\eps_{t-1}$ etc. Pure cases:
+$\mathrm{AR}(p)$ is $\Phi(\Bsh)X_t=\eps_t$ and $\mathrm{MA}(q)$ is
+$X_t=\Theta(\Bsh)\eps_t$.
+\end{definition}
+
+\begin{definition}{Characteristic polynomials}{p3-charpoly}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ we call
+\begin{itemize}
+  \item $\Phi(z)$ the \textbf{characteristic polynomial of the autoregressive
+        part}, and
+  \item $\Theta(z)$ the \textbf{characteristic polynomial of the moving-average
+        part}.
+\end{itemize}
+For a pure $\mathrm{AR}$, $\Phi(\Bsh)X_t=\eps_t$, ``the characteristic
+polynomial'' means $\Phi(z)$; for a pure $\mathrm{MA}$,
+$X_t=\Theta(\Bsh)\eps_t$, it means $\Theta(z)$. The \emph{roots} of these
+polynomials govern stationarity and invertibility.
+\end{definition}
+
+\begin{definition}{Two-sided linear process}{p3-twosided}
+A \textbf{(two-sided) linear process} is
+\[
+X_t=\sum_{k=-\infty}^{\infty}g_k\,\eps_{t-k},
+\qquad \norm{g}_2^2=\sum_k g_k^2<\infty,
+\]
+with $\{g_k\}\subset\Reals$ and $\{\eps_t\}$ mean-zero white noise. Its first
+two moments are, for all $t,\tau\in\Ints$,
+\[
+\E[X_t]=0,\qquad
+\Var(X_t)=\sigma^2\norm{g}_2^2<\infty,\qquad
+\Cov(X_t,X_{t+\tau})=\sigma^2\sum_{k=-\infty}^{\infty}g_k\,g_{k+\tau}.
+\]
+The summability $\norm{g}_2^2<\infty$ is what makes these moments finite, so the
+process is (second-order) stationary.
+\end{definition}
+
+\begin{definition}{General linear process (one-sided)}{p3-genlin}
+If in the two-sided process we set $g_{-1}=g_{-2}=\cdots=0$, we obtain a
+\textbf{general linear process}
+\[
+X_t=\sum_{k=0}^{\infty}g_k\,\eps_{t-k},\qquad \norm{g}_2^2<\infty .
+\]
+Now $X_t$ depends only on the \emph{past and present} of $\{\eps_t\}$, making
+the process \textbf{causal} (in the linear sense). The same mean/autocovariance
+formulas apply, so it is stationary. Writing $G(z)=\sum_{k\ge0}g_kz^k$ gives the
+operator form $X_t=G(\Bsh)\eps_t$. By convention $g_0=1$.
+\end{definition}
+
+\begin{definition}{Transfer function $G(z)$, zeros and poles}{p3-transfer}
+For a linear process $X_t=G(\Bsh)\eps_t$, the function
+\[
+G(z)=\sum_{k=0}^{\infty}g_k z^{k}
+\]
+is the \textbf{transfer function}. When $G$ is a rational ratio
+$G(z)=G_1(z)/G_2(z)$:
+\begin{itemize}
+  \item the roots of the numerator $G_1(z)$ are the \textbf{zeros} of $G$;
+  \item the roots of the denominator $G_2(z)$ are the \textbf{poles} of $G$.
+\end{itemize}
+For an $\mathrm{ARMA}$ model $G(z)=\Theta(z)/\Phi(z)$: the zeros of $\Phi$
+(roots of the AR polynomial) are the poles of $G$, and the zeros of $\Theta$
+(roots of the MA polynomial) are the zeros of $G$. Whether the expansion of
+$G$ involves only past/present (versus future) noise is decided by where these
+roots sit relative to the unit circle $|z|=1$.
+\end{definition}
+
+\begin{definition}{Innovations outlier}{p3-innov}
+If a single realised value of $\eps_t$ affects $X_t$ \emph{and all subsequent}
+$X_{t+1},X_{t+2},\dots$, that value is called an \textbf{innovations outlier}.
+This is exactly the behaviour of a one-sided ($\mathrm{MA}(\infty)$) process:
+each innovation $\eps_t$ propagates forward through the weights $g_0,g_1,\dots$.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{theorem}{Wold decomposition theorem}{p3-wold}
+Any (zero-mean) second-order stationary process $\{X_t\}$ can be written as
+\[
+X_t = U_t + V_t,
+\qquad U_t\ \text{and}\ V_t\ \text{uncorrelated},
+\]
+where
+\begin{itemize}
+  \item $U_t$ has a \textbf{one-sided linear} ($\mathrm{MA}(\infty)$)
+        representation
+        \[
+        U_t=\sum_{k=0}^{\infty}g_k\,\eps_{t-k},\qquad g_0=1,\ \norm{g}_2^2<\infty,
+        \]
+        with $\{\eps_t\}$ mean-zero white noise uncorrelated with $V$,
+        i.e.\ $\E[\eps_s V_t]=0$ for all $s,t$; the sequences $\{g_k\}$ and
+        $\{\eps_t\}$ are \emph{uniquely} determined;
+  \item $V_t$ is \textbf{singular} (deterministic): it can be predicted from its
+        own past with zero error.
+\end{itemize}
+\textit{Proof idea:} project $X_t$ onto the closed linear span of its own past;
+the residual one-step innovations are the white noise $\eps_t$, the $g_k$ are the
+projection coefficients, and $V_t$ is the part lying in the infinite-past
+intersection of these spans (the purely deterministic component).\\
+\textit{Why:} this is the structural justification for the whole linear-model
+programme: up to a deterministic piece, \emph{every} stationary process is a
+one-sided moving average of white noise, and ARMA models are the finite,
+rational approximations to this $\mathrm{MA}(\infty)$.
+\end{theorem}
+
+\begin{intuition}
+Wold says: the only ``new information'' arriving at time $t$ is the innovation
+$\eps_t$; everything else is either an echo of past innovations ($U_t$) or
+perfectly forecastable from the past ($V_t$, e.g.\ a fixed sinusoid). For the
+processes we study $V_t=0$, leaving the pure $\mathrm{MA}(\infty)$ form
+$X_t=G(\Bsh)\eps_t$.
+\end{intuition}
+
+\begin{proposition}{Laurent expansion of $1/G_2$ and the past/present criterion}{p3-laurent}
+Let $G(z)=G_1(z)/G_2(z)$ and let $z_1,\dots,z_p$ be the zeros of $G_2$, ordered
+so that $z_1,\dots,z_k$ lie \emph{inside} the unit circle and
+$z_{k+1},\dots,z_p$ lie \emph{outside}. A partial-fraction plus geometric-series
+(Laurent) expansion, convergent on $|z|=1$, gives after replacing $z\mapsto\Bsh$
+\[
+\frac{1}{G_2(\Bsh)}\eps_t
+=\underbrace{\sum_{j=1}^{k}A_j\sum_{l=0}^{\infty}z_j^{\,l}\,\eps_{t+1+l}}_{\text{future}}
+\;-\;\underbrace{\sum_{j=k+1}^{p}A_j\sum_{l=0}^{\infty}z_j^{-(l+1)}\,\eps_{t-l}}_{\text{past}+\text{present}} .
+\]
+Hence if \emph{all} roots of $G_2(z)$ are outside the unit circle ($k=0$), only
+past and present values appear, and the one-sided general linear process exists.\\
+\textit{Proof idea:} expand $A_j/(z-z_j)$ as a geometric series, choosing the
+\emph{inside} expansion $\sum_l (z_j/z)^l$ for $|z_j|<1$ and the \emph{outside}
+expansion for $|z_j|>1$, so that each series converges on $|z|=1$.\\
+\textit{Why:} this is the precise mechanism behind ``roots outside the unit
+circle $\Rightarrow$ causal''. It also gives the equivalent analytic statement:
+$|G(z)|<\infty$ for $|z|\le1$, i.e.\ $G$ is \textbf{analytic inside and on the
+unit circle}.
+\end{proposition}
+
+\begin{proposition}{Stationarity of the general linear process}{p3-glpstat}
+A general linear process $X_t=\sum_{k\ge0}g_k\eps_{t-k}$ with
+$\norm{g}_2^2<\infty$ is second-order stationary, with
+\[
+\E[X_t]=0,\qquad
+\acvs_\tau=\sigma^2\sum_{k=0}^{\infty}g_k\,g_{k+\abs\tau}.
+\]
+\textit{Proof idea:} the mean is zero by linearity; bilinearity of covariance
+together with $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$ collapses the double
+sum to the single sum above, which is finite by Cauchy--Schwarz and
+$\norm{g}_2^2<\infty$.\\
+\textit{Why:} this is the engine for computing the ACVS of \emph{any} causal
+ARMA once its $\mathrm{MA}(\infty)$ weights $\{g_k\}=\{\psi_k\}$ are known.
+\end{proposition}
+
+\begin{proposition}{Stationarity (causality) of $\mathrm{AR}(p)$}{p3-arstat}
+For $\mathrm{AR}(p)$, $\Phi(\Bsh)X_t=\eps_t$, the (unique) stationary causal
+solution is $X_t=\Phi^{-1}(\Bsh)\eps_t=G(\Bsh)\eps_t$ with
+$G(z)=\Phi^{-1}(z)$. This power expansion is analytic on $|z|\le1$
+\emph{iff} all roots of $\Phi(z)$ lie \emph{outside} the unit circle. Therefore
+\[
+\mathrm{AR}(p)\ \text{is stationary}\iff \text{all roots of }\Phi(z)\ \text{satisfy }\abs{z}>1 .
+\]
+\textit{Proof idea:} the poles of $G=1/\Phi$ are the roots of $\Phi$; by the
+Laurent criterion (Prop.~\ref{prop:p3-laurent}) the one-sided expansion exists
+exactly when those poles are outside $|z|=1$.\\
+\textit{Why:} this is \emph{the} root test for AR stationarity; it reduces an
+infinite-order question to checking the moduli of $p$ roots.
+\end{proposition}
+
+\begin{proposition}{$\mathrm{AR}(p)$ is always invertible; $\mathrm{MA}(q)$ is always stationary}{p3-alwaysinv}
+\begin{itemize}
+  \item For $\mathrm{AR}(p)$, $\Phi(\Bsh)X_t=\eps_t$ already expresses the white
+        noise as a \emph{finite} polynomial in $X$, so $\mathrm{AR}(p)$ is
+        \textbf{always invertible} (the AR polynomial $\Phi$ has finite order;
+        there is no MA polynomial, $\Theta\equiv1$).
+  \item For $\mathrm{MA}(q)$, $X_t=\Theta(\Bsh)\eps_t=G(\Bsh)\eps_t$ with
+        $G(z)=\Theta(z)$ a \emph{finite} polynomial, so $|G(z)|<\infty$
+        everywhere; hence $\mathrm{MA}(q)$ is \textbf{always stationary}.
+\end{itemize}
+\textit{Proof idea:} ``finite polynomial $\Rightarrow$ bounded on the unit
+disk''; only the \emph{inverse} expansion can fail to converge, never the
+finite direct one.\\
+\textit{Why:} it tells you which check is \emph{free}: never test an AR for
+invertibility or an MA for stationarity.
+\end{proposition}
+
+\begin{proposition}{Invertibility via $G^{-1}$ and the $\mathrm{MA}(q)$ root test}{p3-invert}
+A linear process $X_t=G(\Bsh)\eps_t$ is \textbf{invertible} if it can be
+rewritten as an $\mathrm{AR}(\infty)$,
+\[
+G^{-1}(\Bsh)X_t=\eps_t,\qquad G^{-1}(z)=\sum_{k=0}^{\infty}h_k z^{k},
+\]
+with $G^{-1}$ analytic on $|z|\le1$, equivalently $|G^{-1}(z)|<\infty$ for
+$|z|\le1$, equivalently \emph{all poles of $G^{-1}$ are outside} the unit circle
+(equivalently, all \emph{zeros} of $G$ are inside). For $\mathrm{MA}(q)$,
+$G=\Theta$, so
+\[
+\mathrm{MA}(q)\ \text{is invertible}\iff \text{all roots of }\Theta(z)\ \text{satisfy }\abs{z}>1 .
+\]
+\textit{Proof idea:} inverting $X_t=\Theta(\Bsh)\eps_t$ needs the power series of
+$1/\Theta$ to converge on $|z|\le1$; by the Laurent criterion this requires the
+roots of $\Theta$ (the poles of $1/\Theta$) outside the unit circle.\\
+\textit{Why:} invertibility is what makes the innovations $\eps_t$ recoverable
+from the observed past $X_t,X_{t-1},\dots$, which is essential for forecasting
+and for parameter identifiability.
+\end{proposition}
+
+\begin{intuition}
+Stationarity (causality) and invertibility are the \emph{same} test applied to
+\emph{two different} polynomials: ``all roots outside the unit circle'' for
+$\Phi$ controls whether $X_t=G(\Bsh)\eps_t$ uses only past/present noise
+(causal), while the identical test for $\Theta$ controls whether
+$\eps_t=G^{-1}(\Bsh)X_t$ uses only past/present data (invertible). An AR has no
+$\Theta$ to fail, so it is always invertible; an MA has no $\Phi$ to fail, so it
+is always stationary.
+\end{intuition}
+
+\begin{corollary}{Stationarity \& invertibility summary for ARMA}{p3-summary}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$:
+\[
+\begin{aligned}
+\textbf{AR}(p):&\quad \text{stationary}\iff \text{roots of }\Phi\ \text{outside }\abs{z}=1;\quad \text{\emph{always} invertible.}\\
+\textbf{MA}(q):&\quad \text{\emph{always} stationary};\quad \text{invertible}\iff \text{roots of }\Theta\ \text{outside }\abs{z}=1.\\
+\textbf{ARMA}(p,q):&\quad \text{stationary}\iff \text{roots of }\Phi\ \text{outside};\ \ \text{invertible}\iff \text{roots of }\Theta\ \text{outside.}
+\end{aligned}
+\]
+\textit{Why:} the single most-used reference fact of the chapter; combine the
+two independent root tests.
+\end{corollary}
+
+\begin{pitfall}
+``Roots outside the unit circle'' refers to the roots of the polynomial
+$\Phi(z)=\sum_j\phi_j z^j$ in the variable $z$, i.e.\ $\abs{z}>1$. Equivalently,
+in terms of the \emph{reciprocal} roots $g=1/z$, one needs $\abs{g}<1$ ---
+exactly the AR(1) condition $\abs{\phi}<1$ (since the root of $1-\phi z$ is
+$z=1/\phi$). Do not confuse the two conventions, and do not check
+\emph{inside} the circle.
+\end{pitfall}
+
+\begin{proposition}{Causal $\mathrm{AR}(p)$ has $\pacf_\tau=0$ for $\tau>p$}{p3-pacfcut}
+If $\{X_t\}$ is a causal $\mathrm{AR}(p)$, its partial autocorrelation function
+satisfies $\pacf_\tau=0$ for all $\tau>p$.\\
+\textit{Proof idea:} the order-$\tau$ best linear predictor is
+$P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$ and
+$\pacf_\tau=\pacf_{\tau,\tau}$. Since
+$X_\tau=\sum_{j=1}^p\phi_j X_{\tau-j}+\eps_\tau$, choosing
+$\pacf_{\tau,j}=\tilde\phi_j$ (with $\tilde\phi_j=\phi_j$ for $j\le p$,
+$\tilde\phi_j=0$ for $j>p$) makes the prediction residual equal $\eps_\tau$,
+which by causality satisfies $\Cov(\eps_\tau,X_k)=0$ for all $k<\tau$ (here
+$\Cov(X_t,\eps_s)=0$ when $t<s$). Thus the orthogonality (prediction) equations
+are met, so these are the true coefficients; in particular
+$\pacf_\tau=\pacf_{\tau,\tau}=\tilde\phi_\tau=0$ for $\tau>p$.\\
+\textit{Why:} the PACF ``cuts off'' after lag $p$ for an $\mathrm{AR}(p)$ ---
+the diagnostic mirror image of the ACF cutting off after lag $q$ for an
+$\mathrm{MA}(q)$ (this proof is Sheet~2, Ex.~2.7).
+\end{proposition}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Root test for stationarity / invertibility}{p3-roottest}
+Given $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$:
+\begin{enumerate}
+  \item Write the polynomials in $z$: $\Phi(z)=1-\phi_1 z-\dots-\phi_p z^p$ and
+        $\Theta(z)=1-\theta_1 z-\dots-\theta_q z^q$ (matching your sign
+        convention).
+  \item \textbf{Stationarity:} solve $\Phi(z)=0$ and check \emph{every} root has
+        $\abs{z}>1$. (AR/ARMA only; an MA is automatically stationary.)
+  \item \textbf{Invertibility:} solve $\Theta(z)=0$ and check \emph{every} root
+        has $\abs{z}>1$. (MA/ARMA only; an AR is automatically invertible.)
+\end{enumerate}
+For a quadratic $a z^2+bz+c$ use $z=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$ and report
+$\abs{z}=\sqrt{(\mathrm{Re}\,z)^2+(\mathrm{Im}\,z)^2}$. A handy AR(1)/AR(2)
+shortcut: $1-\phi z$ has root $1/\phi$; $1-\phi_1 z-\phi_2 z^2$ is stationary iff
+$\abs{\phi_2}<1$, $\phi_2+\phi_1<1$ and $\phi_2-\phi_1<1$ (the AR(2) triangle).
+\end{keytech}
+
+\begin{keytech}{$\psi$-weights by recurrence (matching coefficients)}{p3-recur}
+To find the $\mathrm{MA}(\infty)$ weights in $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$
+for a causal $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$, equate
+$\Phi(z)\big(\sum_{j\ge0}\psi_j z^j\big)=\Theta(z)$ and match powers of $z$.
+With $\Phi(z)=1-\phi_1 z-\dots-\phi_p z^p$ and
+$\Theta(z)=1-\theta_1 z-\dots-\theta_q z^q$ this gives the recurrence
+\[
+\psi_j=\theta_j^{\star}+\sum_{i=1}^{p}\phi_i\,\psi_{j-i},
+\qquad \psi_0=1,\ \psi_j=0\ (j<0),
+\]
+where $\theta_j^{\star}=-\theta_j$ for $1\le j\le q$ and $0$ otherwise (with the
+$X_t=\eps_t-\theta\eps_{t-1}$ sign convention). Solve forward; for a constant-
+coefficient linear recurrence the closed form is a sum
+$\sum_i (\text{polynomial in }j)\,r_i^{-j}$ over the AR roots $r_i$ (with the
+familiar $(c_0+c_1 j)r^{-j}$ shape for a repeated root).
+\end{keytech}
+
+\begin{keytech}{$\psi$-weights by partial fractions}{p3-partialfrac}
+Alternatively, expand $G(z)=\Theta(z)/\Phi(z)$ directly:
+\begin{enumerate}
+  \item Factor $\Phi(z)=\phi_p\prod_{i}(z-r_i)$ with roots $r_i$ ($\abs{r_i}>1$).
+  \item Partial-fraction $\dfrac{\Theta(z)}{\Phi(z)}
+        =(\text{poly})+\sum_i\dfrac{A_i}{z-r_i}$, then write each
+        $\dfrac{A_i}{z-r_i}=-\dfrac{A_i}{r_i}\dfrac{1}{1-z/r_i}
+        =-\dfrac{A_i}{r_i}\sum_{j\ge0}(z/r_i)^{\,j}$ (valid for
+        $\abs{z}<\abs{r_i}$, in particular on/inside the unit circle).
+  \item Collect the coefficient of $z^j$ to read off $\psi_j$.
+\end{enumerate}
+Because $\abs{r_i}>1$ the geometric series converge inside the unit disk,
+giving a decaying $\psi_j$. This is the method of Sheet~3, Ex.~3.1.
+\end{keytech}
+
+\begin{keytech}{ACVS of a causal ARMA via the difference equation}{p3-acvsdiff}
+To get $\acvs_\tau$ for $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ without summing
+$\psi$-weights:
+\begin{enumerate}
+  \item Multiply the model equation by $X_{t-\tau}$ and take expectations. For
+        $\tau$ larger than the MA order $q$ the right side vanishes, giving a
+        \emph{homogeneous} recurrence in $\acvs_\tau$ whose characteristic
+        equation is $\Phi$ (so $\acvs_\tau$ is a combination of $r_i^{-\tau}$).
+  \item For the small lags $\tau=0,1,\dots,q$ the right side keeps cross-terms
+        $\E[\eps_{t-k}X_{t-\tau}]=\sigma^2\psi_{k-\tau}$ (only $k\ge\tau$
+        contribute, since $X_{t-\tau}$ is a one-sided MA in
+        $\eps_{t-\tau},\eps_{t-\tau-1},\dots$). These give the initial
+        conditions.
+  \item Fit the general homogeneous solution to the initial conditions.
+\end{enumerate}
+This is the route used in the lecture-note worked example
+(Exercise~\ref{exo:p3-arma22ex}).
+\end{keytech}
+
+\begin{keytech}{Spectral density of an ARMA from its polynomials}{p3-sdf}
+For a causal, invertible ARMA $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$, the spectral
+density (with frequency $f$, sampling step $1$) is
+\[
+\sdf(f)=\sigma^2\,\frac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2},
+\qquad -\tfrac12\le f\le\tfrac12 .
+\]
+For the pure $\mathrm{MA}(1)$ $X_t=\eps_t-\theta\eps_{t-1}$ this gives
+$\sdf(f)=\sigma^2\abs{1-\theta e^{-2\pi i f}}^2
+=\sigma^2\big(1+\theta^2-2\theta\cos(2\pi f)\big)$, and one checks
+$\int_{-1/2}^{1/2}\sdf(f)\,df=\acvs_0=\sigma^2(1+\theta^2)$ and
+$\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f}\,df=\acvs_1=-\theta\sigma^2$.
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{$\psi$-weights via partial fractions \quad\textnormal{[Sheet 3]}}{p3-e31}
+Find the coefficients $\psi_j$, $j=0,1,2,\dots$, in the representation
+$X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ of the ARMA process
+\[
+(1-0.5\Bsh+0.04\Bsh^2)X_t=(1+0.25\Bsh)\eps_t,
+\]
+where $\eps_t$ is white noise.
+\end{exercise}
+\begin{solution}
+Write $X_t=G(\Bsh)\eps_t$ with
+\[
+G(z)=\frac{1+0.25z}{1-0.5z+0.04z^2}
+=\frac{1+0.25z}{0.04\,(z-2.5)(z-10)},
+\]
+since $0.04z^2-0.5z+1=0$ has roots $z=2.5$ and $z=10$ (both outside the unit
+circle, so the process is causal). Partial-fraction the rational part
+$\frac{1}{(z-2.5)(z-10)}=\frac{1}{7.5}\big(\frac{-1}{z-2.5}+\frac{1}{z-10}\big)$,
+hence
+\[
+G(z)=\frac{1+0.25z}{0.04\cdot7.5}\left(\frac{-1}{z-2.5}+\frac{1}{z-10}\right)
+=\frac{1+0.25z}{0.3}\left(\frac{1}{2.5}\sum_{j\ge0}0.4^j z^j-\frac{1}{10}\sum_{j\ge0}0.1^j z^j\right),
+\]
+using $\frac{-1}{z-2.5}=\frac{1}{2.5}\frac{1}{1-z/2.5}=\frac{1}{2.5}\sum_{j\ge0}(0.4)^j z^j$
+and $\frac{1}{z-10}=-\frac{1}{10}\sum_{j\ge0}(0.1)^j z^j$. Distributing the
+factor $(1+0.25z)/0.3$ and collecting powers of $z$,
+\[
+G(z)=\sum_{j\ge0}\left(\frac{0.4^j}{0.75}-\frac{0.1^j}{3}\right)z^j
++\sum_{l\ge1}\left(\frac{0.4^l}{1.2}-\frac{0.1^l}{1.2}\right)z^l,
+\]
+so for $j\ge1$,
+\[
+\psi_j=\frac{0.4^j}{0.75}-\frac{0.1^j}{3}+\frac{0.4^j}{1.2}-\frac{0.1^j}{1.2}
+=\Big(\tfrac{1}{0.75}+\tfrac{1}{1.2}\Big)0.4^j-\Big(\tfrac{1}{3}+\tfrac{1}{1.2}\Big)0.1^j
+=\frac{13}{6}\,0.4^j-\frac{7}{6}\,0.1^j,
+\]
+and $\psi_0=1$. Hence
+\[
+\boxed{\;\psi_j=\begin{cases}1 & j=0,\\[2pt]
+\dfrac{13}{6}\,(0.4)^j-\dfrac{7}{6}\,(0.1)^j & j\ge1.\end{cases}}
+\]
+\textit{Check (coefficient-matching):} the recurrence
+$\psi_0=1,\ \psi_1-0.5\psi_0=0.25\Rightarrow\psi_1=0.75,\
+\psi_j=0.5\psi_{j-1}-0.04\psi_{j-2}\ (j\ge2)$ gives
+$\psi_0,\psi_1,\psi_2,\psi_3=1,\,0.75,\,0.335,\,0.1375$, matching
+$\tfrac{13}{6}0.4^j-\tfrac{7}{6}0.1^j$ exactly.
+\end{solution}
+
+\begin{exercise}{$\mathrm{MA}(\infty)$ representation of $\mathrm{AR}(1)$ and $\mathrm{AR}(2)$ \quad\textnormal{[Sheet 3]}}{p3-e32}
+For a stationary causal $\mathrm{AR}(1)$ $(1-\phi\Bsh)Y_t=\eps_t$ and a
+stationary $\mathrm{AR}(2)$ $(1-\phi_1\Bsh-\phi_2\Bsh^2)Y_t=\eps_t$, find the
+representation of $Y_t$ in terms of $\eps_t$.
+\end{exercise}
+\begin{solution}
+\textbf{AR(1).} By causality ($\abs\phi<1$),
+\[
+Y_t=\frac{1}{1-\phi\Bsh}\eps_t=\sum_{k=0}^{\infty}\phi^{k}\eps_{t-k}.
+\]
+\textbf{AR(2).} Factor $\Phi(z)=1-\phi_1 z-\phi_2 z^2=(1-g_1 z)(1-g_2 z)$, where
+$g_1^{-1},g_2^{-1}$ are the roots (outside the unit circle, so
+$\abs{g_1},\abs{g_2}<1$). Then
+\[
+Y_t=\frac{1}{(1-g_1\Bsh)(1-g_2\Bsh)}\eps_t
+=\sum_{k_1=0}^{\infty}\sum_{k_2=0}^{\infty}g_1^{k_1}g_2^{k_2}\,\eps_{t-(k_1+k_2)}
+=\sum_{n=0}^{\infty}\Big(\sum_{k=0}^{n}g_1^{k}g_2^{\,n-k}\Big)\eps_{t-n},
+\]
+collecting terms with $n=k_1+k_2$ (Cauchy product, justified by
+$\abs{g_1},\abs{g_2}<1$). For $g_1\ne g_2$ the inner sum is a geometric series,
+\[
+\sum_{k=0}^{n}g_1^{k}g_2^{\,n-k}=\frac{g_1^{\,n+1}-g_2^{\,n+1}}{g_1-g_2},
+\quad\text{so}\quad
+Y_t=\frac{g_1}{g_1-g_2}\sum_{n\ge0}g_1^{n}\eps_{t-n}-\frac{g_2}{g_1-g_2}\sum_{n\ge0}g_2^{n}\eps_{t-n}.
+\]
+The reciprocal roots are
+$g_{1,2}^{-1}=\dfrac{-\phi_1\mp\sqrt{\phi_1^2+4\phi_2}}{2\phi_2}$. When
+$g_1=g_2=g$ the inner sum becomes $\sum_{k=0}^n g^n=(n+1)g^{n}$, so
+$\psi_n=(n+1)g^{n}$.
+\end{solution}
+
+\begin{exercise}{$\mathrm{AR}(2)$ stationarity via roots \quad\textnormal{[Sheet 3]}}{p3-e33}
+For the $\mathrm{AR}(2)$ process
+$\frac{15}{16}Y_t=\frac14 Y_{t-1}-\frac{1}{16}Y_{t-2}+\eps_t$ (with $\eps_t$
+Gaussian), write the characteristic AR polynomial. Is it stationary? Invertible?
+\end{exercise}
+\begin{solution}
+Move all $Y$ terms to the left and use the backshift operator:
+\[
+\Big(\tfrac{15}{16}-\tfrac14\Bsh+\tfrac{1}{16}\Bsh^2\Big)Y_t=\eps_t,
+\qquad
+\Phi(z)=\tfrac{15}{16}-\tfrac14 z+\tfrac{1}{16}z^2 .
+\]
+Solve $\frac{1}{16}z^2-\frac14 z+\frac{15}{16}=0$, i.e.\ $z^2-4z+15=0$:
+\[
+z=\frac{4\pm\sqrt{16-60}}{2}=2\pm\sqrt{-11}=2\pm\sqrt{11}\,i
+\approx 2\pm 3.3166\,i,
+\qquad \abs{z}=\sqrt{4+11}=\sqrt{15}\approx3.873 .
+\]
+Both roots have modulus $\sqrt{15}>1$, i.e.\ they lie outside the unit circle,
+so the process is \textbf{stationary}. An $\mathrm{AR}$ process is
+\textbf{always invertible}.
+\end{solution}
+
+\begin{exercise}{$\mathrm{ARMA}(2,1)$ stationary \& invertible \quad\textnormal{[Sheet 3]}}{p3-e34}
+For the $\mathrm{ARMA}(2,1)$ process
+$Y_t-\frac14 Y_{t-1}+\frac{1}{16}Y_{t-2}=\eps_t-0.5\eps_{t-1}$, is it stationary?
+Invertible?
+\end{exercise}
+\begin{solution}
+In backshift form,
+$\big(1-\tfrac14\Bsh+\tfrac{1}{16}\Bsh^2\big)Y_t=(1-0.5\Bsh)\eps_t$, so
+\[
+\Phi(z)=1-\tfrac14 z+\tfrac{1}{16}z^2,\qquad \Theta(z)=1-\tfrac12 z .
+\]
+\textbf{Stationarity.} $\Phi(z)=0\iff z^2-4z+16=0$ (multiply by $16$), giving
+\[
+z=\frac{4\pm\sqrt{16-64}}{2}=2\pm 2\sqrt3\,i,\qquad \abs{z}=\sqrt{4+12}=4>1,
+\]
+both outside the unit circle $\Rightarrow$ \textbf{stationary}.\\
+\textbf{Invertibility.} $\Theta(z)=0\iff z=2$, and $\abs{2}=2>1$ is outside the
+unit circle $\Rightarrow$ \textbf{invertible}. The process is both stationary
+and invertible.
+\end{solution}
+
+\begin{exercise}{Same ACF; inverting a non-invertible MA \quad\textnormal{[Sheet 3]}}{p3-e35}
+Let $\{U_t\}$ be stationary zero-mean. Define $X_t=(1-0.4\Bsh)U_t$ and
+$W_t=(1-2.5\Bsh)U_t$.
+\textbf{(a)} Express the ACFs of $\{X_t\}$ and $\{W_t\}$ via that of $\{U_t\}$.
+\textbf{(b)} Show $\{X_t\}$ and $\{W_t\}$ have the \emph{same} ACF.
+\textbf{(c)} Show $\eps_t=-\sum_{j\ge1}(0.4)^j X_{t+j}$ satisfies
+$\eps_t-2.5\eps_{t-1}=X_t$.
+\end{exercise}
+\begin{solution}
+\textbf{(a)} With $X_t=U_t-0.4U_{t-1}$, bilinearity gives
+\[
+\acvs_X(\tau)=\Cov(U_t-0.4U_{t-1},\,U_{t+\tau}-0.4U_{t+\tau-1})
+=1.16\,\acvs_U(\tau)-0.4\,\acvs_U(\tau-1)-0.4\,\acvs_U(\tau+1),
+\]
+using $1+0.4^2=1.16$. In particular, with symmetry $\acvs_U(-1)=\acvs_U(1)$,
+\[
+\acvs_X(0)=1.16\,\acvs_U(0)-0.8\,\acvs_U(1)=\acvs_U(0)\{1.16-0.8\acf_U(1)\}.
+\]
+Dividing, and writing $\acvs_U(\tau)=\acf_U(\tau)\acvs_U(0)$,
+\[
+\acf_X(\tau)=\frac{1.16\,\acf_U(\tau)-0.4\,\acf_U(\tau-1)-0.4\,\acf_U(\tau+1)}{1.16-0.8\acf_U(1)} .
+\]
+Similarly, with $W_t=U_t-2.5U_{t-1}$ ($1+2.5^2=7.25$),
+\[
+\acf_W(\tau)=\frac{7.25\,\acf_U(\tau)-2.5\,\acf_U(\tau-1)-2.5\,\acf_U(\tau+1)}{7.25-5\,\acf_U(1)} .
+\]
+\textbf{(b)} Note $7.25=6.25\times1.16$, $2.5=6.25\times0.4$ and
+$5=6.25\times0.8$. Factoring $6.25$ from numerator and denominator of
+$\acf_W$,
+\[
+\acf_W(\tau)=\frac{6.25\{1.16\,\acf_U(\tau)-0.4\,\acf_U(\tau-1)-0.4\,\acf_U(\tau+1)\}}{6.25\{1.16-0.8\,\acf_U(1)\}}
+=\acf_X(\tau).
+\]
+So the two have identical ACFs. (This is the MA non-uniqueness: the root
+$z=2.5$ for $X$ and $z=0.4=1/2.5$ for $W$ give the same correlation structure;
+only $X$, with root outside the circle, is invertible.)\\
+\textbf{(c)} With $\eps_t=-\sum_{j\ge1}(0.4)^j X_{t+j}$,
+\[
+\begin{aligned}
+\eps_t-2.5\,\eps_{t-1}
+&=-\sum_{j\ge1}0.4^{j}X_{t+j}+2.5\sum_{j\ge1}0.4^{j}X_{t+j-1}\\
+&=-\sum_{j\ge1}0.4^{j}X_{t+j}+2.5\sum_{l\ge0}0.4^{\,l+1}X_{t+l}
+\qquad(l=j-1)\\
+&=-\sum_{j\ge1}0.4^{j}X_{t+j}+\sum_{l\ge0}0.4^{\,l}X_{t+l}
+\qquad(2.5\cdot0.4=1)\\
+&=X_t+\sum_{l\ge1}0.4^{l}X_{t+l}-\sum_{j\ge1}0.4^{j}X_{t+j}=X_t .
+\end{aligned}
+\]
+Thus the non-invertible $W$-type representation can still be inverted, but using
+\emph{future} values $X_{t+j}$ --- exactly the ``future-noise'' branch of the
+Laurent expansion (Prop.~\ref{prop:p3-laurent}).
+\end{solution}
+
+\begin{exercise}{Worked lecture example: ACVS of an $\mathrm{ARMA}(2,1)$ \quad\textnormal{[Notes]}}{p3-arma22ex}
+For $\{I-\Bsh+\tfrac14\Bsh^2\}X_t=\{I+\Bsh\}\eps_t$ with $\eps_t$ white noise of
+variance $\sigma^2$, determine the autocovariance sequence $\acvs_\tau$.
+\end{exercise}
+\begin{solution}
+The model is $X_t-X_{t-1}+\tfrac14 X_{t-2}=\eps_t+\eps_{t-1}$, with
+$\Phi(z)=1-z+\tfrac14 z^2=\tfrac14(z-2)^2$ (double root $z=2$ outside the unit
+circle $\Rightarrow$ stationary) and $\Theta(z)=1+z$ (root $z=-1$ \emph{on} the
+circle $\Rightarrow$ not invertible, but stationarity is all we need here).
+
+\textbf{Recurrence for $\tau\ge2$.} Multiply by $X_{t-\tau}$ and take
+expectations. For $\tau\ge2$ the right side is
+$\E[(\eps_t+\eps_{t-1})X_{t-\tau}]=0$ (since $X_{t-\tau}$ involves only
+$\eps_{t-\tau},\eps_{t-\tau-1},\dots$, all uncorrelated with $\eps_t,\eps_{t-1}$),
+so
+\[
+\acvs_\tau-\acvs_{\tau-1}+\tfrac14\acvs_{\tau-2}=0,\qquad \tau\ge2 .
+\]
+The characteristic equation is $\Phi$ with a double root, so the general
+solution is
+\[
+\acvs_\tau=(\beta_0+\beta_1\tau)\,2^{-\tau},\qquad \tau\ge0 .
+\]
+\textbf{Initial conditions ($\tau=0,1$).} First find the leading $\psi$-weights
+from $\Phi(\Bsh)\psi(\Bsh)=\Theta(\Bsh)$: $\psi_0=1$ and
+$\psi_1-\psi_0=1\Rightarrow\psi_1=2$. Then the cross terms are
+$\E[\eps_t X_t]=\psi_0\sigma^2=\sigma^2$ and
+$\E[\eps_{t-1}X_t]=\psi_1\sigma^2=2\sigma^2$. Hence
+\[
+\tau=0:\quad \acvs_0-\acvs_1+\tfrac14\acvs_2=\E[(\eps_t+\eps_{t-1})X_t]=\sigma^2+2\sigma^2=3\sigma^2,
+\]
+\[
+\tau=1:\quad \acvs_1-\acvs_0+\tfrac14\acvs_1=\E[(\eps_t+\eps_{t-1})X_{t-1}]=\sigma^2 .
+\]
+(The second uses $\E[\eps_t X_{t-1}]=0$ and
+$\E[\eps_{t-1}X_{t-1}]=\psi_0\sigma^2=\sigma^2$.) Substituting
+$\acvs_\tau=(\beta_0+\beta_1\tau)2^{-\tau}$ gives the linear system
+$\beta_0=\tfrac{32}{3}\sigma^2,\ \beta_1=8\sigma^2$. Therefore
+\[
+\boxed{\;\acvs_\tau=\Big(\tfrac{32}{3}+8\tau\Big)2^{-\tau}\,\sigma^2,\qquad \tau\ge0\;}
+\]
+(and $\acvs_{-\tau}=\acvs_\tau$). In particular
+$\acvs_0=\tfrac{32}{3}\sigma^2,\ \acvs_1=\tfrac{28}{3}\sigma^2,\ \acvs_2=\tfrac{20}{3}\sigma^2$.\\
+\textit{Check (via $\psi$-weights):} the recurrence
+$\psi_j=\psi_{j-1}-\tfrac14\psi_{j-2}$ has closed form $\psi_j=(1+3j)2^{-j}$, and
+$\sigma^2\sum_{j\ge0}\psi_j\psi_{j+\tau}$ reproduces
+$\tfrac{32}{3},\tfrac{28}{3},\tfrac{20}{3},\dots$ exactly.
+\end{solution}
+
+\begin{exercise}{Prove the PACF cut-off for a causal $\mathrm{AR}(p)$ \quad\textnormal{[Sheet 2, Ex.~2.7]}}{p3-pacfex}
+Prove that for a causal $\mathrm{AR}(p)$, $\pacf_\tau=0$ for all $\tau>p$.
+Use the prediction equations
+$\Cov\big(Y-P_{X_1,\dots,X_n}(Y),X_k\big)=0$ for all $k$, and the fact that for
+causal processes $\Cov(X_t,\eps_s)=0$ when $t<s$.
+\end{exercise}
+\begin{solution}
+Fix $\tau>p$. By definition $\pacf_\tau=\pacf_{\tau,\tau}$, the last coefficient
+in the order-$\tau$ best linear predictor
+\[
+P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}.
+\]
+We show the AR coefficients themselves solve the prediction equations. Set
+$\tilde\phi_j=\phi_j$ for $1\le j\le p$ and $\tilde\phi_j=0$ for $j>p$, so that
+$X_\tau=\sum_{j=1}^{\tau}\tilde\phi_j X_{\tau-j}+\eps_\tau$. Then for every
+$k\in\{0,\dots,\tau-1\}$,
+\[
+\Cov\Big(X_\tau-\sum_{j=1}^{\tau}\tilde\phi_j X_{\tau-j},\,X_k\Big)
+=\Cov(\eps_\tau,X_k)=0,
+\]
+where the last equality is causality ($X_k$ depends only on
+$\eps_k,\eps_{k-1},\dots$, all with index $<\tau$, so uncorrelated with
+$\eps_\tau$). Hence $\{\tilde\phi_j\}$ satisfies the orthogonality (prediction)
+equations, and by uniqueness of the best linear predictor
+$\pacf_{\tau,j}=\tilde\phi_j$. In particular
+$\pacf_\tau=\pacf_{\tau,\tau}=\tilde\phi_\tau=0$ because $\tau>p$. $\qed$
+\end{solution}
+
+\begin{exercise}{Causality \& invertibility of an $\mathrm{ARMA}(1,1)$, and its $\psi$-weights \quad\textnormal{[New]}}{p3-newarma11}
+Consider $(1-0.5\Bsh)X_t=(1+0.3\Bsh)\eps_t$. (a) Is it stationary? Invertible?
+(b) Find the $\mathrm{MA}(\infty)$ weights $\psi_j$. (c) Compute $\acvs_0$ and
+$\acvs_1$.
+\end{exercise}
+\begin{solution}
+\textbf{(a)} $\Phi(z)=1-0.5z$ has root $z=2$ ($\abs{2}>1$) $\Rightarrow$
+\textbf{stationary}. $\Theta(z)=1+0.3z$ has root $z=-1/0.3\approx-3.33$
+($\abs{z}>1$) $\Rightarrow$ \textbf{invertible}.\\
+\textbf{(b)} Match coefficients in $(1-0.5z)\sum_{j\ge0}\psi_j z^j=1+0.3z$:
+$\psi_0=1$; $\psi_1-0.5\psi_0=0.3\Rightarrow\psi_1=0.8$;
+$\psi_j-0.5\psi_{j-1}=0\Rightarrow\psi_j=0.5\,\psi_{j-1}$ for $j\ge2$. Closed
+form (general ARMA(1,1) with $X_t=\phi X_{t-1}+\eps_t+\theta\eps_{t-1}$):
+$\psi_j=(\phi+\theta)\phi^{\,j-1}$ for $j\ge1$ with $\phi=0.5,\ \theta=0.3$, i.e.
+\[
+\psi_0=1,\qquad \psi_j=0.8\,(0.5)^{\,j-1}=1.6\,(0.5)^{j},\quad j\ge1 .
+\]
+\textbf{(c)} Using $\acvs_\tau=\sigma^2\sum_{j\ge0}\psi_j\psi_{j+\tau}$ with
+$\sum_{j\ge1}\psi_j^2=0.8^2\sum_{j\ge1}0.25^{\,j-1}=0.64/0.75=\tfrac{64}{75}$,
+\[
+\acvs_0=\sigma^2\Big(1+\tfrac{64}{75}\Big)=\tfrac{139}{75}\sigma^2\approx1.853\,\sigma^2 .
+\]
+For $\acvs_1=\sigma^2\big(\psi_0\psi_1+\sum_{j\ge1}\psi_j\psi_{j+1}\big)$ with
+$\sum_{j\ge1}\psi_j\psi_{j+1}=0.5\sum_{j\ge1}\psi_j^2=\tfrac12\cdot\tfrac{64}{75}=\tfrac{32}{75}$,
+\[
+\acvs_1=\sigma^2\Big(0.8+\tfrac{32}{75}\Big)=\tfrac{92}{75}\sigma^2\approx1.227\,\sigma^2 .
+\]
+(Quick check: $\acf_1=92/139\approx0.662$, sensibly large for a positively
+correlated ARMA(1,1).)
+\end{solution}
+
+\begin{exercise}{Invertibility of an $\mathrm{MA}(2)$ and the unit-circle convention \quad\textnormal{[New]}}{p3-newma2}
+Let $X_t=\eps_t-\theta_1\eps_{t-1}-\theta_2\eps_{t-2}$ with
+$(\theta_1,\theta_2)=(0.2,\,0.48)$, i.e.\
+$X_t=\eps_t-0.2\eps_{t-1}-0.48\eps_{t-2}$. Is it stationary? Invertible?
+\end{exercise}
+\begin{solution}
+\textbf{Stationarity.} Every finite MA is stationary
+(Prop.~\ref{prop:p3-alwaysinv}); no computation needed.\\
+\textbf{Invertibility.} With $X_t=\Theta(\Bsh)\eps_t$ and
+$\Theta(z)=1-0.2z-0.48z^2$, solve $0.48z^2+0.2z-1=0$:
+\[
+z=\frac{-0.2\pm\sqrt{0.04+1.92}}{0.96}=\frac{-0.2\pm1.4}{0.96}
+=\Big\{\,\tfrac{5}{4},\ -\tfrac{5}{3}\,\Big\}.
+\]
+Both roots satisfy $\abs{z}>1$ ($1.25$ and $-1.667$), so the process is
+\textbf{invertible}. Equivalently, $\Theta(z)=(1-0.8z)(1+0.6z)$ has reciprocal
+roots $0.8$ and $-0.6$, both of modulus $<1$, the mirror statement of ``roots
+outside''. (Had we instead picked coefficients whose root had $\abs{z}<1$, the
+process would be non-invertible despite being perfectly stationary.)
+\end{solution}
+
+\begin{exercise}{Spectral density of an $\mathrm{ARMA}(1,1)$ \quad\textnormal{[New]}}{p3-newsdf}
+Find the spectral density $\sdf(f)$ of the causal, invertible process
+$(1-\phi\Bsh)X_t=(1-\theta\Bsh)\eps_t$ with $\abs\phi<1,\ \abs\theta<1$, and use
+it to confirm $\acvs_0$ for the model
+$(1-0.5\Bsh)X_t=(1+0.3\Bsh)\eps_t$ of Exercise~\ref{exo:p3-newarma11}.
+\end{exercise}
+\begin{solution}
+By the ARMA spectral formula (Key Technique~\ref{kt:p3-sdf}),
+\[
+\sdf(f)=\sigma^2\,\frac{\abs{1-\theta e^{-2\pi i f}}^2}{\abs{1-\phi e^{-2\pi i f}}^2}
+=\sigma^2\,\frac{1+\theta^2-2\theta\cos(2\pi f)}{1+\phi^2-2\phi\cos(2\pi f)},
+\qquad -\tfrac12\le f\le\tfrac12 .
+\]
+Integrating over one period recovers the variance,
+$\acvs_0=\int_{-1/2}^{1/2}\sdf(f)\,df$; doing the integral (or summing
+$\sigma^2\sum_j\psi_j^2$ with $\psi_0=1,\ \psi_j=(\phi-\theta)\phi^{\,j-1}$) gives
+the standard ARMA(1,1) variance
+\[
+\acvs_0=\sigma^2\,\frac{1+\theta^2-2\phi\theta}{1-\phi^2}.
+\]
+The model $(1-0.5\Bsh)X_t=(1+0.3\Bsh)\eps_t$ corresponds to $\phi=0.5$ and
+$\theta=-0.3$ in the $(1-\theta\Bsh)$ convention. Then numerator
+$=1+0.09-2(0.5)(-0.3)=1.39$, denominator $=1-0.25=0.75$, so
+\[
+\acvs_0=\frac{1.39}{0.75}\sigma^2=\frac{139}{75}\sigma^2\approx1.853\,\sigma^2,
+\]
+agreeing with Exercise~\ref{exo:p3-newarma11}. (Sanity check on the density:
+since $\phi>0$ and the effective MA root is positive, $\sdf$ peaks at $f=0$, the
+hallmark of a positively correlated, low-frequency-dominated process.)
+\end{solution}

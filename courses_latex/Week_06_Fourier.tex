@@ -1,0 +1,128 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\providecommand{\Dir}{\mathcal{D}}
+\begin{document}
+\weekheader{06}{26 March 2026}{Fourier Theory}{The Fourier transform (continuous, discrete, finite-data) and the convolution theorem move us from time to frequency; beware aliasing.}
+
+The Fourier transform is the bridge between the \textbf{time domain} (a function or a sequence $g_t$) and the \textbf{frequency domain} (its transform $G(f)$). We build it in three stages: continuous time (the whole function), discrete time (a sampled sequence), then \textbf{finite data} (what we actually observe). Throughout we use ordinary frequency $f$ (not angular frequency $\omega=2\pi f$). This machinery is the toolbox we will reuse next week to define the spectral density.
+
+\section*{Key definitions}
+
+\begin{defn}{Continuous-time Fourier transform}
+For $g:\Reals\to\Comp$ with $g\in L^1$,
+\[
+G(f)=\int_{-\infty}^{\infty} g(t)\,e^{-2\pi i f t}\,dt,\qquad f\in\Reals .
+\]
+If moreover $G\in L^1$, the \textbf{inverse} recovers $g$ for almost all $t$: $g(t)=\int_{-\infty}^{\infty} G(f)\,e^{2\pi i f t}\,df$. We write $g\longleftrightarrow G$ (a \textbf{Fourier pair}): no information is lost. Upper case denotes the transform.
+\end{defn}
+
+\begin{defn}{Convolution}
+For $g,h\in L^1$, $u=g*h$ is $u(t)=\int_{-\infty}^{\infty} g(t-u)\,h(u)\,du$. It is a \textbf{weighted average} of one function by the other, centred at $t$.
+\end{defn}
+
+\begin{defn}{Discrete-time Fourier transform}
+For a sequence $\{g_t\}_{t\in\Delta\Ints}\in\ell^1$,
+\[
+G(f)=\Delta\sum_{t\in\Delta\Ints} g_t\,e^{-2\pi i t f},\qquad
+g_t=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f)\,e^{2\pi i t f}\,df .
+\]
+The inverse is just a Fourier series with the domains swapped. Key feature: $G$ is \textbf{periodic}, $G(f)=G(f+k/\Delta)$, so it is fully determined on one period of length $1/\Delta$.
+\end{defn}
+
+\begin{defn}{Finite-data transform and the Dirichlet kernel}
+With $n$ observations at times $T=\{0,\Delta,\dots,(n-1)\Delta\}$,
+\[
+G_n(f)=\sum_{t\in T} g_t\,e^{-2\pi i t f}.
+\]
+$G_n$ is the \emph{full} transform times a window indicator $d_t=\tfrac1\Delta\ind_T(t)$, whose transform is the \textbf{Dirichlet kernel}
+\[
+\Dir_T(f)=\sum_{t\in T}e^{-2\pi i f t}=\frac{\sin(n\pi f\Delta)}{\sin(\pi f\Delta)}\,e^{-\pi i(n-1)f\Delta}.
+\]
+Hence $G_n=\Dir_T * G$: a finite window \textbf{blurs} the true transform.
+\end{defn}
+
+\begin{defn}{Fourier frequencies}
+The $n$ equally spaced frequencies (over one period) at which the FFT evaluates $G_n$:
+\[
+f_k=\frac{k}{\Delta n},\qquad -\frac{n}{2}\le k\le \frac{n-1}{2}
+\quad\Big(=\tfrac{k}{n}\text{ if }\Delta=1\Big).
+\]
+\end{defn}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Theorem --- Fourier inversion}
+If $g,G\in L^1$ (continuous time) or $\{g_t\}\in\ell^1$ (discrete time), the inverse transform recovers $g$. \emph{Idea:} substitute the forward transform and use the orthogonality relation $\int e^{2\pi i f(t-s)}\,df$, which acts like a delta. This is what makes $(g,G)$ a genuine pair and underlies every time$\leftrightarrow$frequency duality.
+\end{result}
+
+\begin{result}{Theorem --- Convolution theorem}
+\textbf{Multiplication in one domain = convolution in the other.} For $g,h\in L^1$:
+\[
+\begin{aligned}
+u=g*h &\;\longleftrightarrow\; U=G\cdot H,\\
+v=g\cdot h &\;\longleftrightarrow\; V=G*H \quad(\text{if }G,H\in L^1).
+\end{aligned}
+\]
+In discrete time both pairs hold too: $h*g\leftrightarrow H\cdot G$ and $h\cdot g\leftrightarrow H*G$. \emph{Idea:} plug the convolution into the definition, swap the order of integration (Fubini, since $\norm{g}_1\norm{h}_1<\infty$), and recognise the phase factor. This is the central computational identity (filtering, blurring, etc.).
+\end{result}
+
+\begin{result}{Theorem --- Aliasing and the Nyquist frequency}
+Sampling \emph{folds} all the continuous-frequency content onto one period:
+\[
+G(f)=\sum_{k\in\Ints} G\!\left(f+\tfrac{k}{\Delta}\right).
+\]
+The \textbf{Nyquist frequency} is $1/(2\Delta)$ ($=\tfrac12$ if $\Delta=1$): content above it is \textbf{not} recoverable. \emph{Idea:} write $g(t)$ via both inversion formulas at $t\in\Delta\Ints$, split $\Reals$ into blocks of length $1/\Delta$, shift each ($e^{2\pi i tk/\Delta}=1$ for these $t$), and match.
+\end{result}
+
+\begin{result}{Proposition --- Fast Fourier Transform (FFT)}
+Evaluating $G_n$ at the $n$ Fourier frequencies costs $O(n\log n)$ (vs.\ $O(n^2)$ naively) by \textbf{divide-and-conquer} (even/odd indices, $\log_2 n$ levels). This makes large-scale spectral computation feasible.
+\end{result}
+
+\textbf{Basic properties} (same form in continuous and discrete time):
+\[
+\begin{aligned}
+\conj{g(t)} &\longleftrightarrow \conj{G(-f)}, &\quad
+g(\alpha t) &\longleftrightarrow \tfrac{1}{\abs\alpha}G(f/\alpha),\\
+g(t+\tau) &\longleftrightarrow G(f)\,e^{2\pi i \tau f}, &\quad
+\alpha g(t)+h(t) &\longleftrightarrow \alpha G(f)+H(f).
+\end{aligned}
+\]
+(Conjugation reflects; stretching time compresses frequency; a time shift multiplies by a phase; the transform is linear.)
+
+\section*{Intuition}
+
+\begin{intu}[Convolution = product: the Swiss-army rule]
+The rule ``\emph{convolution in one domain $\leftrightarrow$ product in the other}'' is the whole point of Fourier: an expensive operation (convolution) becomes a plain multiplication. That is why we go to the frequency domain to filter, and why the blurring caused by a finite window is written as a convolution with a kernel.
+\end{intu}
+
+\begin{intu}[Why aliasing hurts]
+A \emph{high}-frequency sinusoid sampled too slowly looks \emph{exactly} like a low-frequency one --- the ``wagon-wheel'' effect in films. Frequencies $f$ and $f+k/\Delta$ become indistinguishable: they are ``aliases''. Cure: sample finely (small $\Delta$, large Nyquist) or low-pass filter \emph{before} sampling.
+\end{intu}
+
+\begin{intu}[Finite window = blurred vision]
+We never observe the whole sequence, only $n$ points. Mathematically, observing = multiplying by an indicator. By the convolution theorem this \textbf{convolves} the true transform with the Dirichlet kernel $\Dir_T$: peaks get smeared and energy ``leaks'' into neighbouring frequencies. The larger $n$, the more concentrated $\Dir_T$, the less blurring.
+\end{intu}
+
+\begin{intu}[Discrete = continuous, but periodic and folded]
+In continuous time $G$ lives on all of $\Reals$. As soon as we sample, $G$ becomes \emph{periodic} (period $1/\Delta$): knowing it on $[-\tfrac1{2\Delta},\tfrac1{2\Delta}]$ suffices. Aliasing says exactly how the continuous spectrum folds back into that period.
+\end{intu}
+
+\begin{exmpl}[Time shift]
+Shifting a signal by $\tau$ does not change its amplitude content, only its phase: $g(t+\tau)\leftrightarrow G(f)e^{2\pi i\tau f}$, so $\abs{G}$ is unchanged. Intuition: moving a sound earlier or later in time does not change \emph{which} frequencies it contains.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+\item Be able to write the \textbf{three} transforms (continuous, discrete, finite-data) and their inverses, and to recognise a \textbf{Fourier pair} $g\leftrightarrow G$.
+\item \textbf{Core reflex:} convolution $\leftrightarrow$ product. Use it to relate $G_n$ to $G$ via $G_n=\Dir_T*G$, and for any filtering computation.
+\item Know the \textbf{4 basic properties} (conjugation, scaling, shift, linearity) --- one-line proofs by a change of variable / inserting a phase.
+\item \textbf{Aliasing:} $G(f)=\sum_k G(f+k/\Delta)$; above the Nyquist frequency $1/(2\Delta)$ the information is lost. Sample fast enough.
+\item In discrete time everything is \textbf{periodic} with period $1/\Delta$: work on one period only.
+\item The \textbf{FFT} gives $G_n$ at the Fourier frequencies in $O(n\log n)$.
+\item \emph{Next stop:} this machinery defines the spectral density $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$ --- the transform of the ACVS.
+\end{itemize}
+\end{retenir}
+
+\end{document}

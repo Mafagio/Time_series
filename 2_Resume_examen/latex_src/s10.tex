@@ -1,0 +1,257 @@
+% ======================================================================
+%  PART 10 -- Non-Linear Time Series: ARCH and GARCH
+% ======================================================================
+\section{Non-Linear Time Series: ARCH and GARCH}
+\label{sec:archgarch}
+
+Linear models (AR, MA, ARMA) describe the conditional \emph{mean} of a series and
+assume a constant innovation variance. Financial log-returns violate this: they
+are nearly uncorrelated (so a linear conditional-mean model is almost useless),
+yet their \emph{squares} are strongly dependent --- large moves cluster with
+large moves and quiet periods with quiet periods. This \textbf{volatility
+clustering}, together with heavy (\textbf{fat}) tails, motivates models for the
+\emph{conditional variance}. \textbf{ARCH} and \textbf{GARCH} keep the series
+mean-zero and uncorrelated (white noise) while letting the conditional variance
+$\sigma_t^2$ evolve in time as a function of past squared returns (and, for
+GARCH, past variances). Throughout, $\mathcal{F}_t$ denotes the information
+available up to and including time $t$, and $\{\eps_t\}$ is white noise with
+$\E[\eps_t]=0$, $\Var(\eps_t)=1$, independent of $\mathcal{F}_{t-1}$.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Log-returns \& volatility clustering}{p10-logret}
+For a price series $\{X_t\}$ (e.g.\ a stock index), the \textbf{log-returns} are
+\[
+r_t=\log\!\Big(\frac{X_t}{X_{t-1}}\Big)=\log(X_t)-\log(X_{t-1}),
+\]
+measuring relative changes in price. Empirically log-returns show:
+\begin{itemize}
+  \item \textbf{little linear dependence:} the sample ACF/PACF of $r_t$ is
+        essentially that of white noise;
+  \item \textbf{dependent squares:} the sample ACF/PACF of $r_t^2$ decays slowly
+        $\Rightarrow$ the conditional variance changes over time;
+  \item \textbf{volatility clustering:} large changes tend to be followed by
+        large changes, small by small;
+  \item \textbf{fat tails:} kurtosis $>3$ (heavier tails than the normal),
+        visible as deviations in a QQ-plot against $\mathcal{N}(0,1)$.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{ARCH(1) model}{p10-arch1}
+$\{r_t\}$ is an \textbf{AutoRegressive Conditionally Heteroscedastic} model of
+order $1$, $\mathrm{ARCH}(1)$, if for $t\in\Ints$
+\[
+r_t=\sigma_t\eps_t,\qquad \sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2,
+\]
+with $\{\eps_t\}$ white noise of mean $0$ and variance $1$, independent of
+$\mathcal F_{t-1}$, and parameters $\alpha_0>0,\ \alpha_1\ge 0$. The volatility
+$\sigma_t$ is $\mathcal F_{t-1}$-measurable (known one step ahead). Immediate
+properties (Proposition~\ref{prop:p10-archmoments}):
+\[
+\E[r_t\mid\mathcal F_{t-1}]=0,\qquad
+\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2 .
+\]
+\end{definition}
+
+\begin{definition}{ARCH(p) model}{p10-archp}
+$\{r_t\}$ is an $\mathrm{ARCH}(p)$ model if $r_t=\sigma_t\eps_t$ with
+\[
+\sigma_t^2=\alpha_0+\alpha_1 r_{t-1}^2+\cdots+\alpha_p r_{t-p}^2
+=\alpha_0+\sum_{j=1}^{p}\alpha_j r_{t-j}^2,
+\]
+$\{\eps_t\}$ white noise $(0,1)$ independent of $\mathcal F_{t-1}$, and
+$\alpha_0>0,\ \alpha_p>0,\ \alpha_j\ge0$ for $1\le j<p$. Volatility may now
+depend on several past squared shocks, so as before
+$\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2$.
+\end{definition}
+
+\begin{definition}{GARCH(p,q) model}{p10-garch}
+$\{r_t\}$ is a \textbf{Generalised ARCH} model $\mathrm{GARCH}(p,q)$ if
+$r_t=\sigma_t\eps_t$ with
+\[
+\sigma_t^2=\alpha_0+\sum_{j=1}^{p}\alpha_j r_{t-j}^2+\sum_{j=1}^{q}\beta_j\sigma_{t-j}^2,
+\]
+$\{\eps_t\}$ white noise $(0,1)$ independent of $\mathcal F_{t-1}$, and parameters
+$\alpha_0>0$, $\alpha_p>0$, $\beta_q>0$, with $\alpha_j,\beta_j\ge0$ otherwise.
+Feeding back past \emph{variances} $\sigma_{t-j}^2$ lets volatility persist over
+time far more parsimoniously than an $\mathrm{ARCH}(p)$ with large $p$. A
+$\mathrm{GARCH}(p,0)$ is exactly an $\mathrm{ARCH}(p)$. As before
+$\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2$.
+\end{definition}
+
+\begin{definition}{Standardised residuals (diagnostics)}{p10-resid}
+After fitting, the \textbf{standardised residuals} are
+$\tilde e_t=r_t/\hat\sigma_t$. If the model is correct these should look like
+i.i.d.\ $(0,1)$ noise: their ACF/PACF \emph{and} the ACF/PACF of their
+\emph{squares} $\tilde e_t^2$ should resemble white noise, and a QQ-plot against
+the assumed innovation law should be roughly straight. Under Gaussian
+innovations one also overlays in-sample bands $\pm1.96\,\hat\sigma_t$ on $r_t$.
+\end{definition}
+
+\begin{definition}{ARMA--GARCH model}{p10-armagarch}
+Because a GARCH process is itself white noise, it can serve as the innovation of
+an ARMA model: with $r_t$ a $\mathrm{GARCH}(\tilde p,\tilde q)$ process,
+\[
+X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\,r_{t-k},
+\qquad \theta_0=-1,
+\]
+where the $\phi_j,\theta_k$ satisfy the usual $\mathrm{ARMA}(p,q)$ stationarity
+and invertibility conditions. This captures a conditional mean (ARMA) and a
+time-varying conditional variance (GARCH) at once; one must only be careful with
+the likelihood, as the errors are no longer i.i.d.\ Gaussian.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Conditional and unconditional moments of ARCH(1)}{p10-archmoments}
+For the $\mathrm{ARCH}(1)$ model with $\alpha_1<1$:
+\[
+\E[r_t\mid\mathcal F_{t-1}]=0,\quad
+\Var(r_t\mid\mathcal F_{t-1})=\sigma_t^2,\quad
+\E[r_t]=0,\quad
+\Var(r_t)=\frac{\alpha_0}{1-\alpha_1}.
+\]
+\textit{Proof idea:} $\sigma_t$ is $\mathcal F_{t-1}$-measurable and $\eps_t$ is
+independent of $\mathcal F_{t-1}$, so
+$\E[r_t\mid\mathcal F_{t-1}]=\sigma_t\E[\eps_t]=0$ and
+$\E[r_t^2\mid\mathcal F_{t-1}]=\sigma_t^2\E[\eps_t^2]=\sigma_t^2$. Iterated
+expectation gives $\E[r_t]=\E[\E[r_t\mid\mathcal F_{t-1}]]=0$ and
+$\Var(r_t)=\E[\sigma_t^2]=\alpha_0+\alpha_1\Var(r_{t-1})$; under stationarity
+$\Var(r_t)=\Var(r_{t-1})$, solve to get $\alpha_0/(1-\alpha_1)$.\\
+\textit{Why:} establishes that ARCH is mean-zero with a positive finite
+unconditional variance exactly when $\alpha_1<1$ (necessary \emph{and}, for
+$\mathrm{ARCH}(1)$, sufficient for weak stationarity).
+\end{proposition}
+
+\begin{proposition}{ARCH/GARCH is white noise (uncorrelated but dependent)}{p10-whitenoise}
+Any $\mathrm{ARCH}(p)$ or $\mathrm{GARCH}(p,q)$ process is mean-zero and serially
+uncorrelated: for $\tau\ne0$,
+\[
+\E[r_t]=0,\qquad \Cov(r_{t+\tau},r_t)=0,\qquad\text{hence}\qquad \Corr(r_{t+\tau},r_t)=0 .
+\]
+\textit{Proof idea:} take $\tau>0$. Since $r_t$ is
+$\mathcal F_{t+\tau-1}$-measurable and $\sigma_{t+\tau}$ is too, condition on
+$\mathcal F_{t+\tau-1}$:
+\[
+\Cov(r_{t+\tau},r_t)=\E[r_{t+\tau}r_t]
+=\E\!\big[\,r_t\,\sigma_{t+\tau}\,\E[\eps_{t+\tau}\mid\mathcal F_{t+\tau-1}]\big]
+=\E[r_t\sigma_{t+\tau}\cdot 0]=0 .
+\]
+\textit{Why:} the central qualitative fact --- ARCH/GARCH leaves the
+\emph{linear} correlation structure flat (white noise) while creating strong
+\emph{nonlinear} dependence in the squares. The conditional-mean and
+conditional-variance modelling problems decouple.
+\end{proposition}
+
+\begin{theorem}{Isserlis' theorem (Wick formula)}{p10-isserlis}
+If $(X_1,\dots,X_N)$ is a zero-mean multivariate normal vector and $N$ is even,
+\[
+\E[X_1\cdots X_N]=\sum_{p\in P_N}\ \prod_{\{i,j\}\in p}\Cov(X_i,X_j),
+\]
+where $P_N$ is the set of all pairings (perfect matchings) of $\{1,\dots,N\}$.
+For $N=4$,
+\[
+\E[X_1X_2X_3X_4]=\E[X_1X_2]\E[X_3X_4]+\E[X_1X_3]\E[X_2X_4]+\E[X_1X_4]\E[X_2X_3].
+\]
+\textit{Proof idea:} expand the Gaussian moment generating function / cumulant
+expansion; only pair-cumulants (covariances) survive for a Gaussian.\\
+\textit{Why:} gives $\E[\eps_t^4]=3(\E[\eps_t^2])^2=3$ for standard Gaussian
+innovations, the key input to the ARCH fourth-moment and kurtosis computations
+below.
+\end{theorem}
+
+\begin{proposition}{Fourth moment and kurtosis of ARCH(1)}{p10-kurtosis}
+For $\mathrm{ARCH}(1)$ with Gaussian innovations, the unconditional fourth moment
+is finite iff $0\le\alpha_1^2<\tfrac13$, in which case
+\[
+\E[r_t^4]=\frac{3\alpha_0^2(1+\alpha_1)}{(1-\alpha_1)(1-3\alpha_1^2)},
+\qquad
+\kappa=\frac{\E[r_t^4]}{\Var(r_t)^2}=\frac{3\,(1-\alpha_1^2)}{1-3\alpha_1^2}\ >\ 3
+\quad(\alpha_1>0).
+\]
+\textit{Proof idea:} $\E[r_t^4\mid\mathcal F_{t-1}]
+=\sigma_t^4\,\E[\eps_t^4\mid\mathcal F_{t-1}]=3\sigma_t^4=3(\alpha_0+\alpha_1 r_{t-1}^2)^2$
+(Isserlis). Take expectations, substitute $\E[r_{t-1}^2]=\alpha_0/(1-\alpha_1)$
+and $\E[r_{t-1}^4]=\E[r_t^4]$ by stationarity, and solve the linear equation;
+divide by $\Var(r_t)^2=\alpha_0^2/(1-\alpha_1)^2$ for $\kappa$.\\
+\textit{Why:} shows ARCH \emph{generates} excess kurtosis (fat tails) endogenously,
+even with Gaussian $\eps_t$ --- matching the heavy tails seen in returns.
+\end{proposition}
+
+\begin{proposition}{ACF of the squares of an ARCH(1)}{p10-acfsq}
+For $\mathrm{ARCH}(1)$ with $0<\alpha_0$ and $0<\alpha_1<1/\sqrt3$,
+\[
+\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau},\qquad \tau\in\Ints,
+\]
+i.e.\ the autocorrelation of the squared series decays \emph{geometrically}.\\
+\textit{Proof idea:} condition on $\mathcal F_{t+\tau-1}$ to peel one step:
+$\E[r_{t+\tau}^2 r_t^2\mid\mathcal F_{t+\tau-1}]=r_t^2\sigma_{t+\tau}^2
+=r_t^2(\alpha_0+\alpha_1 r_{t+\tau-1}^2)$. Taking expectations and subtracting
+$(\E[r_t^2])^2$ yields the recursion
+$\Cov(r_{t+\tau}^2,r_t^2)=\alpha_1\Cov(r_{t+\tau-1}^2,r_t^2)$ (the constant terms
+cancel using $\E[r_t^2]=\alpha_0/(1-\alpha_1)$). Iterating gives
+$\Cov(r_{t+\tau}^2,r_t^2)=\alpha_1^{\tau}\Var(r_t^2)$, hence the stated
+correlation.\\
+\textit{Why:} explains the slowly decaying ACF of squared returns and warns that
+ARCH(1) imposes \emph{purely geometric} memory in volatility --- often too fast
+for real data, motivating GARCH.
+\end{proposition}
+
+\begin{proposition}{Stationarity \& variance of GARCH(p,q)}{p10-garchstat}
+A $\mathrm{GARCH}(p,q)$ process has a weakly stationary solution \textbf{iff}
+\[
+\sum_{j=1}^{p}\alpha_j+\sum_{j=1}^{q}\beta_j<1,
+\]
+and then its unconditional variance is
+\[
+\Var(r_t)=\frac{\alpha_0}{1-\sum_{j=1}^{p}\alpha_j-\sum_{j=1}^{q}\beta_j}.
+\]
+\textit{Proof idea:} take unconditional expectations of
+$\sigma_t^2=\alpha_0+\sum_j\alpha_j r_{t-j}^2+\sum_j\beta_j\sigma_{t-j}^2$ using
+$\E[r_{t-j}^2]=\E[\sigma_{t-j}^2]=\Var(r_t)$ at stationarity, then solve; positivity
+of the denominator forces the stated bound.\\
+\textit{Why:} the master condition for fitting GARCH --- it must hold for the
+fitted parameters, and the closed-form variance gives the long-run volatility
+level. (More: $\sum\alpha+\sum\beta<1$ is sufficient for strict stationarity; for
+some noise laws including Gaussian, the boundary $\sum\alpha+\sum\beta=1$ still
+admits a strictly --- but not weakly --- stationary solution: the IGARCH case.)
+\end{proposition}
+
+\begin{proposition}{Fourth-moment condition for GARCH(1,1)}{p10-garch4}
+For a $\mathrm{GARCH}(1,1)$ with Gaussian noise, the unconditional fourth moment
+$\E[r_t^4]$ exists \textbf{iff}
+\[
+3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2<1 .
+\]
+\textit{Proof idea:} square the recursion for $\sigma_t^2$, take expectations
+using $\E[\eps_t^4]=3$ (Isserlis) and stationarity of $\E[\sigma_t^4]$; the
+coefficient of $\E[\sigma_{t}^4]$ on the right is $3\alpha_1^2+2\alpha_1\beta_1+\beta_1^2$,
+which must be $<1$ for a finite solution.\\
+\textit{Why:} the analogue of $\alpha_1^2<1/3$; needed before quoting any
+formula for the kurtosis or the ACF of squared GARCH returns.
+\end{proposition}
+
+\begin{proposition}{Maximum likelihood estimation (conditional Gaussian)}{p10-mle}
+Conditioning on the first observation $r_1$ to avoid specifying a marginal law
+for the initial value, the conditional likelihood factorises as
+\[
+L_c(\theta\mid r_1,\dots,r_n)=\prod_{t=2}^{n}f(r_t\mid r_{t-1},\dots,r_1;\theta).
+\]
+Under Gaussian innovations the $\mathrm{ARCH}(1)$ model gives
+$r_t\mid\mathcal F_{t-1}\sim\mathcal N(0,\ \alpha_0+\alpha_1 r_{t-1}^2)$, so
+\[
+L_c(\alpha_0,\alpha_1)=\prod_{t=2}^{n}\frac{1}{\sqrt{2\pi(\alpha_0+\alpha_1 r_{t-1}^2)}}
+\exp\!\left(-\frac{r_t^2}{2(\alpha_0+\alpha_1 r_{t-1}^2)}\right),
+\]
+maximised over $\alpha_0>0,\ \alpha_1\ge0$ (numerically; GARCH is analogous with
+$\sigma_t^2$ computed by its recursion).\\
+\textit{Proof idea:} the chain rule for densities plus conditional normality of
+each $r_t$ given the past.\\
+\textit{Why:} the standard estimation route for ARCH/GARCH; the per-term variance
+$\sigma_t^2$ is what is being fitted, not a constant $\sigma^2$.
+\end{proposition}
+
+% ----------------------------------------------------------------------
+% ----------------------------------------------------------------------

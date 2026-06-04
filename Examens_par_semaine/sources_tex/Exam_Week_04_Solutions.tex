@@ -1,0 +1,281 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 4: Parametric Estimation --- Yule--Walker \& Least Squares}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} \emph{Derivation.} Multiply the model
+$X_t=\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t$ by $X_{t-k}$ and take expectations. With
+mean zero, $\E[X_{t-j}X_{t-k}]=\acvs_{k-j}$, so for every $k\ge0$,
+\[
+\acvs_k=\phi_1\acvs_{k-1}+\phi_2\acvs_{k-2}+\E[\eps_tX_{t-k}].
+\]
+Because $\{X_t\}$ is \emph{causal}, $X_{t-k}$ is a one-sided combination of
+$\eps_{t-k},\eps_{t-k-1},\dots$ (innovations \emph{strictly earlier} than
+$\eps_t$ when $k\ge1$), and white noise is uncorrelated across time, so
+$\E[\eps_tX_{t-k}]=0$ for $k\ge1$. This is the single place where causality
+enters. Taking $k=1,2$ gives, with $\acvs_{-1}=\acvs_1$,
+\[
+\boldsymbol\acvs=\Gamma\boldsymbol\phi,\qquad
+\begin{pmatrix}\acvs_1\\ \acvs_2\end{pmatrix}
+=\begin{pmatrix}\acvs_0 & \acvs_1\\ \acvs_1 & \acvs_0\end{pmatrix}
+\begin{pmatrix}\phi_1\\ \phi_2\end{pmatrix}.
+\]
+For $k=0$ the cross-term does \emph{not} vanish: multiplying instead by $X_t$,
+$\E[\eps_tX_t]=\E[\eps_t(\phi_1X_{t-1}+\phi_2X_{t-2}+\eps_t)]=\sigma^2$
+(all $\E[\eps_tX_{t-j}]=0$ for $j\ge1$), giving the variance identity
+\[
+\acvs_0=\phi_1\acvs_1+\phi_2\acvs_2+\sigma^2,
+\qquad\text{i.e.}\qquad
+\sigma^2=\acvs_0-\phi_1\acvs_1-\phi_2\acvs_2 .
+\]
+
+\textbf{(b)} With $\hat\acvs_0=5,\ \hat\acvs_1=3,\ \hat\acvs_2=1$ the
+Yule--Walker system is
+\[
+\begin{pmatrix}5 & 3\\ 3 & 5\end{pmatrix}
+\begin{pmatrix}\hat\phi_1\\ \hat\phi_2\end{pmatrix}
+=\begin{pmatrix}3\\ 1\end{pmatrix}.
+\]
+The inverse of $\left(\begin{smallmatrix}a&b\\ b&a\end{smallmatrix}\right)$ is
+$\tfrac{1}{a^2-b^2}\left(\begin{smallmatrix}a&-b\\ -b&a\end{smallmatrix}\right)$;
+here $a=5,\ b=3$, determinant $a^2-b^2=25-9=16$, so
+\[
+\hat{\boldsymbol\phi}
+=\frac{1}{16}\begin{pmatrix}5 & -3\\ -3 & 5\end{pmatrix}\begin{pmatrix}3\\ 1\end{pmatrix}
+=\frac{1}{16}\begin{pmatrix}15-3\\ -9+5\end{pmatrix}
+=\frac{1}{16}\begin{pmatrix}12\\ -4\end{pmatrix}
+=\begin{pmatrix}\tfrac34\\[2pt] -\tfrac14\end{pmatrix}.
+\]
+So $\hat\phi_1=0.75,\ \hat\phi_2=-0.25$. The variance estimate is
+\[
+\hat\sigma^2=\hat\acvs_0-\hat\phi_1\hat\acvs_1-\hat\phi_2\hat\acvs_2
+=5-\tfrac34(3)-\big(-\tfrac14\big)(1)
+=5-\tfrac94+\tfrac14=5-2=3 .
+\]
+Hence $\hat\phi_1=\tfrac34,\ \hat\phi_2=-\tfrac14,\ \hat\sigma^2=3$.
+
+\textbf{(c)} The fitted AR polynomial is
+$\Phi(z)=1-\tfrac34 z+\tfrac14 z^2$. Solving $\tfrac14 z^2-\tfrac34 z+1=0$,
+i.e.\ $z^2-3z+4=0$,
+\[
+z=\frac{3\pm\sqrt{9-16}}{2}=\frac{3\pm\sqrt{-7}}{2}=\tfrac32\pm\tfrac{\sqrt7}{2}\,i,
+\qquad
+\abs{z}=\sqrt{\Big(\tfrac32\Big)^2+\Big(\tfrac{\sqrt7}{2}\Big)^2}=\sqrt{\tfrac94+\tfrac74}=\sqrt4=2 .
+\]
+Both roots have modulus $2>1$, i.e.\ lie outside the unit circle, so the fit is
+\textbf{causal (stationary)}. (Equivalently, the AR(2) triangle:
+$\phi_1+\phi_2=\tfrac12<1$, $\phi_2-\phi_1=-1<1$, $\abs{\phi_2}=\tfrac14<1$.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The population Yule--Walker system is
+$\boldsymbol\acvs=\Gamma\boldsymbol\phi$, with $\Gamma=(\acvs_{i-j})$ and
+$\boldsymbol\acvs=(\acvs_1,\acvs_2,\acvs_3)\Tr$. Factor out $\acvs_0$: writing
+$V=\acvs_0^{-1}I$ and multiplying both sides by $V$,
+\[
+V\boldsymbol\acvs=V\Gamma\boldsymbol\phi
+\;\Longrightarrow\;
+\hat{\boldsymbol\acf}_3=\bar\Gamma_3\,\boldsymbol\phi,
+\]
+where every entry has been divided by $\acvs_0$, so
+$\bar\Gamma_3=(\hat\acf_{i-j})$ and $\hat{\boldsymbol\acf}_3=(\hat\acf_1,\hat\acf_2,\hat\acf_3)\Tr$.
+The factor $\acvs_0$ cancels because it multiplies \emph{both} sides equally;
+hence $\hat{\boldsymbol\phi}=\bar\Gamma_3^{-1}\hat{\boldsymbol\acf}_3$ depends only
+on the correlations. With $\hat\acf_0=1$ the explicit system is
+\[
+\begin{pmatrix}1 & 0.8 & 0.6\\ 0.8 & 1 & 0.8\\ 0.6 & 0.8 & 1\end{pmatrix}
+\begin{pmatrix}\hat\phi_1\\ \hat\phi_2\\ \hat\phi_3\end{pmatrix}
+=\begin{pmatrix}0.8\\ 0.6\\ 0.4\end{pmatrix}.
+\]
+
+\textbf{(b)} Solve by elimination. Label the rows $R_1,R_2,R_3$.
+\[
+\begin{aligned}
+R_1:&\quad \hat\phi_1+0.8\hat\phi_2+0.6\hat\phi_3=0.8,\\
+R_2:&\quad 0.8\hat\phi_1+\hat\phi_2+0.8\hat\phi_3=0.6,\\
+R_3:&\quad 0.6\hat\phi_1+0.8\hat\phi_2+\hat\phi_3=0.4 .
+\end{aligned}
+\]
+Eliminate $\hat\phi_1$. Compute $R_2-0.8R_1$ and $R_3-0.6R_1$:
+\[
+\begin{aligned}
+R_2':&\quad (1-0.64)\hat\phi_2+(0.8-0.48)\hat\phi_3=0.6-0.64
+\;\Rightarrow\; 0.36\hat\phi_2+0.32\hat\phi_3=-0.04,\\
+R_3':&\quad (0.8-0.48)\hat\phi_2+(1-0.36)\hat\phi_3=0.4-0.48
+\;\Rightarrow\; 0.32\hat\phi_2+0.64\hat\phi_3=-0.08 .
+\end{aligned}
+\]
+From $R_3'$, divide by $0.32$: $\hat\phi_2+2\hat\phi_3=-0.25$. From $R_2'$,
+divide by $0.04$: $9\hat\phi_2+8\hat\phi_3=-1$. Substitute
+$\hat\phi_2=-0.25-2\hat\phi_3$:
+\[
+9(-0.25-2\hat\phi_3)+8\hat\phi_3=-1
+\;\Rightarrow\;
+-2.25-10\hat\phi_3=-1
+\;\Rightarrow\;
+\hat\phi_3=\frac{-1.25}{10}=-\tfrac18=-0.125 .
+\]
+Then $\hat\phi_2=-0.25-2(-0.125)=-0.25+0.25=0$, and from $R_1$,
+$\hat\phi_1=0.8-0.8(0)-0.6(-0.125)=0.8+0.075=0.875=\tfrac78$. Thus
+\[
+\boxed{\;\hat\phi_1=\tfrac78=0.875,\qquad \hat\phi_2=0,\qquad \hat\phi_3=-\tfrac18=-0.125\;}
+\]
+\textit{Check.}
+$R_1:\ 0.875+0.8(0)+0.6(-0.125)=0.875-0.075=0.8$.\ \checkmark\;
+$R_2:\ 0.8(0.875)+0+0.8(-0.125)=0.7-0.1=0.6$.\ \checkmark\;
+$R_3:\ 0.6(0.875)+0.8(0)+(-0.125)=0.525-0.125=0.4$.\ \checkmark
+
+\textbf{(c)} Using $\hat\sigma^2=\hat\acvs_0\big(1-\sum_j\hat\phi_j\hat\acf_j\big)$
+with $\hat\acvs_0=10$,
+\[
+1-\hat\phi_1\hat\acf_1-\hat\phi_2\hat\acf_2-\hat\phi_3\hat\acf_3
+=1-\tfrac78(0.8)-0(0.6)-\big(-\tfrac18\big)(0.4)
+=1-0.7+0.05=0.35=\tfrac{7}{20},
+\]
+hence $\hat\sigma^2=10\cdot\tfrac{7}{20}=\tfrac72=3.5$.
+(The series length $n=150$ plays no role in the point estimates; it would only
+enter standard errors.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The innovations are latent, so reconstruct them from the model
+equation $\eps_t=X_t+\theta\eps_{t-1}$. Initialise the pre-sample innovation to
+zero, $\eps_0=0$ (take $t=0$ as the start). Then
+\[
+\hat\eps_1=X_1+\theta\eps_0=0,\qquad
+\hat\eps_2=X_2+\theta\hat\eps_1=2,\qquad
+\hat\eps_3=X_3+\theta\hat\eps_2=-1+2\theta .
+\]
+The least-squares criterion is
+\[
+S(\theta)=\sum_{t=1}^3\hat\eps_t^{\,2}=0^2+2^2+(2\theta-1)^2=4+(2\theta-1)^2 .
+\]
+Only the last term depends on $\theta$ (because $X_1=0$ froze
+$\hat\eps_1=0,\hat\eps_2=2$), and it is minimised when $2\theta-1=0$. Hence
+\[
+\boxed{\;\hat\theta=\tfrac12\;}\qquad\text{with } S(\hat\theta)=4 .
+\]
+Since $\abs{\hat\theta}=\tfrac12<1$ (equivalently $\Theta(z)=1-\tfrac12 z$ has
+root $z=2$ outside the unit circle), the fit is \textbf{invertible}.
+
+\textbf{(b)} For $\mathrm{AR}(2)$ ($p=2$) the forward regression uses the
+observable times $t=3,4,5$, regressing each $x_t$ on $(x_{t-1},x_{t-2})$:
+\[
+\mathbf X_F=\begin{pmatrix}x_3\\ x_4\\ x_5\end{pmatrix}=\begin{pmatrix}0\\ -1\\ -2\end{pmatrix},
+\qquad
+F=\begin{pmatrix}x_2 & x_1\\ x_3 & x_2\\ x_4 & x_3\end{pmatrix}
+=\begin{pmatrix}2 & 1\\ 0 & 2\\ -1 & 0\end{pmatrix}.
+\]
+Form the normal equations $F\Tr F\,\hat{\boldsymbol\phi}_F=F\Tr\mathbf X_F$:
+\[
+F\Tr F=\begin{pmatrix}2 & 0 & -1\\ 1 & 2 & 0\end{pmatrix}
+\begin{pmatrix}2 & 1\\ 0 & 2\\ -1 & 0\end{pmatrix}
+=\begin{pmatrix}5 & 2\\ 2 & 5\end{pmatrix},
+\qquad
+F\Tr\mathbf X_F=\begin{pmatrix}2 & 0 & -1\\ 1 & 2 & 0\end{pmatrix}
+\begin{pmatrix}0\\ -1\\ -2\end{pmatrix}
+=\begin{pmatrix}2\\ -2\end{pmatrix}.
+\]
+With $\det(F\Tr F)=25-4=21$,
+\[
+\hat{\boldsymbol\phi}_F=\frac{1}{21}\begin{pmatrix}5 & -2\\ -2 & 5\end{pmatrix}
+\begin{pmatrix}2\\ -2\end{pmatrix}
+=\frac{1}{21}\begin{pmatrix}10+4\\ -4-10\end{pmatrix}
+=\frac{1}{21}\begin{pmatrix}14\\ -14\end{pmatrix}
+=\begin{pmatrix}\tfrac23\\[2pt] -\tfrac23\end{pmatrix}.
+\]
+Residuals $r_t=x_t-\hat\phi_1x_{t-1}-\hat\phi_2x_{t-2}$ for $t=3,4,5$:
+\[
+\begin{aligned}
+r_3&=0-\tfrac23(2)+\tfrac23(1)=-\tfrac23,\\
+r_4&=-1-\tfrac23(0)+\tfrac23(2)=-1+\tfrac43=\tfrac13,\\
+r_5&=-2-\tfrac23(-1)+\tfrac23(0)=-2+\tfrac23=-\tfrac43,
+\end{aligned}
+\qquad
+\norm{\mathbf X_F-F\hat{\boldsymbol\phi}_F}^2=\tfrac49+\tfrac19+\tfrac{16}{9}=\tfrac{21}{9}=\tfrac73 .
+\]
+The degrees of freedom are $n-2p=5-4=1$, so
+\[
+\hat\sigma_F^2=\frac{\norm{\mathbf X_F-F\hat{\boldsymbol\phi}_F}^2}{n-2p}
+=\frac{7/3}{1}=\tfrac73\approx2.33 .
+\]
+So $\hat{\boldsymbol\phi}_F=(\tfrac23,-\tfrac23)\Tr$, $\hat\sigma_F^2=\tfrac73$.
+
+\textbf{(c)} (i) A stationary Gaussian $\mathrm{AR}(p)$ run \emph{backwards} in
+time is the \emph{same} $\mathrm{AR}(p)$ model (its ACVS is symmetric,
+$\acvs_{-\tau}=\acvs_\tau$, so forward and reversed processes have identical
+second-order structure), so regressing each point on its \emph{future} lags
+estimates the very same coefficients $\boldsymbol\phi$. (ii) \textbf{No}: the
+OLS objective only minimises the residual sum of squares and places no
+constraint on the root moduli, so $\hat\Phi(z)$ may have roots inside the unit
+circle. (Here it happens to be stationary --- $\Phi(z)=1-\tfrac23z+\tfrac23z^2$
+has roots $z=\tfrac{1\pm\sqrt{-5}}{2}$ of modulus $\sqrt{3/2}\approx1.22>1$ ---
+but this is not guaranteed in general; Yule--Walker, by contrast, always yields a
+stationary fit.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The AR polynomial is
+$\Phi(z)=1-\tfrac34 z+\tfrac18 z^2$. Multiplying by $8$, $z^2-6z+8=(z-2)(z-4)$,
+so
+\[
+\Phi(z)=\tfrac18(z-2)(z-4)=\Big(1-\tfrac12 z\Big)\Big(1-\tfrac14 z\Big),
+\]
+with roots $z=2$ and $z=4$. Both satisfy $\abs{z}>1$, i.e.\ lie outside the unit
+circle, so the process is \textbf{causal} (stationary). The MA polynomial
+$\Theta(z)=1+\tfrac13 z$ has root $z=-3$, $\abs{-3}=3>1$ outside the unit circle,
+so the process is also \textbf{invertible} (this guarantees $G=\Theta/\Phi$ is
+well defined on $\abs{z}\le1$).
+
+\textbf{(b)} Write $X_t=G(\Bsh)\eps_t$ with
+\[
+G(z)=\frac{1+\tfrac13 z}{\big(1-\tfrac12 z\big)\big(1-\tfrac14 z\big)} .
+\]
+Partial-fraction in the reciprocal-root form
+\[
+G(z)=\frac{A}{1-\tfrac12 z}+\frac{B}{1-\tfrac14 z},
+\qquad
+1+\tfrac13 z=A\Big(1-\tfrac14 z\Big)+B\Big(1-\tfrac12 z\Big).
+\]
+Evaluate at the poles $z=2$ and $z=4$:
+\[
+\begin{aligned}
+z=2:\quad &1+\tfrac23=A\Big(1-\tfrac12\Big)=\tfrac12 A
+&&\Rightarrow\quad A=2\cdot\tfrac53=\tfrac{10}{3},\\
+z=4:\quad &1+\tfrac43=B\Big(1-2\Big)=-B
+&&\Rightarrow\quad B=-\tfrac73 .
+\end{aligned}
+\]
+Each term expands as a geometric series convergent on the unit disk (since
+$\abs{z}\le1<2,4$):
+\[
+\frac{A}{1-\tfrac12 z}=A\sum_{j\ge0}\Big(\tfrac12\Big)^j z^j,
+\qquad
+\frac{B}{1-\tfrac14 z}=B\sum_{j\ge0}\Big(\tfrac14\Big)^j z^j .
+\]
+Reading off the coefficient of $z^j$,
+\[
+\boxed{\;\psi_j=\frac{10}{3}\Big(\tfrac12\Big)^{j}-\frac{7}{3}\Big(\tfrac14\Big)^{j},\qquad j\ge0\;}
+\]
+which already gives $\psi_0=\tfrac{10}{3}-\tfrac73=1$. In particular
+\[
+\begin{aligned}
+\psi_0&=\tfrac{10}{3}-\tfrac73=1,\\
+\psi_1&=\tfrac{10}{3}\cdot\tfrac12-\tfrac73\cdot\tfrac14=\tfrac53-\tfrac{7}{12}=\tfrac{20-7}{12}=\tfrac{13}{12},\\
+\psi_2&=\tfrac{10}{3}\cdot\tfrac14-\tfrac73\cdot\tfrac1{16}=\tfrac56-\tfrac{7}{48}=\tfrac{40-7}{48}=\tfrac{33}{48}=\tfrac{11}{16}.
+\end{aligned}
+\]
+\textit{Check (coefficient matching).} Match powers of $z$ in
+$\big(1-\tfrac34 z+\tfrac18 z^2\big)\sum_j\psi_j z^j=1+\tfrac13 z$:
+\[
+\psi_0=1,\qquad
+\psi_1-\tfrac34\psi_0=\tfrac13\ \Rightarrow\ \psi_1=\tfrac34+\tfrac13=\tfrac{13}{12},
+\]
+and $\psi_j=\tfrac34\psi_{j-1}-\tfrac18\psi_{j-2}$ for $j\ge2$, giving
+$\psi_2=\tfrac34\cdot\tfrac{13}{12}-\tfrac18=\tfrac{13}{16}-\tfrac18=\tfrac{11}{16}$,
+matching exactly.
+
+\end{document}

@@ -1,0 +1,278 @@
+% ======================================================================
+%  PART 3 -- ARMA Revisited: Backshift Operator, Wold Decomposition,
+%            Causality & Invertibility
+% ======================================================================
+\section{ARMA Revisited: Backshift Operator, Wold Decomposition, Causality \& Invertibility}
+\label{sec:armarev}
+
+Having met AR, MA and ARMA models as explicit sums of white noise, we now
+repackage them with the \textbf{backshift operator} $\Bsh$, which turns the
+difference equations into a clean algebra of \emph{polynomials} $\Phi(z)$ and
+$\Theta(z)$. The payoff is conceptual: questions about a process
+(``is it stationary? is it invertible? what is its $\mathrm{MA}(\infty)$
+representation?'') become questions about the \emph{roots} of these
+polynomials and the analyticity of a transfer function $G(z)$. Along the way
+the \textbf{Wold decomposition theorem} tells us that essentially every
+stationary process is a one-sided moving average of white noise, which is
+exactly why the linear/ARMA world is so central. Throughout,
+$\{\eps_t\}$ is mean-zero white noise with $\Var(\eps_t)=\sigma^2$, and we use
+the lecture-note conventions: ARMA written $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$,
+stationarity from roots of $\Phi$ \emph{outside} the unit circle, invertibility
+from roots of $\Theta$ \emph{outside} the unit circle.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Backshift operator $\Bsh$}{p3-backshift}
+The \textbf{backshift operator} maps a time series $\{X_t\}$ to the series
+$\{Y_t\}=\Bsh[\{X_t\}]$ shifted back one step in time,
+\[
+Y_t = X_{t-1}\qquad\text{for all }t\in\Ints .
+\]
+We write informally $\Bsh X_t = X_{t-1}$. Iterating, $\Bsh^k X_t = X_{t-k}$
+for $k\ge0$, with $\Bsh^0=I$ the identity. The operator is linear, and
+because shifts commute, products of polynomials in $\Bsh$ may be multiplied
+and reordered like ordinary polynomials.
+\end{definition}
+
+\begin{definition}{ARMA polynomial notation}{p3-armapoly}
+An $\mathrm{ARMA}(p,q)$ process satisfies
+\[
+\sum_{j=0}^{p}\phi_j X_{t-j} \;=\; \sum_{k=0}^{q}\theta_k\eps_{t-k},
+\qquad \phi_0=-1,\ \theta_0=-1,
+\]
+which, with the backshift operator, becomes the compact statement
+\[
+\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t,\qquad
+\Phi(z)=\sum_{j=0}^{p}\phi_j z^{j},\quad
+\Theta(z)=\sum_{k=0}^{q}\theta_k z^{k}.
+\]
+In the common ``signed'' form one writes
+$X_t=\sum_{j=1}^{p}\phi_j X_{t-j}-\sum_{k=0}^{q}\theta_k\eps_{t-k}$;
+simple examples instead use $X_t=\eps_t-\theta\eps_{t-1}$ etc. Pure cases:
+$\mathrm{AR}(p)$ is $\Phi(\Bsh)X_t=\eps_t$ and $\mathrm{MA}(q)$ is
+$X_t=\Theta(\Bsh)\eps_t$.
+\end{definition}
+
+\begin{definition}{Characteristic polynomials}{p3-charpoly}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ we call
+\begin{itemize}
+  \item $\Phi(z)$ the \textbf{characteristic polynomial of the autoregressive
+        part}, and
+  \item $\Theta(z)$ the \textbf{characteristic polynomial of the moving-average
+        part}.
+\end{itemize}
+For a pure $\mathrm{AR}$, $\Phi(\Bsh)X_t=\eps_t$, ``the characteristic
+polynomial'' means $\Phi(z)$; for a pure $\mathrm{MA}$,
+$X_t=\Theta(\Bsh)\eps_t$, it means $\Theta(z)$. The \emph{roots} of these
+polynomials govern stationarity and invertibility.
+\end{definition}
+
+\begin{definition}{Two-sided linear process}{p3-twosided}
+A \textbf{(two-sided) linear process} is
+\[
+X_t=\sum_{k=-\infty}^{\infty}g_k\,\eps_{t-k},
+\qquad \norm{g}_2^2=\sum_k g_k^2<\infty,
+\]
+with $\{g_k\}\subset\Reals$ and $\{\eps_t\}$ mean-zero white noise. Its first
+two moments are, for all $t,\tau\in\Ints$,
+\[
+\E[X_t]=0,\qquad
+\Var(X_t)=\sigma^2\norm{g}_2^2<\infty,\qquad
+\Cov(X_t,X_{t+\tau})=\sigma^2\sum_{k=-\infty}^{\infty}g_k\,g_{k+\tau}.
+\]
+The summability $\norm{g}_2^2<\infty$ is what makes these moments finite, so the
+process is (second-order) stationary.
+\end{definition}
+
+\begin{definition}{General linear process (one-sided)}{p3-genlin}
+If in the two-sided process we set $g_{-1}=g_{-2}=\cdots=0$, we obtain a
+\textbf{general linear process}
+\[
+X_t=\sum_{k=0}^{\infty}g_k\,\eps_{t-k},\qquad \norm{g}_2^2<\infty .
+\]
+Now $X_t$ depends only on the \emph{past and present} of $\{\eps_t\}$, making
+the process \textbf{causal} (in the linear sense). The same mean/autocovariance
+formulas apply, so it is stationary. Writing $G(z)=\sum_{k\ge0}g_kz^k$ gives the
+operator form $X_t=G(\Bsh)\eps_t$. By convention $g_0=1$.
+\end{definition}
+
+\begin{definition}{Transfer function $G(z)$, zeros and poles}{p3-transfer}
+For a linear process $X_t=G(\Bsh)\eps_t$, the function
+\[
+G(z)=\sum_{k=0}^{\infty}g_k z^{k}
+\]
+is the \textbf{transfer function}. When $G$ is a rational ratio
+$G(z)=G_1(z)/G_2(z)$:
+\begin{itemize}
+  \item the roots of the numerator $G_1(z)$ are the \textbf{zeros} of $G$;
+  \item the roots of the denominator $G_2(z)$ are the \textbf{poles} of $G$.
+\end{itemize}
+For an $\mathrm{ARMA}$ model $G(z)=\Theta(z)/\Phi(z)$: the zeros of $\Phi$
+(roots of the AR polynomial) are the poles of $G$, and the zeros of $\Theta$
+(roots of the MA polynomial) are the zeros of $G$. Whether the expansion of
+$G$ involves only past/present (versus future) noise is decided by where these
+roots sit relative to the unit circle $|z|=1$.
+\end{definition}
+
+\begin{definition}{Innovations outlier}{p3-innov}
+If a single realised value of $\eps_t$ affects $X_t$ \emph{and all subsequent}
+$X_{t+1},X_{t+2},\dots$, that value is called an \textbf{innovations outlier}.
+This is exactly the behaviour of a one-sided ($\mathrm{MA}(\infty)$) process:
+each innovation $\eps_t$ propagates forward through the weights $g_0,g_1,\dots$.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{theorem}{Wold decomposition theorem}{p3-wold}
+Any (zero-mean) second-order stationary process $\{X_t\}$ can be written as
+\[
+X_t = U_t + V_t,
+\qquad U_t\ \text{and}\ V_t\ \text{uncorrelated},
+\]
+where
+\begin{itemize}
+  \item $U_t$ has a \textbf{one-sided linear} ($\mathrm{MA}(\infty)$)
+        representation
+        \[
+        U_t=\sum_{k=0}^{\infty}g_k\,\eps_{t-k},\qquad g_0=1,\ \norm{g}_2^2<\infty,
+        \]
+        with $\{\eps_t\}$ mean-zero white noise uncorrelated with $V$,
+        i.e.\ $\E[\eps_s V_t]=0$ for all $s,t$; the sequences $\{g_k\}$ and
+        $\{\eps_t\}$ are \emph{uniquely} determined;
+  \item $V_t$ is \textbf{singular} (deterministic): it can be predicted from its
+        own past with zero error.
+\end{itemize}
+\textit{Proof idea:} project $X_t$ onto the closed linear span of its own past;
+the residual one-step innovations are the white noise $\eps_t$, the $g_k$ are the
+projection coefficients, and $V_t$ is the part lying in the infinite-past
+intersection of these spans (the purely deterministic component).\\
+\textit{Why:} this is the structural justification for the whole linear-model
+programme: up to a deterministic piece, \emph{every} stationary process is a
+one-sided moving average of white noise, and ARMA models are the finite,
+rational approximations to this $\mathrm{MA}(\infty)$.
+\end{theorem}
+
+\begin{proposition}{Laurent expansion of $1/G_2$ and the past/present criterion}{p3-laurent}
+Let $G(z)=G_1(z)/G_2(z)$ and let $z_1,\dots,z_p$ be the zeros of $G_2$, ordered
+so that $z_1,\dots,z_k$ lie \emph{inside} the unit circle and
+$z_{k+1},\dots,z_p$ lie \emph{outside}. A partial-fraction plus geometric-series
+(Laurent) expansion, convergent on $|z|=1$, gives after replacing $z\mapsto\Bsh$
+\[
+\frac{1}{G_2(\Bsh)}\eps_t
+=\underbrace{\sum_{j=1}^{k}A_j\sum_{l=0}^{\infty}z_j^{\,l}\,\eps_{t+1+l}}_{\text{future}}
+\;-\;\underbrace{\sum_{j=k+1}^{p}A_j\sum_{l=0}^{\infty}z_j^{-(l+1)}\,\eps_{t-l}}_{\text{past}+\text{present}} .
+\]
+Hence if \emph{all} roots of $G_2(z)$ are outside the unit circle ($k=0$), only
+past and present values appear, and the one-sided general linear process exists.\\
+\textit{Proof idea:} expand $A_j/(z-z_j)$ as a geometric series, choosing the
+\emph{inside} expansion $\sum_l (z_j/z)^l$ for $|z_j|<1$ and the \emph{outside}
+expansion for $|z_j|>1$, so that each series converges on $|z|=1$.\\
+\textit{Why:} this is the precise mechanism behind ``roots outside the unit
+circle $\Rightarrow$ causal''. It also gives the equivalent analytic statement:
+$|G(z)|<\infty$ for $|z|\le1$, i.e.\ $G$ is \textbf{analytic inside and on the
+unit circle}.
+\end{proposition}
+
+\begin{proposition}{Stationarity of the general linear process}{p3-glpstat}
+A general linear process $X_t=\sum_{k\ge0}g_k\eps_{t-k}$ with
+$\norm{g}_2^2<\infty$ is second-order stationary, with
+\[
+\E[X_t]=0,\qquad
+\acvs_\tau=\sigma^2\sum_{k=0}^{\infty}g_k\,g_{k+\abs\tau}.
+\]
+\textit{Proof idea:} the mean is zero by linearity; bilinearity of covariance
+together with $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$ collapses the double
+sum to the single sum above, which is finite by Cauchy--Schwarz and
+$\norm{g}_2^2<\infty$.\\
+\textit{Why:} this is the engine for computing the ACVS of \emph{any} causal
+ARMA once its $\mathrm{MA}(\infty)$ weights $\{g_k\}=\{\psi_k\}$ are known.
+\end{proposition}
+
+\begin{proposition}{Stationarity (causality) of $\mathrm{AR}(p)$}{p3-arstat}
+For $\mathrm{AR}(p)$, $\Phi(\Bsh)X_t=\eps_t$, the (unique) stationary causal
+solution is $X_t=\Phi^{-1}(\Bsh)\eps_t=G(\Bsh)\eps_t$ with
+$G(z)=\Phi^{-1}(z)$. This power expansion is analytic on $|z|\le1$
+\emph{iff} all roots of $\Phi(z)$ lie \emph{outside} the unit circle. Therefore
+\[
+\mathrm{AR}(p)\ \text{is stationary}\iff \text{all roots of }\Phi(z)\ \text{satisfy }\abs{z}>1 .
+\]
+\textit{Proof idea:} the poles of $G=1/\Phi$ are the roots of $\Phi$; by the
+Laurent criterion (Prop.~\ref{prop:p3-laurent}) the one-sided expansion exists
+exactly when those poles are outside $|z|=1$.\\
+\textit{Why:} this is \emph{the} root test for AR stationarity; it reduces an
+infinite-order question to checking the moduli of $p$ roots.
+\end{proposition}
+
+\begin{proposition}{$\mathrm{AR}(p)$ is always invertible; $\mathrm{MA}(q)$ is always stationary}{p3-alwaysinv}
+\begin{itemize}
+  \item For $\mathrm{AR}(p)$, $\Phi(\Bsh)X_t=\eps_t$ already expresses the white
+        noise as a \emph{finite} polynomial in $X$, so $\mathrm{AR}(p)$ is
+        \textbf{always invertible} (the AR polynomial $\Phi$ has finite order;
+        there is no MA polynomial, $\Theta\equiv1$).
+  \item For $\mathrm{MA}(q)$, $X_t=\Theta(\Bsh)\eps_t=G(\Bsh)\eps_t$ with
+        $G(z)=\Theta(z)$ a \emph{finite} polynomial, so $|G(z)|<\infty$
+        everywhere; hence $\mathrm{MA}(q)$ is \textbf{always stationary}.
+\end{itemize}
+\textit{Proof idea:} ``finite polynomial $\Rightarrow$ bounded on the unit
+disk''; only the \emph{inverse} expansion can fail to converge, never the
+finite direct one.\\
+\textit{Why:} it tells you which check is \emph{free}: never test an AR for
+invertibility or an MA for stationarity.
+\end{proposition}
+
+\begin{proposition}{Invertibility via $G^{-1}$ and the $\mathrm{MA}(q)$ root test}{p3-invert}
+A linear process $X_t=G(\Bsh)\eps_t$ is \textbf{invertible} if it can be
+rewritten as an $\mathrm{AR}(\infty)$,
+\[
+G^{-1}(\Bsh)X_t=\eps_t,\qquad G^{-1}(z)=\sum_{k=0}^{\infty}h_k z^{k},
+\]
+with $G^{-1}$ analytic on $|z|\le1$, equivalently $|G^{-1}(z)|<\infty$ for
+$|z|\le1$, equivalently \emph{all poles of $G^{-1}$ are outside} the unit circle
+(equivalently, all \emph{zeros} of $G$ are inside). For $\mathrm{MA}(q)$,
+$G=\Theta$, so
+\[
+\mathrm{MA}(q)\ \text{is invertible}\iff \text{all roots of }\Theta(z)\ \text{satisfy }\abs{z}>1 .
+\]
+\textit{Proof idea:} inverting $X_t=\Theta(\Bsh)\eps_t$ needs the power series of
+$1/\Theta$ to converge on $|z|\le1$; by the Laurent criterion this requires the
+roots of $\Theta$ (the poles of $1/\Theta$) outside the unit circle.\\
+\textit{Why:} invertibility is what makes the innovations $\eps_t$ recoverable
+from the observed past $X_t,X_{t-1},\dots$, which is essential for forecasting
+and for parameter identifiability.
+\end{proposition}
+
+\begin{corollary}{Stationarity \& invertibility summary for ARMA}{p3-summary}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$:
+\[
+\begin{aligned}
+\textbf{AR}(p):&\quad \text{stationary}\iff \text{roots of }\Phi\ \text{outside }\abs{z}=1;\quad \text{\emph{always} invertible.}\\
+\textbf{MA}(q):&\quad \text{\emph{always} stationary};\quad \text{invertible}\iff \text{roots of }\Theta\ \text{outside }\abs{z}=1.\\
+\textbf{ARMA}(p,q):&\quad \text{stationary}\iff \text{roots of }\Phi\ \text{outside};\ \ \text{invertible}\iff \text{roots of }\Theta\ \text{outside.}
+\end{aligned}
+\]
+\textit{Why:} the single most-used reference fact of the chapter; combine the
+two independent root tests.
+\end{corollary}
+
+\begin{proposition}{Causal $\mathrm{AR}(p)$ has $\pacf_\tau=0$ for $\tau>p$}{p3-pacfcut}
+If $\{X_t\}$ is a causal $\mathrm{AR}(p)$, its partial autocorrelation function
+satisfies $\pacf_\tau=0$ for all $\tau>p$.\\
+\textit{Proof idea:} the order-$\tau$ best linear predictor is
+$P_{X_0,\dots,X_{\tau-1}}(X_\tau)=\sum_{j=1}^{\tau}\pacf_{\tau,j}X_{\tau-j}$ and
+$\pacf_\tau=\pacf_{\tau,\tau}$. Since
+$X_\tau=\sum_{j=1}^p\phi_j X_{\tau-j}+\eps_\tau$, choosing
+$\pacf_{\tau,j}=\tilde\phi_j$ (with $\tilde\phi_j=\phi_j$ for $j\le p$,
+$\tilde\phi_j=0$ for $j>p$) makes the prediction residual equal $\eps_\tau$,
+which by causality satisfies $\Cov(\eps_\tau,X_k)=0$ for all $k<\tau$ (here
+$\Cov(X_t,\eps_s)=0$ when $t<s$). Thus the orthogonality (prediction) equations
+are met, so these are the true coefficients; in particular
+$\pacf_\tau=\pacf_{\tau,\tau}=\tilde\phi_\tau=0$ for $\tau>p$.\\
+\textit{Why:} the PACF ``cuts off'' after lag $p$ for an $\mathrm{AR}(p)$ ---
+the diagnostic mirror image of the ACF cutting off after lag $q$ for an
+$\mathrm{MA}(q)$ (this proof is Sheet~2, Ex.~2.7).
+\end{proposition}
+
+% ----------------------------------------------------------------------
+% ----------------------------------------------------------------------

@@ -1,0 +1,58 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\examheader{Week 1: Stationarity, Autocovariance \& Ergodicity}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\{\eps_t\}$ denotes a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(a)} State the definition of \emph{weak (second-order) stationarity} and of \emph{strict stationarity} for a process $\{X_t\}_{t\in\Ints}$. \hfill(2 pts)
+
+\textbf{(b)} Let $Y_t\iid\mathcal N(0,\sigma_Y^2)$ and let $a,b,c$ be constants. For each process, decide whether it is weakly and/or strictly stationary, and give its mean and ACVS:
+\begin{enumerate}[label=(\roman*)]
+  \item $X_t = a + bY_t + cY_{t-1}$;
+  \item $X_t = Y_0\cos(ct)$.
+\end{enumerate}\hfill(2 pts)
+
+\textbf{(c)} Give a process that is strictly stationary but \emph{not} weakly stationary, and explain why. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+Let $\{X_t\}$ be a second-order stationary process with ACVS $\acvs_\tau$, \emph{independent} of the white noise $\{\eps_t\}$.
+
+\textbf{(a)} Determine the ACVS of $Z_t = X_t + \eps_t$. \hfill(2 pts)
+
+\textbf{(b)} Let $W_t = \theta_1\eps_t + \theta_2\eps_{t-1}$. Compute its ACVS $\acvs^W_\tau$ for all $\tau$ and its autocorrelation $\acf_1$, and prove that $\abs{\acf_1}\le\tfrac12$. \hfill(3 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(a)} Prove that the autocovariance sequence $\{\acvs_\tau\}$ of a stationary process is \emph{positive semi-definite}: for every $n\ge1$ and all $a_1,\dots,a_n\in\Reals$,
+\[
+\sum_{j=1}^{n}\sum_{k=1}^{n} a_j a_k\,\acvs_{j-k}\ \ge\ 0 .
+\]\hfill(2 pts)
+
+\textbf{(b)} Deduce the symmetry $\acvs_{-\tau}=\acvs_\tau$ and the bound $\abs{\acvs_\tau}\le\acvs_0$. \hfill(1 pt)
+
+\textbf{(c)} Is the sequence $\acvs_0 = 1,\ \acvs_{\pm1} = 0.8,\ \acvs_\tau = 0\ (\abs\tau\ge2)$ a valid ACVS of some stationary process? Justify. \hfill(2 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+For observations $X_1,\dots,X_n$ recall the two sample-autocovariance estimators (for $\abs\tau\le n-1$, and $0$ otherwise):
+\[
+\tilde\acvs_\tau=\frac{1}{n-\abs\tau}\sum_{t=1}^{n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X),\qquad
+\hat\acvs_\tau=\frac{1}{n}\sum_{t=1}^{n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X).
+\]
+
+\textbf{(a)} Which estimator is biased? Which one is positive semi-definite? \hfill(1 pt)
+
+\textbf{(b)} For Gaussian white noise (known mean) one has, for $\tau\ne0$, $\Var(\hat\acvs_\tau)=\tfrac{n-\abs\tau}{n^2}\sigma^4$ and $\Var(\tilde\acvs_\tau)=\tfrac{1}{n-\abs\tau}\sigma^4$. Which estimator has the smaller mean-squared error, and why? \hfill(2 pts)
+
+\textbf{(c)} Show that if $\sum_{\tau}\abs{\acvs_\tau}<\infty$ then $\Var(\bar X)\to0$ as $n\to\infty$, so $\bar X$ is a consistent (mean-ergodic) estimator of $\mu=\E[X_t]$. \hfill(2 pts)
+\answerpage
+
+\end{document}

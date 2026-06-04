@@ -1,0 +1,89 @@
+% ======================================================================
+%  weekpreamble.tex — shared preamble for the weekly course summaries (EN)
+%  Concise, readable, intuition-first. Same box style as the main doc.
+%  Compiles with pdflatex.
+% ======================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{microtype}
+
+\emergencystretch=3em
+\allowdisplaybreaks[1]
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+
+% ---------- math macros (same names as the main document) ----------
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\trace}{tr}
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\Ints}{\mathbb{Z}}
+\newcommand{\Comp}{\mathbb{C}}
+\newcommand{\Nat}{\mathbb{N}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Tr}{^{\mathsf{T}}}
+\newcommand{\Herm}{^{\mathsf{H}}}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\diff}{\nabla}
+\newcommand{\acvs}{\gamma}
+\newcommand{\acf}{\rho}
+\newcommand{\pacf}{\alpha}
+\newcommand{\sdf}{\mathcal{S}}
+\newcommand{\filt}{\mathcal{L}}
+\newcommand{\Bsh}{B}
+\newcommand{\ms}{\;\overset{\mathrm{ms}}{=}\;}
+\newcommand{\toprob}{\xrightarrow{P}}
+\newcommand{\todist}{\xrightarrow{d}}
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}
+
+\setlist[itemize]{leftmargin=1.5em,topsep=2pt,itemsep=2pt}
+\setlist[enumerate]{leftmargin=1.7em,topsep=2pt,itemsep=2pt}
+
+% ---------- compact, titled (unnumbered) boxes ----------
+\tcbset{wkbase/.style={enhanced,breakable,fonttitle=\bfseries,coltitle=white,
+  boxrule=0.6pt,arc=1.2mm,left=2.2mm,right=2.2mm,top=1.1mm,bottom=1.1mm,
+  before skip=6pt,after skip=6pt,
+  attach boxed title to top left={yshift=-3.2mm,xshift=2.4mm},
+  boxed title style={boxrule=0pt,arc=0.5mm}}}
+
+\newtcolorbox{defn}[1]{wkbase, colback=blue!4!white, colframe=blue!58!black,
+  colbacktitle=blue!58!black, title={Definition --- #1}, top=3mm}
+\newtcolorbox{result}[1]{wkbase, colback=red!4!white, colframe=red!60!black,
+  colbacktitle=red!60!black, title={#1}, top=3mm}
+\newtcolorbox{intu}[1][Intuition]{wkbase, colback=yellow!12!white,
+  colframe=orange!72!black, colbacktitle=orange!72!black, coltitle=white,
+  title={#1}, top=3mm}
+\newtcolorbox{retenir}[1][Key takeaways --- the week's reflexes]{wkbase,
+  colback=green!5!white, colframe=green!48!black, colbacktitle=green!48!black,
+  title={#1}, top=3mm}
+\newtcolorbox{exmpl}[1][Worked example]{wkbase, colback=black!3!white,
+  colframe=black!55!white, colbacktitle=black!55!white, title={#1}, top=3mm}
+
+% ---------- week header ----------
+\newcommand{\weekheader}[4]{%
+  {\small\sffamily\bfseries\color{black!60} TIME SERIES~~$\cdot$~~MATH-342, EPFL}\par
+  \vspace{2pt}
+  {\LARGE\bfseries Week #1 --- #3\par}
+  \vspace{1pt}
+  {\itshape\color{black!55} #2}\par
+  \vspace{6pt}
+  \begin{tcolorbox}[enhanced,colback=blue!3!white,colframe=blue!45!black,
+    arc=1.4mm,boxrule=0.7pt,left=3mm,right=3mm,top=2mm,bottom=2mm,before skip=2pt,after skip=10pt]
+    \textbf{The big picture.}~ #4
+  \end{tcolorbox}
+}

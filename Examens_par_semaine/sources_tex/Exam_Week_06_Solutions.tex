@@ -1,0 +1,190 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 6: Fourier Theory}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} \emph{Conjugation.} Pull the conjugate outside the integral; it flips the sign of the exponent:
+\[
+H(f)=\int_{-\infty}^{\infty}\conj{g(t)}\,e^{-2\pi i t f}\,dt
+=\conj{\int_{-\infty}^{\infty} g(t)\,e^{2\pi i t f}\,dt}
+=\conj{\int_{-\infty}^{\infty} g(t)\,e^{-2\pi i t(-f)}\,dt}
+=\conj{G(-f)} .
+\]
+\emph{Time shift.} Insert $1=e^{-2\pi i f\tau}e^{2\pi i f\tau}$ to complete the exponent:
+\[
+H(f)=\int_{-\infty}^{\infty} g(t+\tau)\,e^{-2\pi i f t}\,dt
+=\int_{-\infty}^{\infty} g(t+\tau)\,e^{-2\pi i f(t+\tau)}\,dt\;e^{2\pi i f\tau}
+=G(f)\,e^{2\pi i f\tau},
+\]
+where in the last step we substituted $s=t+\tau$ ($ds=dt$, limits unchanged) so the integral is exactly $G(f)$.
+
+\textbf{(b)} Build $h$ in two steps. First the \emph{scaling} rule: with $p(t)=g(\alpha t)$, substitute $s=\alpha t$ (so $dt=ds/\abs\alpha$, the $\abs\alpha$ arising from reversing the limits when $\alpha<0$),
+\[
+P(f)=\int_{-\infty}^{\infty} g(\alpha t)\,e^{-2\pi i f t}\,dt
+=\frac{1}{\abs\alpha}\int_{-\infty}^{\infty} g(s)\,e^{-2\pi i (f/\alpha)s}\,ds
+=\frac{1}{\abs\alpha}\,G\!\left(\frac{f}{\alpha}\right).
+\]
+Now $h(t)=p(t)\,e^{2\pi i f_0 t}$ is a pure \emph{modulation}; modulation in time is a frequency shift, since
+\[
+H(f)=\int_{-\infty}^{\infty} p(t)\,e^{2\pi i f_0 t}\,e^{-2\pi i f t}\,dt
+=\int_{-\infty}^{\infty} p(t)\,e^{-2\pi i (f-f_0) t}\,dt
+=P(f-f_0).
+\]
+Substituting $P$,
+\[
+\boxed{\,H(f)=P(f-f_0)=\frac{1}{\abs\alpha}\,G\!\left(\frac{f-f_0}{\alpha}\right).\,}
+\]
+In words: scaling time by $\alpha$ \emph{inversely} stretches the frequency axis (by $1/\alpha$) and rescales the height by $1/\abs\alpha$; modulating by $e^{2\pi i f_0 t}$ \emph{translates} the whole spectrum to be centred at $f_0$.
+
+\textbf{(c)} Let $g$ be real and even. \emph{Real} ($\conj{g(t)}=g(t)$) means $g$ equals its own conjugate, so by the conjugation rule of (a),
+\[
+G(f)=\conj{G(-f)}\quad\Longleftrightarrow\quad G(-f)=\conj{G(f)}\qquad(\text{Hermitian symmetry}).
+\]
+\emph{Even} ($g(-t)=g(t)$) is the scaling rule of (b) with $\alpha=-1$ (so $\abs\alpha=1$), giving $G(-f)=G(f)$ ($G$ even). Combining the two,
+\[
+G(f)=G(-f)=\conj{G(f)},
+\]
+so $G(f)$ equals its own conjugate, i.e.\ $G$ is \textbf{real}; and $G(f)=G(-f)$ says $G$ is \textbf{even}. (This is exactly why a valid SDF, the transform of the real even ACVS, is real and even.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} By definition of the transform and of convolution,
+\[
+\begin{aligned}
+U(f)&=\int_{-\infty}^{\infty} u(x)\,e^{-2\pi i x f}\,dx
+     =\int_{-\infty}^{\infty}\!\left(\int_{-\infty}^{\infty} g(x-y)\,h(y)\,dy\right)e^{-2\pi i x f}\,dx\\[2pt]
+    &=\int_{-\infty}^{\infty}\!\left(\int_{-\infty}^{\infty} g(x-y)\,e^{-2\pi i x f}\,dx\right)h(y)\,dy
+     \qquad\text{(Fubini: swap the order of integration)}\\[2pt]
+    &=\int_{-\infty}^{\infty}\!\left(\int_{-\infty}^{\infty} g(s)\,e^{-2\pi i s f}\,ds\right)e^{-2\pi i y f}\,h(y)\,dy
+     \qquad (s=x-y,\ dx=ds)\\[2pt]
+    &=G(f)\int_{-\infty}^{\infty} h(y)\,e^{-2\pi i y f}\,dy=G(f)\,H(f).
+\end{aligned}
+\]
+The Fubini interchange is legitimate because the double integral is absolutely convergent:
+\[
+\int_{-\infty}^{\infty}\!\!\int_{-\infty}^{\infty}\abs{g(x-y)\,h(y)}\,dx\,dy
+=\int_{-\infty}^{\infty}\abs{g(s)}\,ds\int_{-\infty}^{\infty}\abs{h(y)}\,dy
+=\norm g_1\,\norm h_1<\infty,
+\]
+using the change of variables $s=x-y$ and the hypotheses $g,h\in L^1$. Hence $U=G\cdot H$: the transform of a convolution is the product of the transforms.
+
+\textbf{(b)} With $y=a*x$, part (a) gives immediately
+\[
+Y(f)=A(f)\,X(f),
+\]
+where $A(f)=\int_{-\infty}^{\infty} a(t)e^{-2\pi i f t}\,dt$ is the \emph{transfer function}: filtering multiplies the spectrum frequency-by-frequency by $A$. For the running average $a(t)=\tfrac1{2T}\ind_{\{\abs t\le T\}}$,
+\[
+A(f)=\frac{1}{2T}\int_{-T}^{T} e^{-2\pi i f t}\,dt
+=\frac{1}{2T}\cdot\frac{e^{-2\pi i f t}}{-2\pi i f}\Bigg|_{t=-T}^{t=T}
+=\frac{1}{2T}\cdot\frac{e^{2\pi i f T}-e^{-2\pi i f T}}{2\pi i f}
+=\frac{\sin(2\pi f T)}{2\pi f T}.
+\]
+At $f=0$ the indeterminate form has limit $1$ (since $\sin x/x\to1$); equivalently $A(0)=\frac{1}{2T}\int_{-T}^{T}1\,dt=1$. So the filter preserves the zero-frequency (mean/DC) component and attenuates higher frequencies --- a low-pass filter, as a running average should be.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The sum is a finite geometric series with ratio $r=e^{-2\pi i f}$. For $f\notin\Ints$ (so $r\neq1$),
+\[
+D_n(f)=\sum_{t=0}^{n-1} r^{t}=\frac{1-r^{n}}{1-r}
+=\frac{1-e^{-2\pi i n f}}{1-e^{-2\pi i f}} .
+\]
+Factor a half-angle phase out of numerator and denominator:
+\[
+\begin{aligned}
+D_n(f)
+&=\frac{e^{-\pi i n f}\bigl(e^{\pi i n f}-e^{-\pi i n f}\bigr)}
+       {e^{-\pi i f}\bigl(e^{\pi i f}-e^{-\pi i f}\bigr)}
+=\frac{e^{-\pi i n f}\,(2i)\sin(n\pi f)}{e^{-\pi i f}\,(2i)\sin(\pi f)}\\[2pt]
+&=\frac{\sin(n\pi f)}{\sin(\pi f)}\;e^{-\pi i (n-1) f},
+\end{aligned}
+\]
+using $e^{i\theta}-e^{-i\theta}=2i\sin\theta$. The phase factor has modulus $1$, so
+\[
+\abs{D_n(f)}=\left\lvert\frac{\sin(n\pi f)}{\sin(\pi f)}\right\rvert .
+\]
+
+\textbf{(b)} The numerator $\sin(n\pi f)$ vanishes exactly when $n f\in\Ints$, i.e.\ at $f=k/n$, $k\in\Ints$. The denominator $\sin(\pi f)$ vanishes only when $f\in\Ints$. At the Fourier frequencies $f_k=k/n$ for $k=1,\dots,n-1$ we have $f_k\notin\Ints$ (since $0<k/n<1$), so the denominator is nonzero while the numerator is zero:
+\[
+\abs{D_n(f_k)}=\frac{\abs{\sin(k\pi)}}{\abs{\sin(\pi k/n)}}=\frac{0}{\sin(\pi k/n)}=0,\qquad k=1,\dots,n-1.
+\]
+At $f=0$ both vanish; resolving the limit (or summing directly $\sum_{t=0}^{n-1}1$),
+\[
+D_n(0)=\lim_{f\to0}\frac{\sin(n\pi f)}{\sin(\pi f)}=\lim_{f\to0}\frac{n\pi f}{\pi f}=n .
+\]
+So $\abs{D_n}$ has a peak of height $n$ at the origin and is exactly zero at every \emph{other} Fourier frequency. Consequently the finite transform of a sinusoid sitting at one Fourier frequency contributes nothing at the remaining Fourier frequencies: there is no spectral leakage \emph{between} Fourier frequencies for an on-grid sinusoid.
+
+\textbf{(c)} With $\Delta=1$ the Nyquist frequency is $\tfrac12$ and the aliasing identity reads $\sdf(f)=\sum_{k\in\Ints}\sdf_{\mathrm{c}}(f+k)$ on $\abs f\le\tfrac12$. Since $\sdf_{\mathrm{c}}$ is supported on $[-1,1]$, for $\abs f\le\tfrac12$ only $k\in\{-1,0,1\}$ can contribute:
+\[
+\sdf(f)=\sdf_{\mathrm{c}}(f-1)+\sdf_{\mathrm{c}}(f)+\sdf_{\mathrm{c}}(f+1).
+\]
+Evaluate each term on $\abs f\le\tfrac12$:
+\begin{itemize}
+  \item $\sdf_{\mathrm{c}}(f)=1-\abs f$ (always in support);
+  \item $\sdf_{\mathrm{c}}(f+1)=1-\abs{f+1}$ is nonzero only when $\abs{f+1}\le1$, i.e.\ $f\le0$, where it equals $1-(1+f)=-f$;
+  \item $\sdf_{\mathrm{c}}(f-1)=1-\abs{f-1}$ is nonzero only when $\abs{f-1}\le1$, i.e.\ $f\ge0$, where it equals $1-(1-f)=f$.
+\end{itemize}
+Hence
+\[
+\sdf(f)=
+\begin{cases}
+(1-\abs f)+(-f)=(1+f)+(-f)=1, & -\tfrac12\le f\le 0,\\[2pt]
+(1-\abs f)+f=(1-f)+f=1, & 0\le f\le \tfrac12,
+\end{cases}
+\]
+that is, $\boxed{\,\sdf(f)\equiv1\ \text{ on }\abs f\le\tfrac12.\,}$
+\textbf{Aliasing has occurred.} The continuous spectrum had support out to $\abs f=1$, i.e.\ \emph{beyond} the Nyquist frequency $\tfrac12$; sampling at $\Delta=1$ folds that excess high-frequency power back into the band $[-\tfrac12,\tfrac12]$. Here the folded triangular tails fill in exactly the missing area, turning a triangular continuous SDF into a \emph{flat} (white-looking) sampled SDF --- the high-frequency content has been irretrievably mixed into the low frequencies.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Apply the seasonal difference first. Using $s_t=s_{t-12}$,
+\[
+\diff_{(12)}X_t=X_t-X_{t-12}
+=\bigl(a+bt+s_t+Y_t\bigr)-\bigl(a+b(t-12)+s_{t-12}+Y_{t-12}\bigr)
+=12b+\bigl(Y_t-Y_{t-12}\bigr).
+\]
+The period-$12$ season is annihilated and the linear trend collapses to the constant $12b$. Now apply $\diff=I-\Bsh$, which kills the constant:
+\[
+\diff\,\diff_{(12)}X_t
+=\bigl(12b+Y_t-Y_{t-12}\bigr)-\bigl(12b+Y_{t-1}-Y_{t-13}\bigr)
+=\boxed{\,Y_t-Y_{t-1}-Y_{t-12}+Y_{t-13}\,}.
+\]
+This is a \emph{fixed} finite linear combination of $\{Y_t\}$, so its mean is
+$\E[Y_t-Y_{t-1}-Y_{t-12}+Y_{t-13}]=0$, and being a fixed linear filter of a stationary process its autocovariance depends on the lag $\tau$ only (no $t$); hence it is weakly stationary. All $t$-dependence (trend and season) has been removed.
+
+\textbf{(b)} Solve the model for $X_t$: $X_t=\Phi X_{t-12}+\eps_t-\theta\eps_{t-1}$, a seasonal $\mathrm{AR}(1)$ at lag $12$ driven by an $\mathrm{MA}(1)$ input. Invert the seasonal factor as a geometric series in $\Bsh^{12}$ (valid since $\abs\Phi<1$),
+\[
+\frac{1}{1-\Phi\Bsh^{12}}=\sum_{l\ge0}\Phi^{l}\Bsh^{12l},
+\]
+so that
+\[
+X_t=\sum_{l\ge0}\Phi^{l}\Bsh^{12l}\bigl(\eps_t-\theta\eps_{t-1}\bigr)
+=\sum_{l\ge0}\Phi^{l}\bigl(\eps_{t-12l}-\theta\,\eps_{t-12l-1}\bigr).
+\]
+Reading off the coefficient of $\eps_{t-j}$,
+\[
+\boxed{\;\psi_{12l}=\Phi^{l},\qquad \psi_{12l+1}=-\theta\,\Phi^{l}\quad(l\ge0),\qquad \psi_j=0\ \text{otherwise.}\;}
+\]
+(Check: $\psi_0=1,\ \psi_1=-\theta,\ \psi_{12}=\Phi,\ \psi_{13}=-\theta\Phi,\dots$)
+
+\textbf{(c)} Use $\acvs_\tau=\sigma^{2}\sum_{j\ge0}\psi_j\psi_{j+\tau}$. The only nonzero taps are at $j\equiv0$ and $j\equiv1\pmod{12}$.
+
+\emph{Lag $0$:}
+\[
+\acvs_0=\sigma^{2}\sum_{l\ge0}\bigl(\psi_{12l}^{2}+\psi_{12l+1}^{2}\bigr)
+=\sigma^{2}\sum_{l\ge0}\bigl(\Phi^{2l}+\theta^{2}\Phi^{2l}\bigr)
+=\frac{(1+\theta^{2})\,\sigma^{2}}{1-\Phi^{2}} .
+\]
+\emph{Lag $1$:} the only surviving pairs are $\psi_{12l}\,\psi_{12l+1}=\Phi^{l}(-\theta\Phi^{l})=-\theta\Phi^{2l}$, so
+\[
+\acvs_1=\sigma^{2}\sum_{l\ge0}\bigl(-\theta\Phi^{2l}\bigr)=\frac{-\theta\,\sigma^{2}}{1-\Phi^{2}} .
+\]
+Therefore
+\[
+\acf_1=\frac{\acvs_1}{\acvs_0}=\frac{-\theta}{1+\theta^{2}} .
+\]
+For $\theta=\tfrac12$: $\acf_1=\dfrac{-1/2}{1+1/4}=\dfrac{-1/2}{5/4}=-\dfrac{2}{5}=-0.4.$ (The autocorrelation is governed entirely by the $\mathrm{MA}(1)$ side-factor near the origin; the seasonal $\mathrm{AR}(1)$ produces analogous spikes at the seasonal lags $12,24,\dots$ of relative size $\Phi^{k}$.)
+
+\end{document}

@@ -1,0 +1,238 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\DeclareMathOperator{\diag}{diag}
+\begin{document}
+
+\solheader{Week 10: Forecasting}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} For the causal AR(1) the $\mathrm{MA}(\infty)$ representation is obtained by inverting $1-\phi B$:
+\[
+X_t=\frac{1}{1-\phi B}\,\eps_t=\sum_{j=0}^\infty\phi^{\,j}\eps_{t-j},
+\qquad\text{so}\qquad \psi_j=\phi^{\,j}\ \ (j\ge0).
+\]
+Because the process is Gaussian, the best linear predictor coincides with the conditional expectation $\E[X_{n+h}\mid X_1,\dots,X_n]$. Iterating the recursion $X_{n+h}=\phi X_{n+h-1}+\eps_{n+h}$ and taking conditional expectations (every future innovation $\eps_{n+1},\dots,\eps_{n+h}$ has conditional mean $0$, being uncorrelated with the data),
+\[
+\begin{aligned}
+X^{\,n}_{n+h}
+&=\E[\phi X_{n+h-1}+\eps_{n+h}\mid X_1,\dots,X_n]
+=\phi\,\E[X_{n+h-1}\mid X_1,\dots,X_n]\\
+&=\phi^2\,\E[X_{n+h-2}\mid X_1,\dots,X_n]=\cdots=\phi^{\,h}X_n .
+\end{aligned}
+\]
+Since $\abs\phi<1$, $X^{\,n}_{n+h}=\phi^{\,h}X_n\xrightarrow[h\to\infty]{}0$, the process mean: the forecast \emph{reverts to the mean}.
+
+\textbf{(b)} By the $\psi$-weight theorem the forecast error is the sum of the unrealised future innovations,
+\[
+e_n(h)=X_{n+h}-X^{\,n}_{n+h}=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}
+=\sum_{j=0}^{h-1}\phi^{\,j}\eps_{n+h-j}.
+\]
+The innovations are uncorrelated with common variance $\sigma^2$, so
+\[
+\Var\bigl(e_n(h)\bigr)=\sigma^2\sum_{j=0}^{h-1}\psi_j^2
+=\sigma^2\sum_{j=0}^{h-1}\phi^{2j}
+=\sigma^2\,\frac{1-(\phi^2)^h}{1-\phi^2}
+=\sigma^2\,\frac{1-\phi^{2h}}{1-\phi^2},
+\]
+using the finite geometric sum $\sum_{j=0}^{h-1}r^j=(1-r^h)/(1-r)$ with $r=\phi^2$. As $h\to\infty$, $\phi^{2h}\to0$ (since $\abs\phi<1$), so
+\[
+\Var\bigl(e_n(h)\bigr)\longrightarrow\frac{\sigma^2}{1-\phi^2}=\acvs_0,
+\]
+the marginal variance of the AR(1). The forecast-error variance increases monotonically in $h$ and saturates at $\acvs_0$: forecasting far ahead is no better than quoting the unconditional distribution.
+
+\textbf{(c)} With $\phi=0.6$ and $\sigma^2=4$:
+\[
+X^{\,n}_{n+2}=\phi^2 X_n=0.36\,X_n .
+\]
+The forecast-error variances are
+\[
+\Var(e_n(1))=\sigma^2\psi_0^2=\sigma^2=4,
+\qquad
+\Var(e_n(2))=\sigma^2(1+\phi^2)=4(1+0.36)=4\cdot1.36=5.44 .
+\]
+(For reference $\acvs_0=4/(1-0.36)=4/0.64=6.25$, and indeed $4<5.44<6.25$.) A $95\%$ Gaussian prediction interval for $X_{n+2}$ is
+\[
+X^{\,n}_{n+2}\pm z_{0.975}\sqrt{\Var(e_n(2))}
+=0.36\,X_n\pm1.96\sqrt{5.44}
+=0.36\,X_n\pm1.96(2.3324)
+=0.36\,X_n\pm4.571 .
+\]
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Expand the prediction MSE as a quadratic in $\beta$, using $\Var(X)=\Gamma_n$ and $\Cov(X_{n+h},X)=\acvs_{[h]}$ (the $k$-th entry of $\Cov(X_{n+h},X)$ is $\Cov(X_{n+h},X_k)=\acvs_{n+h-k}$, which is exactly the $k$-th entry of $\acvs_{[h]}$):
+\[
+\begin{aligned}
+S(\beta)
+&=\E\bigl[(X_{n+h}-\beta\Tr X)^2\bigr]
+=\Var(X_{n+h}-\beta\Tr X)\\
+&=\acvs_0-2\beta\Tr\Cov(X_{n+h},X)+\beta\Tr\Var(X)\beta
+=\acvs_0-2\beta\Tr\acvs_{[h]}+\beta\Tr\Gamma_n\beta .
+\end{aligned}
+\]
+This is a quadratic in $\beta$ bounded below by $0$ ($\Gamma_n$ is positive semi-definite), so its minimiser solves $\nabla_\beta S=0$:
+\[
+\nabla_\beta S=-2\acvs_{[h]}+2\Gamma_n\beta=0
+\qquad\Longrightarrow\qquad
+\boxed{\;\Gamma_n\beta=\acvs_{[h]}.\;}
+\]
+\emph{Equivalence to orthogonality.} Row $k$ of $\Gamma_n\beta=\acvs_{[h]}$ reads
+\[
+\sum_{j=1}^n\beta_j\,\acvs_{j-k}=\acvs_{n+h-k},\qquad k=1,\dots,n .
+\]
+On the other hand $\E[(X_{n+h}-\sum_j\beta_jX_j)X_k]=\Cov(X_{n+h},X_k)-\sum_j\beta_j\Cov(X_j,X_k)=\acvs_{n+h-k}-\sum_j\beta_j\acvs_{j-k}$. Setting this to $0$ for each $k$ gives exactly the same $n$ equations. Hence ``error orthogonal to every observation'' $\Longleftrightarrow$ $\Gamma_n\beta=\acvs_{[h]}$: the best linear predictor is the orthogonal projection of $X_{n+h}$ onto $\mathrm{span}\{X_1,\dots,X_n\}$.
+
+\textbf{(b)} If $\Gamma_n$ is invertible then $\beta=\Gamma_n^{-1}\acvs_{[h]}$, so
+\[
+X^{\,n}_{n+h}=\beta\Tr X=\bigl(\Gamma_n^{-1}\acvs_{[h]}\bigr)\Tr X=\acvs_{[h]}\Tr\Gamma_n^{-1}X
+\]
+(using $(\Gamma_n^{-1})\Tr=\Gamma_n^{-1}$ since $\Gamma_n$ is symmetric). For the MSE, substitute $\beta\Tr\Gamma_n\beta=\beta\Tr\acvs_{[h]}$ into $S(\beta)$:
+\[
+P^{\,n}_{n+h}=\acvs_0-2\beta\Tr\acvs_{[h]}+\beta\Tr\Gamma_n\beta
+=\acvs_0-2\beta\Tr\acvs_{[h]}+\beta\Tr\acvs_{[h]}
+=\acvs_0-\beta\Tr\acvs_{[h]}
+=\acvs_0-\acvs_{[h]}\Tr\Gamma_n^{-1}\acvs_{[h]} .
+\]
+
+\textbf{(c)} \emph{Based on $X_1$ (so $n=1$, $h=1$).} The prediction equation $\Gamma_1\beta=\acvs_{[1]}$ is the scalar equation $\acvs_0\beta_1=\acvs_1$, hence $\beta_1=\acvs_1/\acvs_0=\acf_1$ and
+\[
+X^{\,1}_2=\beta_1X_1=\frac{\acvs_1}{\acvs_0}X_1=\acf_1 X_1 .
+\]
+\emph{Based on $X_1,X_2$ (so $n=2$, $h=1$).} Rather than invert $\Gamma_2$, use the model: $X_3=\phi_1X_2+\phi_2X_1+\eps_3$, so the candidate predictor $\phi_1X_2+\phi_2X_1$ has error
+\[
+X_3-(\phi_1X_2+\phi_2X_1)=\eps_3 .
+\]
+The future white noise $\eps_3$ is uncorrelated with the past observations $X_1,X_2$ (which depend only on $\eps_s$, $s\le2$), so
+\[
+\E\bigl[(X_3-\phi_1X_2-\phi_2X_1)X_1\bigr]=\E[\eps_3X_1]=0,
+\qquad
+\E\bigl[(X_3-\phi_1X_2-\phi_2X_1)X_2\bigr]=\E[\eps_3X_2]=0 .
+\]
+The error is orthogonal to both observations, so by the prediction-equations theorem of part (a) this candidate \emph{is} the best linear predictor:
+\[
+X^{\,2}_3=\phi_1X_2+\phi_2X_1 .
+\]
+(General fact: for an AR$(p)$ with $n\ge p$, the one-step forecast is simply $\sum_{i=1}^p\phi_iX_{n+1-i}$.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Consider any linear predictor $X^{\,n}_{n+h}=\sum_{i=1}^n\beta_iX_i$. Substituting the linear representation $X_i=\sum_{j=0}^\infty\psi_j\eps_{i-j}$,
+\[
+X^{\,n}_{n+h}=\sum_{i=1}^n\beta_i\sum_{j=0}^\infty\psi_j\eps_{i-j}=\sum_{j=0}^\infty c_j\,\eps_{n-j}
+\]
+for some coefficients $c_j$: any predictor built from $X_1,\dots,X_n$ is a linear combination of the innovations up to time $n$ (it ``starts at $\eps_n$''). Now write $X_{n+h}=\sum_{j=0}^\infty\psi_j\eps_{n+h-j}$ and split off the future innovations $\eps_{n+1},\dots,\eps_{n+h}$ (indices $j=0,\dots,h-1$). Since the $\eps$'s are uncorrelated with common variance $\sigma^2$, the cross terms vanish and
+\[
+\begin{aligned}
+\E\bigl[(X_{n+h}-X^{\,n}_{n+h})^2\bigr]
+&=\E\Bigl[\Bigl(\sum_{j=0}^\infty\psi_j\eps_{n+h-j}-\sum_{j=0}^\infty c_j\eps_{n-j}\Bigr)^2\Bigr]\\
+&=\sigma^2\Bigl(\sum_{j=0}^{h-1}\psi_j^2+\sum_{j=h}^\infty(\psi_j-c_{j-h})^2\Bigr).
+\end{aligned}
+\]
+The first sum collects the future innovations, which no past-based predictor can touch (it is \emph{fixed}); the second sum matches $\psi_j$ against $c_{j-h}$ for the observable innovations. The second sum is minimised --- to $0$ --- by choosing $c_{j-h}=\psi_j$, i.e.\ $c_j=\psi_{j+h}$. The predictor is then
+\[
+X^{\,n}_{n+h}=\sum_{j=0}^\infty\psi_{j+h}\eps_{n-j}=\sum_{j=h}^\infty\psi_j\eps_{n+h-j},
+\]
+the residual is $X_{n+h}-X^{\,n}_{n+h}=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}$, and the minimal MSE is
+\[
+P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2 .
+\]
+(Operationally: \emph{write the future and erase the future innovations.})
+
+\textbf{(b)} Here $\phi=\tfrac12$ and $\theta=\tfrac{3}{10}$ (with $\Phi(B)=1-\tfrac12B$, $\Theta(B)=1+\tfrac{3}{10}B$). The $\psi$-weights come from $\Theta(B)/\Phi(B)=\sum_j\psi_jB^j$:
+\[
+\frac{1+\tfrac{3}{10}B}{1-\tfrac12 B}
+=\Bigl(1+\tfrac{3}{10}B\Bigr)\sum_{k=0}^\infty\Bigl(\tfrac12\Bigr)^k B^k .
+\]
+Matching powers of $B$,
+\[
+\psi_0=1,\qquad
+\psi_1=\phi+\theta=\tfrac12+\tfrac{3}{10}=\tfrac{4}{5},\qquad
+\psi_2=\phi\,\psi_1=\tfrac12\cdot\tfrac45=\tfrac25
+\]
+(in general $\psi_j=(\phi+\theta)\phi^{\,j-1}$ for $j\ge1$). The point forecasts are obtained by zeroing future innovations in $X_{n+h}=\tfrac12X_{n+h-1}+\eps_{n+h}+\tfrac{3}{10}\eps_{n+h-1}$:
+\[
+\begin{aligned}
+X^{\,n}_{n+1}&=\tfrac12 X_n+\underbrace{\eps_{n+1}}_{\to0}+\tfrac{3}{10}\hat\eps_n
+=\tfrac12 X_n+\tfrac{3}{10}\hat\eps_n,\\[2pt]
+X^{\,n}_{n+2}&=\tfrac12 X^{\,n}_{n+1}+\underbrace{\eps_{n+2}}_{\to0}+\tfrac{3}{10}\underbrace{\eps_{n+1}}_{\to0}
+=\tfrac12 X^{\,n}_{n+1}=\tfrac14 X_n+\tfrac{3}{20}\hat\eps_n .
+\end{aligned}
+\]
+(For $h\ge2$ the MA term has vanished and the forecast obeys $X^{\,n}_{n+h}=\tfrac12 X^{\,n}_{n+h-1}$, decaying geometrically to the mean $0$.)
+
+\textbf{(c)} With $\sigma^2=2$ and $\psi_0=1,\psi_1=\tfrac45,\psi_2=\tfrac25$, the forecast-error variances $P^{\,n}_{n+h}=\sigma^2\sum_{j=0}^{h-1}\psi_j^2$ are
+\[
+\begin{aligned}
+P^{\,n}_{n+1}&=\sigma^2\,\psi_0^2=2\cdot1=2,\\
+P^{\,n}_{n+2}&=\sigma^2\bigl(\psi_0^2+\psi_1^2\bigr)=2\Bigl(1+\tfrac{16}{25}\Bigr)=2\cdot\tfrac{41}{25}=\tfrac{82}{25}=3.28,\\
+P^{\,n}_{n+3}&=\sigma^2\bigl(\psi_0^2+\psi_1^2+\psi_2^2\bigr)=2\Bigl(1+\tfrac{16}{25}+\tfrac{4}{25}\Bigr)=2\cdot\tfrac{45}{25}=\tfrac{18}{5}=3.6 .
+\end{aligned}
+\]
+These increase toward the marginal variance
+\[
+\acvs_0=\sigma^2\,\frac{1+2\phi\theta+\theta^2}{1-\phi^2}
+=2\cdot\frac{1+2\cdot\tfrac12\cdot\tfrac{3}{10}+\tfrac{9}{100}}{1-\tfrac14}
+=2\cdot\frac{1+\tfrac{3}{10}+\tfrac{9}{100}}{\tfrac34}
+=2\cdot\frac{139/100}{3/4}=\frac{278}{75}\approx3.707 ,
+\]
+which is exactly $\sigma^2\sum_{j=0}^\infty\psi_j^2$: as $h\to\infty$ the forecast loses all information and the error variance saturates at the unconditional variance $\acvs_0$ ($2<3.28<3.6<3.707$).
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Build $M(z)=I_2-\Phi_1 z-\Phi_2 z^2$:
+\[
+M(z)=\begin{pmatrix}
+1-0.4z & 0\\[2pt]
+-0.5z-0.3z^2 & 1-0.9z+0.2z^2
+\end{pmatrix}.
+\]
+This matrix is lower triangular, so its determinant is the product of the diagonal entries (the off-diagonal terms $\Phi_1^{(2,1)},\Phi_2^{(2,1)}$ do \emph{not} enter):
+\[
+\det M(z)=(1-0.4z)\bigl(1-0.9z+0.2z^2\bigr).
+\]
+\emph{Roots.} The first factor gives $z=1/0.4=2.5$. The quadratic $0.2z^2-0.9z+1=0$ has
+\[
+z=\frac{0.9\pm\sqrt{0.81-0.8}}{0.4}=\frac{0.9\pm0.1}{0.4}
+\ \Longrightarrow\ z=2.5\ \text{ or }\ z=2 .
+\]
+So the three roots are $z\in\{2.5,\,2.5,\,2\}$, all with $\abs z>1$ (strictly outside the unit circle). Hence the $\mathrm{VAR}(2)$ is \textbf{stable} (and therefore stationary). \emph{Sanity check:} $\det M(0)=\det I_2=1$, as required.
+
+\emph{Companion form.} Stacking $Y_t=(X_t\Tr,X_{t-1}\Tr)\Tr\in\Reals^4$ turns the VAR(2) into the VAR(1) $Y_t=FY_{t-1}+U_t$ with
+\[
+F=\begin{pmatrix}\Phi_1 & \Phi_2\\ I_2 & 0\end{pmatrix}
+=\begin{pmatrix}
+0.4 & 0 & 0 & 0\\
+0.5 & 0.9 & 0.3 & -0.2\\
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0
+\end{pmatrix}.
+\]
+The companion test is ``all eigenvalues of $F$ strictly inside the unit circle''. It is the reciprocal of the root test, because $\det(I_2-\Phi_1 z-\Phi_2 z^2)=z^{4}\det(z^{-1}I_4-F)$ up to a constant, so the eigenvalues of $F$ are the reciprocals $1/z_i$ of the roots. Here $\lambda=1/2.5=0.4$, $1/2.5=0.4$, $1/2=0.5$ (and a structural $\lambda=0$ from the rank-deficient $\Phi_2$), all with $\abs\lambda<1$: \emph{same} conclusion, stable.
+
+\textbf{(b)} Since $\Phi=\diag(\tfrac12,\tfrac14)$ has spectral radius $\tfrac12<1$, the VAR(1) is stable and back-substitution gives the matrix geometric ($\mathrm{MA}(\infty)$) filter
+\[
+X_t=\sum_{j=0}^{\infty}\Phi^{\,j}\eps_{t-j},
+\qquad
+\Phi^{\,j}=\diag\!\bigl(2^{-j},\,4^{-j}\bigr).
+\]
+By the VAR(1) covariance formula $\Gamma_0=\sum_{k\ge0}\Phi^k\Sigma(\Phi^k)\Tr$ with $\Sigma=I_2$ (everything diagonal, so the channels decouple into independent AR(1)'s),
+\[
+\Gamma_0=\sum_{k=0}^{\infty}\diag\!\bigl(4^{-k},\,16^{-k}\bigr)
+=\diag\!\left(\frac{1}{1-\tfrac14},\ \frac{1}{1-\tfrac{1}{16}}\right)
+=\boxed{\ \diag\!\left(\tfrac43,\ \tfrac{16}{15}\right)\ }.
+\]
+(Equivalently, the Lyapunov equation $\Gamma_0=\Phi\Gamma_0\Phi\Tr+I_2$ gives componentwise $g_{jj}=\phi_j^2 g_{jj}+1\Rightarrow g_{jj}=1/(1-\phi_j^2)$, i.e.\ $1/(1-\tfrac14)=\tfrac43$ and $1/(1-\tfrac{1}{16})=\tfrac{16}{15}$.) The lag-$1$ matrix follows from Yule--Walker $\Gamma_1=\Phi\Gamma_0$:
+\[
+\Gamma_1=\diag\!\bigl(\tfrac12,\tfrac14\bigr)\diag\!\bigl(\tfrac43,\tfrac{16}{15}\bigr)
+=\boxed{\ \diag\!\left(\tfrac23,\ \tfrac{4}{15}\right)\ }.
+\]
+
+\textbf{(c)} Both $\Phi$ and $\Sigma=I_2$ are diagonal, so by the formula in (b) \emph{every} $\Gamma_\tau$ is diagonal: all off-diagonal cross-covariances vanish at every lag. Hence the cross-spectrum $S_{1,2}(f)=\sum_\tau\acvs_\tau^{(1,2)}e^{-2\pi if\tau}\equiv0$, and the coherence
+\[
+r_{1,2}(f)=\frac{S_{1,2}(f)}{\sqrt{S_{1,1}(f)S_{2,2}(f)}}=0\quad\text{for all }f .
+\]
+The two channels are completely uncoupled: the off-diagonal entries of $\Phi$ (here zero) are exactly the cross-channel dynamics, and there is no shared innovation ($\Sigma$ diagonal), so nothing links the series at any frequency.
+
+\end{document}

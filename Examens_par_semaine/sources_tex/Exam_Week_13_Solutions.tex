@@ -1,0 +1,203 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\newcommand{\filt}{L}
+\begin{document}
+
+\solheader{Week 13: Linear Time-Invariant (LTI) Filters}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} We verify the two axioms on a generic input, using only the linearity and time invariance of $\filt_1,\filt_2$.
+
+\emph{Linearity.} For sequences $\{X_t\},\{Y_t\}$ and $\beta\in\Comp$,
+\[
+\begin{aligned}
+\filt[\beta\{X_t\}+\{Y_t\}]
+&=\alpha\,\filt_1[\beta\{X_t\}+\{Y_t\}]+\filt_2[\beta\{X_t\}+\{Y_t\}]\\
+&=\alpha\bigl(\beta\,\filt_1[\{X_t\}]+\filt_1[\{Y_t\}]\bigr)
+ +\bigl(\beta\,\filt_2[\{X_t\}]+\filt_2[\{Y_t\}]\bigr)\\
+&=\beta\bigl(\alpha\,\filt_1[\{X_t\}]+\filt_2[\{X_t\}]\bigr)
+ +\bigl(\alpha\,\filt_1[\{Y_t\}]+\filt_2[\{Y_t\}]\bigr)\\
+&=\beta\,\filt[\{X_t\}]+\filt[\{Y_t\}].
+\end{aligned}
+\]
+
+\emph{Time invariance.} Using that each $\filt_j$ commutes with $\Bsh$ and that $\Bsh$ is linear,
+\[
+\begin{aligned}
+\filt\bigl[\Bsh[\{X_t\}]\bigr]
+&=\alpha\,\filt_1\bigl[\Bsh[\{X_t\}]\bigr]+\filt_2\bigl[\Bsh[\{X_t\}]\bigr]
+ =\alpha\,\Bsh\bigl[\filt_1[\{X_t\}]\bigr]+\Bsh\bigl[\filt_2[\{X_t\}]\bigr]\\
+&=\Bsh\bigl[\alpha\,\filt_1[\{X_t\}]+\filt_2[\{X_t\}]\bigr]
+ =\Bsh\bigl[\filt[\{X_t\}]\bigr].
+\end{aligned}
+\]
+Both axioms hold, so $\filt=\alpha\filt_1+\filt_2$ is LTI. \hfill$\square$ (In particular the LTI filters form a vector space over $\Comp$, so every polynomial in $\Bsh$ is LTI.)
+
+\textbf{(b)} Writing $\filt[\{X_t\}]_u=\sum_k h_k X_{u-k}$, the coefficient of $X_u$ is $h_0$ and the coefficient of $X_{u-1}$ is $h_1$. Comparing with $X_u-\tfrac12 X_{u-1}$,
+\[
+h_0=1,\qquad h_1=-\tfrac12,\qquad h_m=0\ \ (m\neq0,1).
+\]
+Thus $\filt=I-\tfrac12\Bsh=\Phi(\Bsh)$ with $\Phi(z)=1-\tfrac12 z$. Its transfer function is the Fourier transform of $h$ (equivalently the polynomial-filter lemma $H=\Phi(e^{-2\pi i f})$):
+\[
+H(f)=\sum_m h_m e^{-2\pi i fm}=1-\tfrac12 e^{-2\pi i f}.
+\]
+The squared gain is
+\[
+\begin{aligned}
+\abs{H(f)}^2
+&=\bigl(1-\tfrac12 e^{-2\pi i f}\bigr)\bigl(1-\tfrac12 e^{2\pi i f}\bigr)
+ =1-\tfrac12\bigl(e^{2\pi i f}+e^{-2\pi i f}\bigr)+\tfrac14\\
+&=\tfrac54-\cos(2\pi f).
+\end{aligned}
+\]
+
+\textbf{(c)} On $f\in[0,\tfrac12]$, $\cos(2\pi f)$ decreases monotonically from $1$ (at $f=0$) to $-1$ (at $f=\tfrac12$), so $\abs{H(f)}^2=\tfrac54-\cos(2\pi f)$ is \emph{smallest} at $f=0$ and \emph{largest} at $f=\tfrac12$:
+\[
+\abs{H(0)}^2=\tfrac54-1=\tfrac14\quad(\text{minimum}),\qquad
+\abs{H(\tfrac12)}^2=\tfrac54+1=\tfrac94\quad(\text{maximum}).
+\]
+Since the gain is smallest at low frequency and largest at high frequency, the filter is \textbf{high-pass}: it attenuates the slowly varying (low-frequency) part of the series and emphasises rapid oscillations.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} The filter $I-\Bsh$ has impulse response $h_0=1,\ h_1=-1$ (all others $0$), so $h\in\ell^1$. Filtering a stationary process by an $\ell^1$ filter yields a stationary process (filtering preserves stationarity), hence $\{Y_t\}$ is stationary and has a spectral density. Its transfer function is
+\[
+H(f)=h_0+h_1 e^{-2\pi i f}=1-e^{-2\pi i f}.
+\]
+By the output-spectrum theorem $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$, and
+\[
+\begin{aligned}
+\abs{1-e^{-2\pi i f}}^2
+&=\bigl(1-\cos 2\pi f\bigr)^2+\sin^2 2\pi f
+ =1-2\cos 2\pi f+\cos^2 2\pi f+\sin^2 2\pi f\\
+&=2-2\cos(2\pi f)=4\sin^2(\pi f),
+\end{aligned}
+\]
+using $\cos^2+\sin^2=1$ and the half-angle identity $1-\cos(2\theta)=2\sin^2\theta$ with $\theta=\pi f$. Therefore
+\[
+\boxed{\ \sdf_Y(f)=4\sin^2(\pi f)\,\sdf_X(f).\ }
+\]
+Note $H(0)=0$: differencing kills the $f=0$ component, the signature of a high-pass operation that removes a constant level / linear trend.
+
+\textbf{(b)} The three-point average has coefficients $h_{-1}=h_0=h_1=\tfrac13$ (it is symmetric, zero phase), so its transfer function is real:
+\[
+H_2(f)=\tfrac13\bigl(e^{2\pi i f}+1+e^{-2\pi i f}\bigr)=\tfrac13\bigl(1+2\cos 2\pi f\bigr).
+\]
+The cascade $\{W_t\}=\filt_2\bigl[(I-\Bsh)[\{X_t\}]\bigr]$ is LTI with transfer function the \emph{product}
+\[
+H(f)=\underbrace{(1-e^{-2\pi i f})}_{\text{difference}}\cdot
+\underbrace{\tfrac13\bigl(1+2\cos 2\pi f\bigr)}_{\text{3-point average}},
+\]
+so the squared gains multiply:
+\[
+\boxed{\
+\sdf_W(f)=\abs{H(f)}^2\sdf_X(f)
+=4\sin^2(\pi f)\cdot\tfrac19\bigl(1+2\cos 2\pi f\bigr)^2\,\sdf_X(f).\ }
+\]
+The factor $4\sin^2(\pi f)$ vanishes at $f=0$ (the difference). The factor $(1+2\cos 2\pi f)^2$ vanishes where $\cos(2\pi f)=-\tfrac12$, i.e.\ $2\pi f=\tfrac{2\pi}{3}$, that is $f=\tfrac13$. Hence on $[0,\tfrac12]$ the output spectrum is forced to be zero at
+\[
+f=0\quad\text{and}\quad f=\tfrac13 .
+\]
+(The difference removes the DC component, the average annihilates $f=\tfrac13$: a band-suppressing combination.)
+
+\textbf{(c)} With $\sdf_X(f)\equiv\sigma^2$ and part (a),
+\[
+\sdf_Y(\tfrac14)=4\sin^2\!\bigl(\tfrac\pi4\bigr)\sigma^2
+=4\cdot\Bigl(\tfrac{1}{\sqrt2}\Bigr)^2\sigma^2
+=4\cdot\tfrac12\,\sigma^2=2\sigma^2 .
+\]
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Rewrite the AR$(1)$ as $\Phi(\Bsh)X_t=\eps_t$ with $\Phi(z)=1-\phi z$. By the polynomial-filter lemma the filter $\Phi(\Bsh)$ has transfer function $\Phi(e^{-2\pi i f})=1-\phi e^{-2\pi i f}$, so applying the output-spectrum theorem to $\Phi(\Bsh)[\{X_t\}]=\{\eps_t\}$ (with $\sdf_\eps\equiv\sigma^2$),
+\[
+\abs{1-\phi e^{-2\pi i f}}^2\,\sdf_X(f)=\sigma^2 .
+\]
+Expanding the modulus,
+\[
+\abs{1-\phi e^{-2\pi i f}}^2=(1-\phi e^{-2\pi i f})(1-\phi e^{2\pi i f})
+=1+\phi^2-\phi\bigl(e^{2\pi i f}+e^{-2\pi i f}\bigr)=1+\phi^2-2\phi\cos(2\pi f),
+\]
+which is $\ge(1-\abs\phi)^2>0$ since $\abs\phi<1$ (so we may divide), giving
+\[
+\boxed{\ \sdf_X(f)=\frac{\sigma^2}{1+\phi^2-2\phi\cos(2\pi f)} .\ }
+\]
+The denominator is smallest where $\phi\cos(2\pi f)$ is largest. For $\phi>0$ that is $f=0$, so $\sdf_X$ \textbf{peaks at $f=0$} (a slowly varying, persistent series); for $\phi<0$ it is $f=\tfrac12$, so $\sdf_X$ \textbf{peaks at $f=\tfrac12$} (a rapidly oscillating series).
+
+\textbf{(b)} Since $\{X_t\}$ is stationary its ACVS is even, $\acvs^{(X)}_{-\tau}=\acvs^{(X)}_\tau$. With $Y_t=X_{-t}$ and using stationarity ($\E[Y_t]=0$),
+\[
+\acvs^{(Y)}_\tau=\Cov(Y_{t+\tau},Y_t)=\E[Y_{t+\tau}Y_t]
+=\E[X_{-t-\tau}X_{-t}]=\acvs^{(X)}_{(-t)-(-t-\tau)}=\acvs^{(X)}_{\tau} ,
+\]
+where the lag is (first index) $-$ (second index) $=\tau$. Hence $\acvs^{(Y)}_\tau=\acvs^{(X)}_\tau$ for all $\tau$, and taking Fourier transforms,
+\[
+\sdf_Y(f)=\sum_\tau\acvs^{(Y)}_\tau e^{-2\pi i f\tau}
+=\sum_\tau\acvs^{(X)}_\tau e^{-2\pi i f\tau}=\sdf_X(f),\qquad\forall f .
+\]
+
+\textbf{(c)} The sequence $\{\tilde\nu_t\}=\Phi(\Bsh)[\{Y_t\}]$ is an LTI filtering of $\{Y_t\}$ with the polynomial filter $\Phi(\Bsh)$, $\Phi(z)=1-\sum_{j=1}^p\phi_j z^j$. By the polynomial-filter lemma and the output-spectrum theorem,
+\[
+\sdf_{\tilde\nu}(f)=\abs{\Phi(e^{-2\pi i f})}^2\,\sdf_Y(f)
+\overset{\text{(b)}}{=}\abs{\Phi(e^{-2\pi i f})}^2\,\sdf_X(f).
+\]
+But $\{X_t\}$ is AR$(p)$, i.e.\ the $q=0$ ARMA case, so $\sdf_X(f)=\sigma^2/\abs{\Phi(e^{-2\pi i f})}^2$ (the multivariate analogue of part (a); the denominator is nonzero on the unit circle by stationarity). Substituting,
+\[
+\sdf_{\tilde\nu}(f)=\abs{\Phi(e^{-2\pi i f})}^2\cdot
+\frac{\sigma^2}{\abs{\Phi(e^{-2\pi i f})}^2}=\sigma^2,\qquad\forall f .
+\]
+A constant spectral density means $\{\tilde\nu_t\}$ is white noise of variance $\sigma^2$; being a linear combination of jointly Gaussian variables it is Gaussian with mean $0$ (as $\E[X_t]=0$), so it has the same law as $\{\eps_t\}$. Finally, from $\phi_0=-1$,
+\[
+\tilde\nu_t=\sum_{j=0}^p\phi_j Y_{t-j}=-Y_t+\sum_{j=1}^p\phi_j Y_{t-j}
+\quad\Longleftrightarrow\quad
+Y_t=\sum_{j=1}^p\phi_j Y_{t-j}-\tilde\nu_t .
+\]
+Since $-\tilde\nu_t$ is again white noise of variance $\sigma^2$ with the same distribution as $\eps_t$, the reversed series $\{Y_t\}$ is an AR$(p)$ with the \emph{same} coefficients $\phi_1,\dots,\phi_p$. \hfill$\square$
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Since $\sigma_t$ is a function of the past (it depends on $r_{t-1}^2$), it is $\mathcal F_{t-1}$-measurable, while $\eps_t$ is independent of $\mathcal F_{t-1}$ with $\E[\eps_t]=0$. Hence
+\[
+\E[r_t\mid\mathcal F_{t-1}]=\E[\sigma_t\eps_t\mid\mathcal F_{t-1}]
+=\sigma_t\,\E[\eps_t]=0
+\ \Longrightarrow\
+\E[r_t]=\E\bigl[\E[r_t\mid\mathcal F_{t-1}]\bigr]=0 .
+\]
+For the variance, $\E[\eps_t^2]=1$ gives $\E[r_t^2\mid\mathcal F_{t-1}]=\sigma_t^2\E[\eps_t^2]=\sigma_t^2$, so by iterated expectation, using $\E[r_t]=0$ (whence $\E[r_t^2]=\Var(r_t)$),
+\[
+\Var(r_t)=\E[r_t^2]=\E[\sigma_t^2]
+=\E[\alpha_0+\alpha_1 r_{t-1}^2]
+=\alpha_0+\alpha_1\,\E[r_{t-1}^2]
+=\alpha_0+\alpha_1\,\Var(r_{t-1}).
+\]
+By weak stationarity $\Var(r_t)=\Var(r_{t-1})=:v$, so $v=\alpha_0+\alpha_1 v$, i.e.\ $(1-\alpha_1)v=\alpha_0$, hence
+\[
+\boxed{\ \Var(r_t)=\frac{\alpha_0}{1-\alpha_1}\quad(\alpha_1<1).\ }
+\]
+
+\textbf{(b)} Fix $\tau>0$. As $\E[r_t]=0$, $\Cov(r_{t+\tau},r_t)=\E[r_{t+\tau}r_t]$. Both $r_t$ and $\sigma_{t+\tau}$ are $\mathcal F_{t+\tau-1}$-measurable ($r_t$ is observed by time $t+\tau-1$, and $\sigma_{t+\tau}$ depends on $r_{t+\tau-1}$), while $\eps_{t+\tau}$ is independent of $\mathcal F_{t+\tau-1}$ with mean $0$. Conditioning on $\mathcal F_{t+\tau-1}$ and pulling out the measurable factors,
+\[
+\E[r_{t+\tau}r_t]
+=\E\bigl[\E[\sigma_{t+\tau}\eps_{t+\tau}r_t\mid\mathcal F_{t+\tau-1}]\bigr]
+=\E\bigl[r_t\,\sigma_{t+\tau}\,\E[\eps_{t+\tau}\mid\mathcal F_{t+\tau-1}]\bigr]
+=\E[r_t\,\sigma_{t+\tau}\cdot 0]=0 .
+\]
+By symmetry of the covariance the same holds for $\tau<0$. Therefore $\Cov(r_{t+\tau},r_t)=0$ and $\Corr(r_{t+\tau},r_t)=0$ for all $\tau\neq0$: $\{r_t\}$ is white noise. \hfill$\square$
+
+\textbf{(c)} With $\alpha_1=\tfrac12$ we have $\alpha_1=0.5<1/\sqrt3\approx0.577$, so a finite fourth moment exists. The ACF of the squares is $\Corr(r_{t+\tau}^2,r_t^2)=\alpha_1^{\abs\tau}$, so
+\[
+\Corr(r_{t+1}^2,r_t^2)=\alpha_1=\tfrac12=0.5,
+\qquad
+\Corr(r_{t+2}^2,r_t^2)=\alpha_1^2=\tfrac14=0.25 .
+\]
+The kurtosis is
+\[
+\kappa=\frac{3(1-\alpha_1^2)}{1-3\alpha_1^2}
+=\frac{3\bigl(1-\tfrac14\bigr)}{1-3\cdot\tfrac14}
+=\frac{3\cdot\tfrac34}{\tfrac14}
+=\frac{9/4}{1/4}=9 .
+\]
+A normal distribution has kurtosis exactly $3$; $\kappa=9>3$ means the standardised distribution of $r_t$ has \emph{heavier tails than the Gaussian} (excess kurtosis $6$), so large $\abs{r_t}$ occurs far more often than under normality --- the fat-tailed behaviour observed in financial returns, generated here endogenously even though $\eps_t$ is Gaussian.
+
+\end{document}

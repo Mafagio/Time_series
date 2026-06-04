@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\newcommand{\Fej}{\mathcal{F}}   % Fej\'er kernel (local; not in weekpreamble)
+\begin{document}
+\weekheader{08}{16 April 2026}{Spectral Estimation: Periodogram \& Tapering}{The periodogram estimates the spectral density but is biased (Fej\'er kernel) and inconsistent; tapering reduces bias, multitapering reduces variance.}
+
+We have a finite, equally spaced record $X_1,\dots,X_n$ ($T=\{1,\dots,n\}$, sampling interval $\Delta=1$) and we want to estimate the spectral density function (SDF) $\sdf(f)$. The natural idea is a \emph{plug-in}: since $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$, just replace $\acvs_\tau$ by the sample ACVS $\hat\acvs_\tau$. This gives the \textbf{periodogram}. The whole week is about what goes wrong with it (bias from a finite window, variance that never dies) and the two fixes (\emph{tapering} for bias, \emph{multitapering} for variance).
+
+\section*{Key definitions}
+
+\begin{defn}{Periodogram}
+The plug-in estimator of the SDF: Fourier-transform the (biased) sample ACVS,
+\[
+\hat\sdf^{(p)}(f)=\sum_{\tau\in\Ints}\hat\acvs_\tau\,e^{-2\pi i f\tau},
+\qquad
+\hat\acvs_\tau=\frac1n\sum_{t=1}^{\,n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X)
+\]
+for $\abs\tau\le n-1$ (and $0$ otherwise). Equivalently it is the squared modulus of the finite Fourier transform of the centred data, $\hat\sdf^{(p)}(f)=\abs{J(f)}^2$ with $J(f)=\sqrt{1/n}\sum_{t\in T}(X_t-\bar X)e^{-2\pi i t f}$.
+\end{defn}
+
+\begin{intu}[Two faces of the periodogram]
+The lag form ($\sum_\tau\hat\acvs_\tau e^{-2\pi i f\tau}$) shows it is the honest plug-in for the SDF. The $\abs{J(f)}^2$ form shows two things at a glance: it is \textbf{always $\ge0$} (a squared modulus), and it can be computed by a single FFT in $O(n\log n)$. Same object, two viewpoints.
+\end{intu}
+
+\begin{defn}{Data taper and tapered periodogram}
+A \textbf{data taper} is a window $\{h_t\}_{t\in T}$ normalised so that $\norm{h}_2^2=\sum_t h_t^2=1$. Replace the flat sum by a weighted one:
+\[
+J_h(f)=\sum_{t\in T} h_t\,(X_t-\bar X)\,e^{-2\pi i t f},
+\qquad
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2 .
+\]
+The constant taper $h_t=\sqrt{1/n}$ recovers the ordinary periodogram. The normalisation $\norm{h}_2^2=1$ is exactly what keeps the estimator unbiased for white noise.
+\end{defn}
+
+\begin{defn}{Multitaper estimator}
+Take $K$ \textbf{orthonormal} tapers, $\sum_{t\in T} h_{t,k}h_{t,k'}=\delta_{k,k'}$, and average their tapered periodograms:
+\[
+\hat\sdf^{(mt)}(f)=\frac1K\sum_{k=1}^{K}\hat\sdf^{(p)}_{h_k}(f).
+\]
+Its expectation is a convolution of $\sdf$ with the \textbf{average kernel} $\overline H(f)=\tfrac1K\sum_{k=1}^K\abs{H_k(f)}^2$, and its variance is $\approx \sdf(f)^2/K$.
+\end{defn}
+
+\section*{Key results \& formulas}
+
+Ideally an estimator would satisfy (1) $\E[\hat\sdf^{(p)}(f)]=\sdf(f)$, (2) $\Var(\hat\sdf^{(p)}(f))\to0$, (3) $\Cov$ between distinct frequencies $=0$. Reality: (1) holds only \emph{approximately} (bias from the finite window), (2) is \emph{false} (variance does not vanish), (3) holds approximately, but only at the Fourier frequencies.
+
+\begin{result}{Theorem --- Expectation of the periodogram (Fej\'er kernel)}
+For a zero-mean process the expectation is a windowed ACVS, equivalently a frequency convolution with the Fej\'er kernel $\Fej_n$:
+\[
+\begin{aligned}
+\E\big[\hat\sdf^{(p)}(f)\big]
+&=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi i\tau f},
+\qquad w_\tau=\Big(1-\tfrac{\abs\tau}{n}\Big)\ind_{[-n,n]}(\tau),\\[2pt]
+&=\int_{-1/2}^{1/2}\sdf(f')\,\Fej_n(f-f')\,df',
+\qquad
+\Fej_n(f)=\frac1n\,\frac{\sin^2(n\pi f)}{\sin^2(\pi f)}\ \ (f\ne0).
+\end{aligned}
+\]
+\textit{Idea:} $\E[\hat\acvs_\tau]=(1-\abs\tau/n)\acvs_\tau$; multiplying the ACVS by the triangular weight $w_\tau$ in the time domain becomes convolution with $\Fej_n$ in frequency. As $n\to\infty$, $\Fej_n$ concentrates at $0$, so the periodogram is \emph{asymptotically unbiased}.
+\end{result}
+
+\begin{result}{Theorem --- Variance of the periodogram (inconsistency)}
+For $f\ne0\ \mathrm{mod}\ \tfrac12$,
+\[
+\Var\big(\hat\sdf^{(p)}(f)\big)\xrightarrow[n\to\infty]{}\sdf(f)^2 \;>\;0,
+\]
+and ordinates at distinct Fourier frequencies are asymptotically uncorrelated. \textit{Idea (Gaussian case):} $J(f)$ is asymptotically complex Gaussian, so $\hat\sdf^{(p)}(f)=\abs{J(f)}^2\sim\tfrac12\sdf(f)\chi^2_2$, with variance $\sdf(f)^2$. The variance \textbf{does not shrink with $n$}: the periodogram is \emph{not consistent}.
+\end{result}
+
+\begin{intu}[Why blurring, and why the variance never dies]
+Observing a finite window multiplies the ACVS by a triangular weight $\to$ in frequency that is convolution with $\Fej_n$. But $\Fej_n$ has \textbf{slow-decaying side lobes}, so power \emph{leaks} from one frequency into its neighbours and sharp peaks get smeared. That is the \textbf{bias}. Separately, more data does \emph{not} average out the noise at a fixed $f$: it gives you \emph{more} frequency ordinates, each just as noisy as before ($\approx\sdf(f)\cdot\mathrm{Exp}(1)$). ``It got noisier as I added data'' is normal --- finer resolution, same per-ordinate scatter. To kill variance you must \emph{average}.
+\end{intu}
+
+\begin{result}{Theorem --- Expectation of the tapered periodogram}
+With a taper $\{h_t\}$ (set $h_t=0$ off $T$), the Fej\'er kernel is replaced by $\abs{H}^2$, the squared modulus of the taper's transform:
+\[
+\E\big[\hat\sdf^{(p)}_h(f)\big]
+=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df' .
+\]
+\textit{Idea:} the time-domain weight is now $w_\tau=\sum_t h_t h_{t+\tau}$ (autocorrelation of the taper), whose transform is $\abs{H(f)}^2$. A well-chosen taper (e.g.\ a dpss / Slepian taper) makes $\abs{H}^2$ far more concentrated near $0$ with much lower side lobes than $\Fej_n$ --- so \textbf{tapering reduces bias/leakage}. (Corollary: if $\norm h_2^2=1$, the tapered periodogram is \emph{exactly} unbiased for white noise, $\E[\hat\sdf^{(p)}_h(f)]=\sigma^2$, by Parseval --- which pins the normalisation.)
+\end{result}
+
+\begin{result}{Theorem --- Variance reduction by multitapering}
+For $K$ orthonormal tapers the individual tapered periodograms become asymptotically uncorrelated, each with variance $\sdf(f)^2$, so averaging divides the variance by $K$:
+\[
+\Cov\big(\hat\sdf^{(p)}_{h_k}(f),\hat\sdf^{(p)}_{h_{k'}}(f)\big)\to\sdf(f)^2\,\delta_{k,k'},
+\qquad
+\Var\big(\hat\sdf^{(mt)}(f)\big)\approx\frac{\sdf(f)^2}{K}.
+\]
+\textit{Idea:} orthogonality of the tapers $\Rightarrow$ $K$ near-independent estimates; averaging $K$ uncorrelated terms divides variance by $K$. Letting $K\to\infty$ slowly with $n$ restores \textbf{consistency}, at the cost of a modest increase in bias.
+\end{result}
+
+\section*{Intuition}
+
+\begin{intu}[The bias--variance story in one line]
+The raw periodogram has tolerable (vanishing) \textbf{bias} but stubborn \textbf{variance}. \textbf{Tapering} attacks bias: it swaps the leaky kernel $\Fej_n$ for a sharper $\abs{H}^2$. \textbf{Multitapering} attacks variance: it averages $K$ near-independent tapered estimates, so $\Var\approx\sdf^2/K$. Used together they give a usable spectral estimate.
+\end{intu}
+
+\begin{intu}[Tapering vs.\ truncating the ACVS]
+Why not just chop the ACVS to a short window to ``smooth''? Because truncating a genuine ACVS generally breaks non-negative-definiteness (the resulting ``SDF'' can go negative). The clean way to localise is to taper the data / shape the spectrum, \emph{not} to crop the ACVS.
+\end{intu}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Compute it.} Periodogram $=\hat\sdf^{(p)}(f)=\abs{J(f)}^2$; one FFT, always $\ge0$, $O(n\log n)$.
+  \item \textbf{Bias.} $\E[\hat\sdf^{(p)}]=\sdf*\Fej_n$: the Fej\'er kernel's slow side lobes \emph{blur} the SDF and leak power; sharp peaks suffer most. Asymptotically unbiased as $n\to\infty$.
+  \item \textbf{Variance.} $\Var(\hat\sdf^{(p)}(f))\to\sdf(f)^2\ne0$: \textbf{not consistent}. More data $=$ finer resolution, \emph{not} less scatter.
+  \item \textbf{Fix bias $\Rightarrow$ taper:} kernel becomes $\abs{H}^2$ (sharper, e.g.\ dpss tapers); keep $\norm h_2^2=1$ (unbiased for white noise).
+  \item \textbf{Fix variance $\Rightarrow$ multitaper:} average $K$ orthonormal tapers, $\Var\approx\sdf^2/K$.
+\end{itemize}
+\end{retenir}
+
+\end{document}

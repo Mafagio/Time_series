@@ -1,0 +1,87 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\newcommand{\Herm}{^{\mathsf{H}}}
+\DeclareMathOperator{\diag}{diag}
+\begin{document}
+
+\examheader{Week 9: Multivariate Time Series \& VAR}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+We work with bivariate series $X_t=(X_t^{(1)},X_t^{(2)})\Tr$. Recall the matrix
+autocovariance $\Gamma_\tau=\Cov(X_{t+\tau},X_t)$ (\emph{the lag $\tau$ sits in
+the first argument}), with $(j,k)$ entry the cross-covariance
+$\acvs_\tau^{(j,k)}=\Cov(X_{t+\tau}^{(j)},X_t^{(k)})$, and the
+cross-correlation $\acf_\tau^{(j,k)}=\acvs_\tau^{(j,k)}/\sqrt{\acvs_0^{(j,j)}\acvs_0^{(k,k)}}$.
+
+\textbf{(a)} State the symmetry relation linking $\Gamma_{-\tau}$ to $\Gamma_\tau$, prove it from the definition, and explain in one sentence why the off-diagonal cross-covariance $\acvs_\tau^{(1,2)}$ need \emph{not} be an even function of $\tau$ (unlike a scalar ACVS). \hfill(1.5 pts)
+
+\textbf{(b)} Let $\{U_t^{(1)}\}$ and $\{U_t^{(2)}\}$ be two jointly stationary, mutually independent zero-mean series with $\Var(U_t^{(j)})=\sigma_j^2$, and let $\{\phi_t\}$ be a scalar mean-zero white noise of variance $\sigma_\phi^2$, independent of both. Define the common-shock model
+\[
+Y_t^{(1)}=U_t^{(1)}+\phi_t,\qquad Y_t^{(2)}=U_t^{(2)}+\phi_t .
+\]
+Compute the cross-covariance $\acvs_\tau^{(1,2)}$ and the cross-correlation $\acf_\tau^{(1,2)}$ between $\{Y^{(1)}\}$ and $\{Y^{(2)}\}$ at \emph{all} lags $\tau$, and identify at which lag(s) the shared shock injects correlation. \hfill(2 pts)
+
+\textbf{(c)} Specialise to $\sigma_1^2=3$, $\sigma_2^2=1$, $\sigma_\phi^2=1$ and report the numerical value of $\acf_0^{(1,2)}$ and of $\acf_\tau^{(1,2)}$ for $\tau\neq0$. \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(The delay process and its cross-spectrum.)} Fix an integer delay $\nu$ and a gain $\alpha>0$. Let $\{X_t^{(2)}\}$ be a zero-mean stationary series with autocovariance $\acvs_\tau^{(2,2)}$, spectral density $\sdf_2(f)=\sum_\tau\acvs_\tau^{(2,2)}e^{-2\pi if\tau}$ and variance $\sigma_2^2=\acvs_0^{(2,2)}$. Define a second channel as a scaled, delayed copy corrupted by noise,
+\[
+X_t^{(1)}=\alpha\,X_{t-\nu}^{(2)}+\eps_t ,\qquad t\in\Ints,
+\]
+where $\{\eps_t\}$ (variance $\sigma^2$) is white noise uncorrelated with $\{X_t^{(2)}\}$ at all lags.
+
+\textbf{(a)} Show that the cross-covariance is a \emph{shift} of the autocovariance of $X^{(2)}$, namely $\acvs_\tau^{(1,2)}=\alpha\,\acvs_{\tau-\nu}^{(2,2)}$, and deduce the cross-correlation $\acf_\tau^{(1,2)}$ at all lags in terms of $\acf^{(2,2)}$. \hfill(1.5 pts)
+
+\textbf{(b)} Compute the cross-spectrum $S_{1,2}(f)=\sum_\tau\acvs_\tau^{(1,2)}e^{-2\pi if\tau}$ in closed form, and read off its \textbf{amplitude} $\abs{S_{1,2}(f)}$ and its \textbf{phase} $\arg S_{1,2}(f)$. Why is the phase \emph{linear} in $f$, and what is its slope? \hfill(2 pts)
+
+\textbf{(c)} Define the coherence $r_{1,2}(f)=S_{1,2}(f)/\sqrt{S_{1,1}(f)\,S_{2,2}(f)}$. Using $S_{1,1}(f)=\alpha^2\sdf_2(f)+\sigma^2$ and $S_{2,2}(f)=\sdf_2(f)$, give $\abs{r_{1,2}(f)}$, and show that in the \emph{noiseless} limit $\sigma^2\to0$ the magnitude-squared coherence equals $1$ at every frequency. \hfill(1.5 pts)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(VAR stability and the VAR(1) second-order structure.)}
+
+\textbf{(a)} Consider the bivariate $\mathrm{VAR}(2)$ process $X_t=\Phi_1X_{t-1}+\Phi_2X_{t-2}+\eps_t$ with
+\[
+\Phi_1=\begin{pmatrix}0.5 & 0\\[2pt] 0.3 & 0.7\end{pmatrix},\qquad
+\Phi_2=\begin{pmatrix}0 & 0\\[2pt] 0.1 & -0.1\end{pmatrix}.
+\]
+Form the reverse characteristic polynomial $\det\bigl(I_2-\Phi_1 z-\Phi_2 z^2\bigr)$, exploit the lower-triangular structure to \emph{factor} it, find all its roots, and decide whether the VAR(2) is stable. State the companion-matrix ($F$) form of the stability test and verify it gives the same conclusion. \hfill(2.5 pts)
+
+\textbf{(b)} Now take the \emph{diagonal} $\mathrm{VAR}(1)$ process $X_t=\Phi\,X_{t-1}+\eps_t$ with
+\[
+\Phi=\diag\!\bigl(\tfrac12,\tfrac13\bigr),\qquad
+\{\eps_t\}\sim\mathrm{WN}(0,I_2).
+\]
+Write its $\mathrm{MA}(\infty)$ representation, and compute the stationary covariance $\Gamma_0$ and the lag-$1$ matrix $\Gamma_1$ in closed form (exact fractions). \hfill(1.5 pts)
+
+\textbf{(c)} For the process of part (b), what is the coherence $r_{1,2}(f)$ between the two channels at every frequency, and why? \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 8: the tapered periodogram --- bias kernel \& unbiasedness.)} Data $X_1,\dots,X_n$ ($T=\{1,\dots,n\}$, $\Delta=1$) are observed from a zero-mean stationary process with spectral density $\sdf(f)$. A \emph{data taper} is a sequence $\{h_t\}_{t\in T}$ (extended by $h_t=0$ off $T$); the tapered periodogram is
+\[
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2 ,\qquad
+J_h(f)=\sum_{t\in T}h_t\,X_t\,e^{-2\pi itf},
+\]
+and $H(f)=\sum_{t}h_t e^{-2\pi itf}$ denotes the discrete Fourier transform of the taper.
+
+\textbf{(a)} Show that the expectation of the tapered periodogram is the frequency convolution
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df' .
+\]
+(\emph{Hint:} expand $\abs{J_h}^2$ as a double sum, take expectations to get $\sum_\tau w_\tau\acvs_\tau e^{-2\pi if\tau}$ with $w_\tau=\sum_t h_t h_{t+\tau}$, then identify $w$ as an autocorrelation of the taper and apply the convolution theorem.) \hfill(2 pts)
+
+\textbf{(b)} Suppose $\{X_t\}$ is white noise of variance $\sigma^2$ (so $\sdf\equiv\sigma^2$). Using part (a) and Parseval's relation $\int_{-1/2}^{1/2}\abs{H(f')}^2\,df'=\sum_t h_t^2$, prove that $\hat\sdf^{(p)}_h(f)$ is \emph{unbiased} for $\sdf(f)$ at every $f$ and every $n$ \textbf{iff} $\norm{h}_2^2=\sum_t h_t^2=1$. \hfill(1.5 pts)
+
+\textbf{(c)} Take $n=3$ and the un-normalised triangular weights $g=(g_1,g_2,g_3)=(1,2,1)$. Find the constant $c$ so that $h_t=c\,g_t$ is an admissible taper (i.e.\ $\norm h_2^2=1$), and contrast, in one or two sentences, what tapering versus \emph{multitapering} each fix about the raw periodogram. \hfill(1.5 pts)
+\answerpage
+
+\end{document}

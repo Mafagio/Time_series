@@ -1,0 +1,118 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{13}{21 May 2026}{Linear Time-Invariant (LTI) Filters}{An LTI filter acts as a convolution (impulse response) and multiplies the spectrum by $\abs{H(f)}^2$ (transfer function); hence the ARMA spectral density.}
+
+A \emph{filter} turns one sequence into another, $\{Y_t\}=\filt[\{X_t\}]$. The filters that matter for time series are the \textbf{linear time-invariant} (LTI) ones: they treat every time point the same and respect superposition. Two ``test inputs'' pin such a filter down completely --- a single impulse (giving the \emph{impulse response} $h$) and a pure wave (giving the \emph{transfer function} $H$). The payoff is one formula, $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$, which is the engine behind the closed-form ARMA spectral density. (We allow complex-valued series and assume the sums converge, the usual sufficient condition being $h\in\ell^1$.)
+
+\section*{Key definitions}
+
+\begin{defn}{LTI filter}
+A digital filter $\filt$ (with output entry $Y_u=\filt[\{X_t\}]_u$) is \textbf{linear time-invariant} if for all sequences and all $\alpha\in\Comp$:
+\begin{enumerate}
+  \item \textbf{Linearity:} $\filt[\{\alpha X_t+Y_t\}]=\alpha\,\filt[\{X_t\}]+\filt[\{Y_t\}]$;
+  \item \textbf{Time invariance:} $\filt\big[\Bsh[\{X_t\}]\big]=\Bsh\big[\filt[\{X_t\}]\big]$ --- $\filt$ \emph{commutes with the backshift} $\Bsh$.
+\end{enumerate}
+The one-step condition already gives $\filt[\Bsh^u\{X_t\}]=\Bsh^u\filt[\{X_t\}]$ for all $u$. The backshift $\Bsh$ ($\Bsh[\{X_t\}]_u=X_{u-1}$) is itself the prototypical LTI filter.
+\end{defn}
+
+\begin{defn}{Impulse response $h$}
+The \textbf{impulse sequence} is $\delta_{t,m}=1$ if $t=m$, else $0$. The \textbf{impulse response} of $\filt$ is
+\[
+h_m=\filt[\{\delta_{t,-m}\}]_0,\qquad m\in\Ints
+\]
+(the $0$ is the output time). Informally: the response, read at time $0$, to a unit shock placed at time $-m$. Regularity condition: $h\in\ell^1$.
+\end{defn}
+
+\begin{defn}{Transfer function $H$}
+For $f\in\Reals$ the \textbf{complex wave} is $\xi_{t,f}=e^{2\pi i f t}$. The \textbf{transfer function} of $\filt$ is
+\[
+H(f)=\filt[\{\xi_{t,f}\}]_0,\qquad f\in\Reals,
+\]
+the filter's frequency-domain fingerprint: how each pure frequency is re-weighted in amplitude and shifted in phase.
+\end{defn}
+
+\begin{intu}[Two test signals, two views of the same filter]
+Feed in a \emph{spike} $\Rightarrow$ you read off the time-domain weights $h$ (the convolution kernel). Feed in a \emph{pure wave} $\Rightarrow$ you read off the frequency-domain gain $H(f)$. Same filter, two complementary descriptions, linked by a Fourier transform.
+\end{intu}
+
+\section*{Key results \& formulas}
+
+\begin{result}{Theorem --- LTI $\Leftrightarrow$ convolution with $h$}
+Under convergence assumptions, an LTI filter acts as a \textbf{convolution} with its impulse response:
+\[
+\filt[\{X_t\}]_u\ms\sum_{m\in\Ints}h_{u-m}X_m,\qquad u\in\Ints,
+\]
+and conversely any convolution with $h\in\ell^1$ is LTI. \emph{Idea:} write the input as a sum of impulses, use linearity on the truncations and time invariance ($\filt[\{\delta_{t,m}\}]_u=h_{u-m}$); absolute convergence passes to the full series. This is the master representation: any LTI filter $=$ the weights $h$.
+\end{result}
+
+\begin{result}{Theorem --- waves are eigensequences, $H(f)$ the eigenvalue}
+For every $f$, $\filt[\{\xi_{t,f}\}]=H(f)\,\{\xi_{t,f}\}$: the filter only rescales amplitude and shifts phase, never changing the frequency. Hence in the frequency basis filtering is \textbf{pointwise multiplication} by $H(f)$. \emph{Idea:} $\Bsh^{-u}\{\xi_{t,f}\}=e^{2\pi i u f}\{\xi_{t,f}\}$, then push $\Bsh^u$ through $\filt$ using time invariance.
+\end{result}
+
+\begin{result}{Theorem --- $H$ is the Fourier transform of $h$}
+If $h\in\ell^1$,
+\[
+H(f)=\sum_{m\in\Ints}h_m\,e^{-2\pi i f m},\qquad f\in\Reals.
+\]
+Recover the weights as Fourier coefficients: $h_m=\int_{-1/2}^{1/2}H(f)e^{2\pi i f m}\,df$. \emph{Practical recipe:} read $h$ off the filter, sum the series to get $H$.
+\end{result}
+
+\begin{result}{Theorem --- filtering preserves stationarity}
+If $\{X_t\}$ is stationary and $h\in\ell^1$, then $\{Y_t\}=\filt[\{X_t\}]$ is stationary: $\E[Y_t]=\mu_X\sum_m h_m$ is $t$-free, and $\acvs^{(Y)}_\tau=\sum_{m,s}h_m\conj{h_s}\,\acvs^{(X)}_{\tau-m+s}$ depends only on $\tau$ (with $\acvs^{(Y)}_0\le\acvs^{(X)}_0\norm{h}_1^2<\infty$). Only then does $\sdf_Y$ even exist.
+\end{result}
+
+\begin{result}{Theorem --- the workhorse: $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$}
+For $\{X_t\}$ stationary with $\acvs^{(X)}\in\ell^1$ and $\filt$ LTI with $h\in\ell^1$,
+\[
+\sdf_Y(f)=\abs{H(f)}^2\,\sdf_X(f),\qquad f\in\Reals.
+\]
+\emph{Idea:} $\acvs^{(Y)}=w*\acvs^{(X)}$ with $w=h*\tilde h$, $\tilde h_t=\conj{h_{-t}}$; the convolution theorem gives the multiplier $W(f)=H(f)\conj{H(f)}=\abs{H(f)}^2$. The gain is the \textbf{squared modulus} --- always real and non-negative, as a spectral density must be.
+\end{result}
+
+\begin{result}{Lemma + Theorem --- polynomial filter $\Rightarrow$ ARMA spectrum}
+A polynomial filter $\Phi(\Bsh)=\sum_{j=0}^p\phi_j\Bsh^j$ is LTI with $H(f)=\Phi(e^{-2\pi i f})$. Applying the workhorse to both sides of $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ (white noise, variance $\sigma^2$) gives the \textbf{ARMA$(p,q)$ spectral density}
+\[
+\sdf_X(f)=\sigma^2\,\frac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2}.
+\]
+Division is legal because stationarity forbids zeros of $\Phi$ on the unit circle. ARMA has \emph{no} closed-form ACVS, but this clean closed-form spectrum.
+\end{result}
+
+\begin{intu}[Filtering is ``multiply the spectrum by a gain'']
+In the time domain filtering is a (sometimes messy) convolution. In the frequency domain it collapses to multiplication by $\abs{H(f)}^2$. So a filter is just a frequency-by-frequency volume knob: $\abs{H(f)}^2>1$ amplifies that band, $<1$ attenuates it, $=0$ kills it. Where $H$ is large the output spectrum bulges; where $H=0$ the output is silent.
+\end{intu}
+
+\begin{intu}[Why ARMA is ``MA on top, AR on the bottom'']
+A cascade $\filt_1\filt_2$ multiplies transfer functions, $H=H_1H_2$ (convolution in time $=$ product in frequency). ARMA is the MA filter $\Theta(\Bsh)$ acting on white noise, then ``undone'' by the AR filter $\Phi(\Bsh)$: the MA part contributes $\abs{\Theta}^2$ as a numerator, the AR part $\abs{\Phi}^2$ as a denominator. Roots of $\Theta$ near the circle dig dips; roots of $\Phi$ near the circle raise peaks.
+\end{intu}
+
+\begin{exmpl}[First difference $Y_t=X_t-X_{t-1}$ is high-pass]
+The filter $I-\Bsh$ has impulse response $h_0=1,\ h_1=-1$, so
+\[
+H(f)=1-e^{-2\pi i f},\qquad
+\abs{H(f)}^2=\abs{1-e^{-2\pi i f}}^2=4\sin^2(\pi f).
+\]
+Therefore $\sdf_Y(f)=4\sin^2(\pi f)\,\sdf_X(f)$: differencing \emph{kills} $f=0$ (since $H(0)=0$, it removes trend/DC) and \emph{amplifies} high frequencies --- a high-pass operation. (Handy identity: $\abs{1-e^{-2\pi i f}}^2=2-2\cos(2\pi f)=4\sin^2(\pi f)$.)
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\textbf{To get the spectrum of a filtered process $\{Y_t\}=\filt[\{X_t\}]$:}
+\begin{enumerate}
+  \item \textbf{Find $h$} (the convolution weights), or write $\filt$ as a polynomial $\Phi(\Bsh)$. To read $h$ off a convolution: in $\sum_k h_k X_{u-k}$ the coefficient of $X_{u-k}$ is $h_k$.
+  \item \textbf{Form $H(f)=\sum_m h_m e^{-2\pi i f m}$} (for $\Phi(\Bsh)$ this is just $\Phi(e^{-2\pi i f})$).
+  \item \textbf{Multiply:} $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$.
+\end{enumerate}
+\textbf{Reflexes:}
+\begin{itemize}
+  \item Prove LTI by checking the two axioms; or note that any linear combination / cascade of LTI filters, and any convolution with $h\in\ell^1$, is automatically LTI.
+  \item \textbf{Cascades multiply:} $H=H_1H_2$, gains $\abs{H_1}^2\abs{H_2}^2$.
+  \item The multiplier is $\abs{H(f)}^2$, \emph{not} $H(f)$ or $H(f)^2$.
+  \item Complex ACVS: the conjugate sits on the \emph{second} factor, $\Cov(X_{t+\tau},X_t)=\E[(X_{t+\tau}-\mu)\conj{(X_t-\mu)}]$.
+  \item Filtering preserves stationarity ($h\in\ell^1$) --- a prerequisite for $\sdf_Y$ to exist.
+  \item AR$(1)$ peaks at $f=0$ if $\phi>0$ (persistent), at $f=\tfrac12$ if $\phi<0$ (oscillating).
+\end{itemize}
+\end{retenir}
+
+\end{document}

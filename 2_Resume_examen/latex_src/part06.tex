@@ -1,0 +1,995 @@
+% ======================================================================
+%  PART 6 -- Fourier Theory, Spectral Density and the Periodogram
+% ======================================================================
+\section{Fourier Theory, Spectral Density and the Periodogram}
+\label{sec:spectral}
+
+The frequency domain is the second face of a stationary process. Every
+second-order property carried by the autocovariance sequence (ACVS)
+$\{\acvs_\tau\}$ in the time domain is mirrored, via the Fourier transform, by
+the \textbf{spectral density function} (SDF) $\sdf(f)$ in the frequency domain.
+This part builds that bridge in three stages. First, pure Fourier theory:
+continuous-time, discrete-time and finite-data transforms, the convolution
+theorem, aliasing and the Nyquist frequency. Second, the spectral
+representation of a stationary process: $\sdf(f)=\sum_\tau\acvs_\tau
+e^{-2\pi i f\tau}$, Herglotz's theorem, the integrated spectrum and its
+Lebesgue decomposition, and the spectral representation theorem with its
+orthogonal-increment process $\{Z(f)\}$. Third, estimation: the periodogram
+$\hat\sdf^{(p)}(f)=\abs{J(f)}^2$, why it is (asymptotically) unbiased but
+\emph{inconsistent}, and how tapering cures bias while multitapering cures
+variance. Throughout we take the sampling interval $\Delta=1$ once we reach
+the spectral chapters, and we always work with ordinary frequency $f$ (not
+angular frequency $\omega=2\pi f$).
+
+% ======================================================================
+\subsection{Definitions}
+% ======================================================================
+
+\begin{definition}{Continuous-time Fourier transform and its inverse}{p6-ctft}
+For $g:\Reals\to\Comp$ with $g\in L^1$, the \textbf{Fourier transform}
+$G$ (upper case denotes the transform; some authors write $\hat g$) is
+\[
+G(f)=\int_{-\infty}^{\infty} g(t)\,e^{-2\pi i f t}\,dt,\qquad f\in\Reals .
+\]
+If in addition $G\in L^1$, the \textbf{inverse transform} recovers $g$ for
+almost all $t$:
+\[
+g(t)=\int_{-\infty}^{\infty} G(f)\,e^{2\pi i f t}\,df .
+\]
+We write $g\longleftrightarrow G$ and call $(g,G)$ a \textbf{Fourier pair}.
+\end{definition}
+
+\begin{definition}{Properties of the continuous-time transform}{p6-ctprops}
+For $g,h\in L^1$ with transforms $G,H$ and scalar $\alpha$, the basic pairs are
+\[
+\begin{aligned}
+\conj{g(t)} &\longleftrightarrow \conj{G(-f)}, &\qquad
+g(\alpha t)\;(\alpha\ne0) &\longleftrightarrow \tfrac{1}{\abs\alpha}G(f/\alpha),\\
+g(t+\tau) &\longleftrightarrow G(f)\,e^{2\pi i \tau f}, &\qquad
+\alpha g(t)+h(t) &\longleftrightarrow \alpha G(f)+H(f).
+\end{aligned}
+\]
+(Conjugation reflects, scaling in time inversely scales frequency, a time
+shift multiplies by a phase, and the transform is linear.)
+\end{definition}
+
+\begin{definition}{Continuous-time convolution}{p6-ctconv}
+For $g,h\in L^1$, the \textbf{convolution} $u=g*h$ is
+\[
+u(t)=\int_{-\infty}^{\infty} g(t-u)\,h(u)\,du,\qquad t\in\Reals .
+\]
+Convolution at a point is a weighted average of one function by the other,
+centred at that point.
+\end{definition}
+
+\begin{definition}{Discrete-time Fourier transform and its inverse}{p6-dtft}
+For a sequence $\{g_t\}_{t\in\Delta\Ints}$ in $\ell^1$, the
+\textbf{discrete-time Fourier transform} is
+\[
+G(f)=\Delta\sum_{t\in\Delta\Ints} g_t\,e^{-2\pi i t f},\qquad f\in\Reals,
+\]
+with inverse (a Fourier series with the roles of domains swapped)
+\[
+g_t=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f)\,e^{2\pi i t f}\,df,\qquad t\in\Delta\Ints .
+\]
+A defining feature is \textbf{periodicity}: $G(f)=G(f+k/\Delta)$ for every
+$k\in\Ints$, so $G$ is determined by its values on one period of length
+$1/\Delta$.
+\end{definition}
+
+\begin{definition}{Discrete-time and periodic convolution}{p6-dtconv}
+For $g,h\in\ell^1$ the \textbf{discrete convolution} $u=g*h$ is
+\[
+u_t=\Delta\sum_{u\in\Delta\Ints} g_{t-u}\,h_u,\qquad t\in\Delta\Ints,
+\]
+(with $\Delta=1$ the prefactor disappears). The dual object, the
+\textbf{periodic convolution} $U=G*H$ of two periodic spectra, is
+\[
+U(f)=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f-f')\,H(f')\,df' .
+\]
+\end{definition}
+
+\begin{definition}{Finite-data Fourier transform and the Dirichlet kernel}{p6-fdft}
+Given observations $g_0,\dots,g_{(n-1)\Delta}$ at times
+$T=\{0,\Delta,\dots,(n-1)\Delta\}$, the \textbf{finite Fourier transform} is
+\[
+G_n(f)=\sum_{t\in T} g_t\,e^{-2\pi i t f},\qquad f\in\Reals .
+\]
+It equals the full transform of $g_t$ multiplied by the indicator
+$d_t=\tfrac1\Delta\ind_T(t)$, whose own transform is the \textbf{Dirichlet
+kernel}
+\[
+\Dir_T(f)=\sum_{t\in T} e^{-2\pi i f t}
+=\frac{\sin(n\pi f\Delta)}{\sin(\pi f\Delta)}\,e^{-\pi i (n-1) f\Delta}.
+\]
+Thus $G_n=\Dir_T * G$: observing a finite window \emph{blurs} the true
+transform.
+\end{definition}
+
+\begin{definition}{Fourier frequencies}{p6-fourierfreq}
+The FFT evaluates $G_n$ at the \textbf{Fourier frequencies}
+\[
+f_k=\frac{k}{\Delta n},\qquad k\in\Ints,\quad -\frac{n}{2}\le k\le \frac{n-1}{2}.
+\]
+With $\Delta=1$ these are $f_k=k/n$. They are equally spaced over one period
+and are the frequencies at which distinct periodogram ordinates are
+(approximately) uncorrelated.
+\end{definition}
+
+\begin{definition}{Spectral density function (discrete and continuous)}{p6-sdf}
+For a discrete-time stationary process $\{X_t\}_{t\in\Ints}$ with ACVS
+$\{\acvs_\tau\}\in\ell^1$, the \textbf{spectral density function} is the
+discrete-time Fourier transform of the ACVS (with $\Delta=1$):
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau\,e^{-2\pi i f\tau},\qquad f\in\Reals .
+\]
+For a continuous-time process with $\acvs\in L^1$,
+$\sdf(f)=\int_{-\infty}^{\infty}\acvs(\tau)e^{-2\pi i f\tau}\,d\tau$. By Fourier
+inversion the ACVS is recovered as
+$\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f\tau}\,df$; in particular
+$\acvs_0=\Var(X_t)=\int_{-1/2}^{1/2}\sdf(f)\,df$, so the SDF distributes the
+total ``power'' $\Var(X_t)$ across frequencies. A valid SDF is real, even
+($\sdf(-f)=\sdf(f)$, since $\acvs_{-\tau}=\acvs_\tau$), non-negative, and
+periodic with period $1$.
+\end{definition}
+
+\begin{definition}{Harmonic (sinusoidal) process}{p6-harmonic}
+Let $A>0$ and $\Theta\sim\mathrm{Unif}(-\pi,\pi)$ be independent. The
+\textbf{harmonic process} is
+\[
+X_t=A\cos(\nu t+\Theta),\qquad t\in\Ints,
+\]
+with $\nu\in\Reals$ the oscillation frequency. Then $\E[X_t]=0$ and
+\[
+\Cov(X_{t+\tau},X_t)=\tfrac12\,\E[A^2]\cos(\nu\tau),
+\]
+so it is stationary but its ACVS does \emph{not} decay; in particular
+$\{\acvs_\tau\}\notin\ell^1$ and no ordinary SDF exists. Its spectrum is a
+pair of lines (jumps) at $\pm\nu/(2\pi)$.
+\end{definition}
+
+\begin{definition}{Integrated spectrum (spectral distribution function)}{p6-integspec}
+By Herglotz's theorem, every ACVS admits the representation
+\[
+\acvs_\tau=\int_{-1/2}^{1/2} e^{2\pi i \tau f}\,dS^{(I)}(f),
+\]
+where $S^{(I)}$, the \textbf{integrated spectrum}, is right-continuous,
+bounded, non-decreasing, with $S^{(I)}(-\tfrac12)=0$ and
+$S^{(I)}(\tfrac12)=\sigma^2=\acvs_0$. It behaves like a (scaled) cumulative
+distribution function over frequency. When $\{\acvs_\tau\}\in\ell^1$ there is a
+density $\sdf$ with $S^{(I)}(f)=\int_{-1/2}^{f}\sdf(\lambda)\,d\lambda$, i.e.\
+$\sdf=dS^{(I)}/df$, recovering Definition~\ref{def:p6-sdf}.
+\end{definition}
+
+\begin{definition}{Periodogram}{p6-periodogram}
+For data $X_1,\dots,X_n$ ($T=\{1,\dots,n\}$, $\Delta=1$), the
+\textbf{periodogram} is the plug-in estimator obtained by Fourier transforming
+the biased sample ACVS:
+\[
+\hat\sdf^{(p)}(f)=\sum_{\tau\in\Ints}\hat\acvs_\tau\,e^{-2\pi i f\tau},
+\qquad
+\hat\acvs_\tau=\frac1n\sum_{t=1}^{n-\abs\tau}(X_t-\bar X)(X_{t+\abs\tau}-\bar X)
+\]
+for $\abs\tau\le n-1$ ($0$ otherwise). Equivalently (Proposition
+\ref{prop:p6-periogramJ}) $\hat\sdf^{(p)}(f)=\abs{J(f)}^2$ with
+$J(f)=\sqrt{1/n}\sum_{t\in T}(X_t-\bar X)e^{-2\pi i t f}$.
+\end{definition}
+
+\begin{definition}{Data taper and tapered periodogram}{p6-taper}
+A \textbf{data taper} is a sequence $\{h_t\}_{t\in T}$ with
+$\norm{h}_2^2=\sum_t h_t^2=1$. The \textbf{tapered Fourier transform} and
+\textbf{tapered periodogram} are
+\[
+J_h(f)=\sum_{t\in T} h_t\,(X_t-\bar X)\,e^{-2\pi i t f},
+\qquad
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2 .
+\]
+Choosing $h_t=\sqrt{1/n}$ (the constant taper) recovers the ordinary
+periodogram. The normalisation $\norm{h}_2^2=1$ keeps the estimator unbiased
+for white noise (Exercise~\ref{exo:p6-tunbias}).
+\end{definition}
+
+\begin{definition}{Multitaper spectral estimator}{p6-multitaper}
+Given $K$ \textbf{orthonormal} tapers $h_k=\{h_{t,k}\}_{t\in T}$ with
+$\sum_{t\in T} h_{t,k}h_{t,k'}=\delta_{k,k'}$, the \textbf{multitaper
+estimator} averages the individual tapered periodograms,
+\[
+\hat\sdf^{(mt)}(f)=\frac1K\sum_{k=1}^{K}\hat\sdf^{(p)}_{h_k}(f).
+\]
+Its expectation is a convolution with the \textbf{average kernel}
+$\overline H(f)=\tfrac1K\sum_{k=1}^K\abs{H_k(f)}^2$, and its variance is
+$\approx\sdf(f)^2/K$.
+\end{definition}
+
+% ======================================================================
+\subsection{Theorems \& Propositions}
+% ======================================================================
+
+\begin{theorem}{Fourier inversion (continuous and discrete time)}{p6-inversion}
+\emph{(Continuous time.)} If $g,G\in L^1$ then the inverse transform recovers
+$g$ for almost all $t$:
+$g(t)=\int_{-\infty}^{\infty} G(f)\,e^{2\pi i f t}\,df$.
+\emph{(Discrete time.)} If $\{g_t\}\in\ell^1$ then $G$ is recovered on one
+period as a Fourier series with the domains swapped:
+\[
+g_t=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f)\,e^{2\pi i t f}\,df,\qquad
+t\in\Delta\Ints .
+\]
+\textit{Proof idea:} substitute the forward transform into the right-hand side
+and use the Fourier orthogonality relation
+($\int e^{2\pi i f(t-s)}\,df$ acts as a delta), the integrability hypotheses
+justifying the interchange of integration/summation.\\
+\textit{Why:} inversion is what makes $(g,G)$ a genuine \emph{Fourier pair} ---
+no information is lost. It is the engine behind recovering the ACVS from the SDF
+($\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f\tau}\,df$) and behind every
+``time $\leftrightarrow$ frequency'' duality used below.
+\end{theorem}
+
+\begin{theorem}{Convolution theorem (continuous time)}{p6-convthm}
+For $g,h\in L^1$, if $u=g*h$ then $U=G\cdot H$: the transform of a convolution
+is the product of the transforms. If also $G,H\in L^1$ and $v=g\cdot h$, then
+dually $V=G*H$.\\[2pt]
+\textit{Proof idea:} substitute the convolution integral into the definition of
+$U$, swap the order of integration (Fubini, justified by
+$\iint\abs{g(x-y)h(y)}\,dx\,dy=\norm g_1\norm h_1<\infty$), and recognise the
+shift factor $e^{-2\pi i s f}$ as producing $G(f)$.\\
+\textit{Why:} the central computational identity of Fourier analysis ---
+``multiplication in one domain is convolution in the other''. It underlies
+filtering, the SDF of a filtered process, and the periodogram bias formula.
+\end{theorem}
+
+\begin{theorem}{Convolution theorem (discrete time)}{p6-dconvthm}
+For $g,h\in\ell^1$ both pairs hold:
+\[
+h\cdot g \longleftrightarrow H*G,\qquad
+h*g \longleftrightarrow H\cdot G .
+\]
+\textit{Proof idea:} for $u=h*g$, expand $U(f)=\sum_t u_t e^{-2\pi i t f}$,
+insert $e^{-2\pi i (t-s)f}e^{-2\pi i s f}$, factor the double sum into
+$\big(\sum_s h_s e^{-2\pi i s f}\big)\big(\sum_x g_x e^{-2\pi i x f}\big)$;
+interchange is legal because $g,h\in\ell^1$. For $v=h\cdot g$, replace one
+factor by its inverse transform and integrate.\\
+\textit{Why:} the discrete analogue used to derive the finite-data transform
+($G_n=\Dir_T*G$) and the periodogram expectation (a frequency convolution with
+the Fej\'er kernel).
+\end{theorem}
+
+\begin{theorem}{Aliasing theorem and the Nyquist frequency}{p6-aliasing}
+Let $g\in L^1$ be continuous with transform $G$, and let $G$ denote the
+transform of the sampled sequence $\{g(t)\}_{t\in\Delta\Ints}$. Under the
+summability hypotheses, for every $f$
+\[
+G(f)=\sum_{k\in\Ints} G(f+k/\Delta).
+\]
+Sampling \emph{folds} all the continuous-frequency content at
+$\{f+k/\Delta\}_{k}$ onto the single frequency $f$. For an SDF this reads
+$\sdf(f)=\sum_{k\in\Ints}\sdf(f+k)$ (with $\Delta=1$). The
+\textbf{Nyquist frequency} is $1/(2\Delta)$ (i.e.\ $\tfrac12$ when
+$\Delta=1$): content above it cannot be recovered.\\[2pt]
+\textit{Proof idea:} write $g(t)$ at integer times by both inversion formulas;
+split $\int_{-\infty}^{\infty}G(f)e^{2\pi i f t}df$ into period-length blocks,
+shift each block by $k/\Delta$ (the phase $e^{2\pi i t k/\Delta}=1$ for
+$t\in\Delta\Ints$), swap sum and integral (summability), and match the two
+representations of $g(t)$.\\
+\textit{Why:} explains why we sample fast enough; if $\sdf$ is negligible
+beyond $1/(2\Delta)$ the discrete spectrum faithfully matches the continuous
+one, otherwise it is corrupted (poor agreement).
+\end{theorem}
+
+\begin{intuition}[Why aliasing matters]
+A high-frequency sinusoid sampled too slowly looks identical to a
+low-frequency one --- the wagon-wheel effect. Frequencies $f$ and $f+k/\Delta$
+are indistinguishable from the samples; they are ``aliases''. The cure is to
+sample finely (small $\Delta$, large Nyquist) or to low-pass filter before
+sampling.
+\end{intuition}
+
+\begin{proposition}{FFT complexity}{p6-fft}
+The finite Fourier transform at the $n$ Fourier frequencies $\{k/(\Delta n)\}$
+can be computed in $O(n\log n)$ time via the \textbf{Fast Fourier Transform},
+versus $O(n^2)$ for the naive sum.\\[2pt]
+\textit{Proof idea:} divide-and-conquer --- a transform of length $n$ splits
+into two of length $n/2$ (even/odd indices), recursing $\log_2 n$ levels with
+$O(n)$ work each.\\
+\textit{Why:} makes periodogram/spectral computation feasible at scale; one
+can also invert the periodogram by FFT to get the sample ACVS cheaply.
+\end{proposition}
+
+\begin{theorem}{Herglotz's theorem}{p6-herglotz}
+A complex sequence $\{g_t\}_{t\in\Ints}$ is \textbf{non-negative definite} if
+and only if there exists a right-continuous, bounded, non-decreasing function
+$G^{(I)}$ with $G^{(I)}(-\tfrac12)=0$ such that
+\[
+g_t=\int_{-1/2}^{1/2} e^{2\pi i t f}\,dG^{(I)}(f),\qquad t\in\Ints .
+\]
+\textit{Proof idea:} ($\Leftarrow$) any such integral representation yields a
+non-negative-definite sequence because $G^{(I)}$ is non-decreasing.
+($\Rightarrow$) construct $G^{(I)}$ as the (weak) limit of the non-negative
+Ces\`aro/Fej\'er averages of the partial sums $\sum_{\abs t\le N} g_t
+e^{-2\pi i t f}$, which form a tight family of measures.\\
+\textit{Why:} it is the existence theorem for the spectrum. Since every ACVS is
+non-negative definite (a foundational property of any stationary process),
+\emph{every} stationary process has an integrated spectrum $S^{(I)}$ --- even
+those, like harmonic processes, with no ordinary SDF.
+\end{theorem}
+
+\begin{corollary}{Integrated spectrum exists for every stationary process}{p6-integexists}
+Applying Herglotz's theorem to the non-negative-definite ACVS gives
+$\acvs_\tau=\int_{-1/2}^{1/2}e^{2\pi i \tau f}\,dS^{(I)}(f)$ with
+$S^{(I)}(-\tfrac12)=0$, $S^{(I)}(\tfrac12)=\sigma^2$, and $S^{(I)}$
+non-decreasing.\\[2pt]
+\textit{Why:} guarantees a frequency-domain description always exists; the SDF
+is merely the special (absolutely continuous) case $dS^{(I)}=\sdf\,df$.
+\end{corollary}
+
+\begin{theorem}{Lebesgue decomposition of the integrated spectrum}{p6-lebesgue}
+Any integrated spectrum decomposes uniquely as
+\[
+S^{(I)}(\cdot)=S^{(I)}_1(\cdot)+S^{(I)}_2(\cdot)+S^{(I)}_3(\cdot),
+\]
+where each $S^{(I)}_j$ is non-negative, non-decreasing with
+$S^{(I)}_j(-\tfrac12)=0$, and
+\begin{enumerate}
+  \item $S^{(I)}_1$ is \textbf{absolutely continuous}:
+        $S^{(I)}_1(f)=\int_{-1/2}^{f}\sdf(\lambda)\,d\lambda$ (the ordinary SDF
+        $\sdf$);
+  \item $S^{(I)}_2$ is a \textbf{step function} with jumps $\{p_\ell\}$ at
+        frequencies $\{f_\ell\}$ of pure sinusoids (a \emph{line spectrum});
+  \item $S^{(I)}_3$ is a \textbf{continuous singular} function (pathological,
+        of no practical use).
+\end{enumerate}
+\textit{Proof idea:} the Lebesgue decomposition theorem for monotone functions
+/ measures, specialised to the finite interval $[-\tfrac12,\tfrac12]$.\\
+\textit{Why:} classifies the possible spectral behaviours: purely continuous
+($S^{(I)}_1$ only), purely discrete/line ($S^{(I)}_2$ only), or mixed.
+\end{theorem}
+
+\begin{intuition}[Reading the three components]
+\textbf{Absolutely continuous} ($S^{(I)}_1$): the ACVS damps to zero,
+$\acvs_\tau\to0$ as $\tau\to\infty$ (since for integrable $\sdf$,
+$\int\cos(2\pi f\tau)\sdf\,df\to0$). Example: any ARMA process.
+\textbf{Discrete/line} ($S^{(I)}_2$): the ACVS does \emph{not} damp to zero
+(a sinusoid keeps oscillating). Example: a sinusoid with random phase and
+amplitude (the harmonic process). \textbf{Mixed}: a signal-plus-noise sum of
+the two, e.g.\ a periodic component buried in coloured noise.
+\end{intuition}
+
+\begin{example}{Spectral characterisation of common processes}{p6-speccases}
+\begin{itemize}
+  \item \textbf{Purely continuous spectrum} ($S^{(I)}_1\ge0$,
+        $S^{(I)}_2\equiv0$): ARMA processes; the SDF $\sdf$ exists and
+        $\acvs_\tau\to0$.
+  \item \textbf{Purely discrete (line) spectrum} ($S^{(I)}_1\equiv0$,
+        $S^{(I)}_2\ge0$): random-phase/amplitude sinusoid; the ACVS persists.
+  \item \textbf{Mixed spectrum} ($S^{(I)}_1\ge0$, $S^{(I)}_2\ge0$): pointwise
+        aggregation, e.g.\ harmonic signal plus an ARMA background.
+\end{itemize}
+\end{example}
+
+\begin{theorem}{Spectral representation theorem}{p6-specrep}
+Let $\{X_t\}$ be a real-valued discrete-time stationary process with mean
+$\mu$. There exists an \textbf{orthogonal-increment process} $\{Z(f)\}$ on
+$[-\tfrac12,\tfrac12]$ with
+\[
+X_t=\mu+\int_{-1/2}^{1/2} e^{2\pi i f t}\,dZ(f)
+\quad\text{(equality in mean square),}
+\]
+where for $f\ne f'$,
+\[
+\E[dZ(f)]=0,\qquad
+\Var\big(dZ(f)\big)=dS^{(I)}(f),\qquad
+\Cov\big(dZ(f),dZ(f')\big)=0 .
+\]
+\textit{Proof idea:} build $Z$ as the $L^2$ (mean-square) limit of finite
+Fourier sums of the $X_t$'s; orthogonality of increments mirrors the
+non-decrease of $S^{(I)}$, and the variance of an increment is exactly the mass
+$S^{(I)}$ places there.\\
+\textit{Why:} the deep structural result: \emph{every} stationary process is a
+superposition of uncorrelated random sinusoids $e^{2\pi i f t}\,dZ(f)$, with
+``amount of variance'' $dS^{(I)}(f)$ at each frequency. It makes precise the
+slogan ``$\sdf(f)\,df$ is the power in $[f,f+df]$''.
+\end{theorem}
+
+\begin{recallbox}[Recall: covariance of complex random variables]
+For complex $Z_1,Z_2$ the covariance is
+$\Cov(Z_1,Z_2)=\E[(Z_1-\E Z_1)\conj{(Z_2-\E Z_2)}]$ (note the conjugate on the
+second factor). The \emph{complementary covariance} (relation) is
+$\mathrm{Rel}\{Z_1,Z_2\}=\E[(Z_1-\E Z_1)(Z_2-\E Z_2)]$ (no conjugate).
+\end{recallbox}
+
+\begin{proposition}{Periodogram as squared modulus of $J$}{p6-periogramJ}
+With $T=\{1,\dots,n\}$ and $Y_t=X_t-\bar X$,
+\[
+\hat\sdf^{(p)}(f)=\abs{J(f)}^2,\qquad
+J(f)=\sqrt{\tfrac1n}\sum_{t\in T} Y_t\,e^{-2\pi i t f}.
+\]
+\textit{Proof idea:} starting from
+$\hat\sdf^{(p)}(f)=\sum_{\tau}\frac1n\sum_t Y_tY_{t+\abs\tau}e^{-2\pi i\tau f}$,
+re-index the double lag sum as a free double sum over $s,t\in T$,
+\[
+\hat\sdf^{(p)}(f)=\frac1n\sum_{s=1}^{n}\sum_{t=1}^{n}
+Y_tY_s\,e^{-2\pi i s f}e^{2\pi i t f}
+=\Big(\sqrt{\tfrac1n}\sum_t Y_t e^{-2\pi i t f}\Big)
+\conj{\Big(\sqrt{\tfrac1n}\sum_s Y_s e^{-2\pi i s f}\Big)}
+=\abs{J(f)}^2 .
+\]
+\textit{Why:} lets the periodogram be computed by a single FFT in
+$O(n\log n)$, and makes manifest that $\hat\sdf^{(p)}\ge0$.
+\end{proposition}
+
+\begin{theorem}{Expectation of the periodogram: the Fej\'er kernel}{p6-periogexp}
+For a zero-mean process,
+\[
+\E\big[\hat\sdf^{(p)}(f)\big]
+=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi i\tau f},\qquad
+w_\tau=\Big(1-\frac{\abs\tau}{n}\Big)\ind_{[-n,n]}(\tau),
+\]
+equivalently the frequency convolution
+\[
+\E\big[\hat\sdf^{(p)}(f)\big]=\int_{-1/2}^{1/2}\sdf(f')\,\Fej_n(f-f')\,df',
+\qquad
+\Fej_n(f)=
+\begin{cases}
+\dfrac1n\dfrac{\sin^2(n\pi f)}{\sin^2(\pi f)}, & f\ne0,\\[2.2ex]
+n, & f=0,
+\end{cases}
+\]
+the \textbf{Fej\'er kernel}.\\[2pt]
+\textit{Proof idea:} $\E[\hat\acvs_\tau]=\big(1-\tfrac{\abs\tau}{n}\big)\acvs_\tau$
+for $\abs\tau<n$; transform term by term. The triangular weight
+$w_\tau=\tfrac1n(d*\tilde d)_\tau$ is the autocorrelation of the rectangular
+window, whose transform is $\abs{\Dir_T(f)}^2/n=\Fej_n(f)$, so multiplication by
+$w_\tau$ in time becomes convolution with $\Fej_n$ in frequency.\\
+\textit{Why:} quantifies the \textbf{bias}. Because $\Fej_n$ has wide side
+lobes that decay slowly, $\E[\hat\sdf^{(p)}]$ is a \emph{blurred} (leaked)
+version of $\sdf$; peaks are smeared and power leaks into neighbouring
+frequencies. As $n\to\infty$, $\Fej_n$ concentrates at $0$, so the periodogram
+is asymptotically unbiased.
+\end{theorem}
+
+\begin{theorem}{Variance of the periodogram: inconsistency}{p6-periogvar}
+For $f\ne0\ \mathrm{mod}\ \tfrac12$,
+\[
+\Var\big(\hat\sdf^{(p)}(f)\big)\xrightarrow[n\to\infty]{}\sdf(f)^2 \;>\;0,
+\]
+and at distinct Fourier frequencies the ordinates are asymptotically
+uncorrelated.\\[2pt]
+\textit{Proof idea:} for a Gaussian process $J(f)$ is asymptotically complex
+Gaussian, so $\hat\sdf^{(p)}(f)=\abs{J(f)}^2$ is asymptotically
+$\tfrac12\sdf(f)\chi^2_2=\sdf(f)\cdot\mathrm{Exp}(1)$, whose variance is
+$\sdf(f)^2$.\\
+\textit{Why:} the periodogram is \textbf{not consistent} --- its variance does
+\emph{not} vanish as $n$ grows; more data merely gives more (equally noisy)
+ordinates. This is the motivation for smoothing/averaging (multitapering,
+or averaging neighbouring ordinates).
+\end{theorem}
+
+\begin{pitfall}
+The periodogram is \emph{not} a consistent estimator of the SDF. Doubling $n$
+does \textbf{not} halve the variance at a fixed $f$; it stays
+$\approx\sdf(f)^2$. ``It got noisier as I added data'' is expected behaviour,
+not a bug --- you see finer frequency resolution but the same per-ordinate
+scatter. To reduce variance you must \emph{average} (multitaper or smooth).
+\end{pitfall}
+
+\begin{theorem}{Expectation of the tapered periodogram}{p6-tapexp}
+With a taper $\{h_t\}$ (set $h_t=0$ off $T$) and mean replaced by $\mu$,
+\[
+\E\big[\hat\sdf^{(p)}_h(f)\big]
+=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df',
+\]
+where $H$ is the discrete Fourier transform of $h$.\\[2pt]
+\textit{Proof idea:} expand $\hat\sdf^{(p)}_h(f)=\sum_{t,s}h_th_sY_tY_s
+e^{-2\pi i f(t-s)}$, take expectations to get $\sum_\tau w_\tau\acvs_\tau
+e^{-2\pi i f\tau}$ with $w_\tau=\sum_t h_th_{t+\tau}=(\tilde h*\bar h)_\tau$
+(autocorrelation of the taper). By the convolution theorem its transform is
+$\tilde H(f)\bar H(f)=\abs{H(f)}^2$, giving the frequency convolution.\\
+\textit{Why:} the kernel is now $\abs{H(f)}^2$ instead of the Fej\'er kernel
+$\Fej_n$. A well-chosen taper (e.g.\ a dpss / Slepian taper) makes
+$\abs{H(f)}^2$ far more concentrated near $0$ with much lower side lobes, so
+\textbf{tapering reduces bias / leakage}.
+\end{theorem}
+
+\begin{corollary}{Unbiasedness of the tapered periodogram for white noise}{p6-tapunbias}
+If $\{X_t\}$ is white noise with variance $\sigma^2$ (so $\sdf\equiv\sigma^2$)
+and $\norm{h}_2^2=1$, then $\E[\hat\sdf^{(p)}_h(f)]=\sigma^2=\sdf(f)$ for all
+$n$ and all $f$.\\[2pt]
+\textit{Proof idea:} the kernel integrates out,
+$\E[\hat\sdf^{(p)}_h(f)]=\sigma^2\int_{-1/2}^{1/2}\abs{H(f')}^2\,df'
+=\sigma^2\sum_{t}h_t^2=\sigma^2\norm{h}_2^2$ (Parseval), which equals
+$\sigma^2$ exactly when $\norm h_2^2=1$.\\
+\textit{Why:} pins down the normalisation $\norm h_2^2=1$ in the definition of
+a taper, and shows tapering costs nothing in bias for flat spectra.
+\end{corollary}
+
+\begin{theorem}{Variance reduction by multitapering}{p6-mtvar}
+For $K$ orthonormal tapers, asymptotically
+\[
+\Cov\big(\hat\sdf^{(p)}_{h_k}(f),\hat\sdf^{(p)}_{h_{k'}}(f)\big)
+\to\sdf(f)^2\,\delta_{k,k'},
+\quad\text{hence}\quad
+\Var\big(\hat\sdf^{(mt)}(f)\big)\approx\frac{\sdf(f)^2}{K}.
+\]
+\textit{Proof idea:} orthogonality of the tapers makes the $K$ individual
+tapered periodograms asymptotically uncorrelated, each with variance
+$\sdf(f)^2$; averaging $K$ uncorrelated terms divides the variance by $K$.\\
+\textit{Why:} \textbf{multitapering restores consistency}: as $n\to\infty$ one
+may let $K\to\infty$ (slowly) so $\Var\to0$. It is the standard fix for the
+periodogram's non-vanishing variance, with only a modest bias increase.
+\end{theorem}
+
+\begin{intuition}[Bias vs.\ variance, the whole story in one line]
+The raw periodogram has tolerable (vanishing) \emph{bias} but stubborn
+\emph{variance}. \textbf{Tapering} attacks bias (sharper kernel
+$\abs{H}^2$ vs.\ $\Fej_n$); \textbf{multitapering} attacks variance (average
+$K$ near-independent estimates, $\Var\approx\sdf^2/K$). Together they give a
+usable spectral estimate.
+\end{intuition}
+
+% ======================================================================
+\subsection{Key Techniques}
+% ======================================================================
+
+\begin{keytech}{Compute an SDF from an ACVS}{p6-sdffromacvs}
+To get $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$:
+\begin{enumerate}
+  \item Write down the ACVS (only finitely many lags for MA; geometric for AR).
+  \item Pair $\tau$ with $-\tau$ and use
+        $e^{-2\pi i f\tau}+e^{2\pi i f\tau}=2\cos(2\pi f\tau)$, giving
+        $\sdf(f)=\acvs_0+2\sum_{\tau\ge1}\acvs_\tau\cos(2\pi f\tau)$ (real,
+        even).
+  \item For a finite linear filter, prefer the factored form: if
+        $X_t=\sum_j\psi_j\eps_{t-j}$ with $\eps$ white noise of variance
+        $\sigma^2$, then
+        $\sdf(f)=\sigma^2\big|\sum_j\psi_j e^{-2\pi i j f}\big|^2$.
+\end{enumerate}
+For an AR/ARMA $\Phi(B)X_t=\Theta(B)\eps_t$,
+$\sdf(f)=\sigma^2\,\dfrac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2}$.
+\textbf{Sanity checks:} $\sdf$ must be real, even, non-negative, and integrate
+to $\acvs_0$ over $[-\tfrac12,\tfrac12]$.
+\end{keytech}
+
+\begin{keytech}{Test whether a candidate $\acvs$ is a valid ACVS}{p6-validacvs}
+A sequence $\{\acvs_\tau\}$ is a valid ACVS \emph{iff} it is non-negative
+definite, which (in the summable case) is equivalent to its Fourier transform
+being non-negative:
+\[
+\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}\ \ge 0\quad\text{for all }f .
+\]
+Procedure: (i) check $\acvs_{-\tau}=\acvs_\tau$ and $\acvs_0\ge\abs{\acvs_\tau}$
+(necessary); (ii) compute $\sdf(f)$; (iii) hunt for a frequency where
+$\sdf(f)<0$ --- often the endpoints $f=0$ (gives $\sum_\tau\acvs_\tau$) or
+$f=\tfrac12$ (gives $\sum_\tau(-1)^\tau\acvs_\tau$) are the culprits. A single
+negative value \textbf{disqualifies} the candidate.
+\end{keytech}
+
+\begin{keytech}{Recover an ACVS from a given SDF}{p6-acvsfromsdf}
+Use $\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f\tau}\,df$. Practical moves:
+\begin{itemize}
+  \item Drop the imaginary part: since $\acvs_\tau$ is real and $\sdf$ even,
+        $\acvs_\tau=\int_{-1/2}^{1/2}\sdf(f)\cos(2\pi f\tau)\,df
+        =2\int_0^{1/2}\sdf(f)\cos(2\pi f\tau)\,df$.
+  \item For polynomial $\sdf$ integrate by parts; the building blocks are
+        $\int_0^{1/2}\cos(2\pi f\tau)\,df=\frac{\sin(\pi\tau)}{2\pi\tau}$ and
+        $\int_0^{1/2}f\cos(2\pi f\tau)\,df
+        =\frac{\sin(\pi\tau)}{4\pi\tau}+\frac{\cos(\pi\tau)-1}{4\pi^2\tau^2}$.
+  \item For a rational $\sdf$ (ARMA), match it to
+        $\sigma^2\abs{\Theta}^2/\abs{\Phi}^2$ and read off the recursion, or do
+        a partial-fraction / contour integral.
+  \item Treat $\tau=0$ separately (the $\sin(\pi\tau)/\tau$ terms need a limit).
+\end{itemize}
+\end{keytech}
+
+\begin{keytech}{Read off periodogram bias and variance}{p6-readbias}
+Given a periodogram problem, recall the three facts:
+\begin{itemize}
+  \item \textbf{Bias / blurring:} $\E[\hat\sdf^{(p)}]=\sdf*\Fej_n$; the Fej\'er
+        kernel's slow-decaying side lobes leak power between frequencies.
+        Sharp spectral peaks are the worst affected.
+  \item \textbf{Variance:} $\Var(\hat\sdf^{(p)}(f))\to\sdf(f)^2\ne0$ --- not
+        consistent.
+  \item \textbf{Fixes:} tapering swaps $\Fej_n$ for the sharper $\abs{H}^2$
+        (less bias); multitapering averages $K$ tapers
+        ($\Var\approx\sdf^2/K$, less variance).
+\end{itemize}
+\end{keytech}
+
+% ======================================================================
+\subsection{Exercises}
+% ======================================================================
+
+\begin{exercise}{Fourier transform property table \quad\textnormal{[Sheet 6]}}{p6-ft-props}
+For $g\in L^1$ with transform $G$, prove: (1) if $h(t)=\conj{g(t)}$ then
+$H(f)=\conj{G(-f)}$; (2) if $h(t)=g(\alpha t)$, $\alpha\ne0$, then
+$H(f)=G(f/\alpha)/\abs\alpha$; (3) if $h(t)=g(t+\tau)$ then
+$H(f)=G(f)e^{2\pi i f\tau}$; (4) if $h(t)=\alpha g(t)+p(t)$ then
+$H(f)=\alpha G(f)+P(f)$.
+\end{exercise}
+\begin{solution}
+\textbf{(1)} Conjugation: pull the conjugate outside (it flips the sign of the
+exponent),
+\[
+H(f)=\int_{-\infty}^{\infty}\conj{g(t)}e^{-2\pi i t f}\,dt
+=\conj{\int_{-\infty}^{\infty} g(t)e^{2\pi i t f}\,dt}
+=\conj{G(-f)} .
+\]
+\textbf{(2)} Scaling: substitute $t'=\alpha t$, $dt=dt'/\abs\alpha$ (the
+$\abs\alpha$ comes from reversing limits when $\alpha<0$):
+\[
+H(f)=\int_{-\infty}^{\infty} g(\alpha t)e^{-2\pi i t f}\,dt
+=\frac{1}{\abs\alpha}\int_{-\infty}^{\infty} g(t')e^{-2\pi i (f/\alpha)t'}\,dt'
+=\frac{1}{\abs\alpha}\,G(f/\alpha).
+\]
+\textbf{(3)} Shift: insert $1=e^{-2\pi i f\tau}e^{2\pi i f\tau}$,
+\[
+H(f)=\int_{-\infty}^{\infty} g(t+\tau)e^{-2\pi i f t}\,dt
+=\int_{-\infty}^{\infty} g(t+\tau)e^{-2\pi i f(t+\tau)}\,dt\;e^{2\pi i f\tau}
+=G(f)e^{2\pi i f\tau}.
+\]
+\textbf{(4)} Linearity of the integral gives $H=\alpha G+P$ immediately.
+\end{solution}
+
+\begin{exercise}{Continuous-time convolution theorem \quad\textnormal{[Sheet 6]}}{p6-convproof}
+Let $g,h\in L^1$ and $u=g*h$. Prove $U=G\cdot H$.
+\end{exercise}
+\begin{solution}
+\[
+\begin{aligned}
+U(f)&=\int_{-\infty}^{\infty} u(x)e^{-2\pi i x f}\,dx
+     =\int_{-\infty}^{\infty}\!\!\int_{-\infty}^{\infty} g(x-y)h(y)\,dy\;e^{-2\pi i x f}\,dx\\
+    &=\int_{-\infty}^{\infty}\Big(\int_{-\infty}^{\infty} g(x-y)e^{-2\pi i x f}\,dx\Big)h(y)\,dy
+     \qquad\text{(Fubini)}\\
+    &=\int_{-\infty}^{\infty}\Big(\int_{-\infty}^{\infty} g(s)e^{-2\pi i s f}\,ds\Big)
+       e^{-2\pi i y f}h(y)\,dy
+     \qquad (s=x-y)\\
+    &=G(f)\int_{-\infty}^{\infty} h(y)e^{-2\pi i y f}\,dy=G(f)H(f).
+\end{aligned}
+\]
+The interchange is justified because
+$\iint\abs{g(x-y)h(y)}\,dx\,dy=\norm g_1\norm h_1<\infty$, so Fubini applies.
+\end{solution}
+
+\begin{exercise}{Aliasing via Poisson summation \quad\textnormal{[Sheet 6]}}{p6-aliasproof}
+For continuous $g\in L^1$ with transform $G$, and $G$ the transform of the
+sampled sequence $\{g(t)\}_{t\in\Delta\Ints}$, show
+$G(f)=\sum_{k\in\Ints} G(f+k/\Delta)$ (under the stated summability
+hypotheses).
+\end{exercise}
+\begin{solution}
+For $t\in\Delta\Ints$ both inversion formulas hold:
+\[
+g(t)=\int_{-\infty}^{\infty} G(f)e^{2\pi i f t}\,df,
+\qquad
+g(t)=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f)e^{2\pi i f t}\,df .
+\]
+Split the real line into period blocks centred at $k/\Delta$ and shift each:
+\[
+\begin{aligned}
+g(t)&=\sum_{k\in\Ints}\int_{k/\Delta-1/(2\Delta)}^{k/\Delta+1/(2\Delta)} G(f)e^{2\pi i f t}\,df
+     =\sum_{k\in\Ints}\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f+k/\Delta)e^{2\pi i (f+k/\Delta)t}\,df\\
+    &=\sum_{k\in\Ints}\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f+k/\Delta)e^{2\pi i f t}\,df,
+\end{aligned}
+\]
+because $t=z\Delta$ for some $z\in\Ints$ makes $e^{2\pi i (k/\Delta)t}
+=e^{2\pi i kz}=1$. By the summability hypothesis
+$\sum_k\int\abs{G(f+k/\Delta)}\,df<\infty$ we may swap sum and integral:
+\[
+\int_{-1/(2\Delta)}^{1/(2\Delta)}\Big(\sum_{k\in\Ints} G(f+k/\Delta)\Big)e^{2\pi i f t}\,df
+=g(t)=\int_{-1/(2\Delta)}^{1/(2\Delta)} G(f)e^{2\pi i f t}\,df .
+\]
+Equality of these Fourier-series coefficients (for all $t\in\Delta\Ints$) forces
+$\sum_k G(f+k/\Delta)=G(f)$ for a.e.\ $f$; both sides are continuous (by the
+$\ell^1$/summability hypotheses), so equality holds for all $f$.
+\end{solution}
+
+\begin{exercise}{SDF of white noise \quad\textnormal{[Sheet 7]}}{p6-wnsdf}
+Let $\{\eps_t\}$ be white noise with variance $\sigma_\eps^2$. Find its SDF.
+\end{exercise}
+\begin{solution}
+The ACVS is $\acvs_\tau=\sigma_\eps^2$ for $\tau=0$ and $0$ otherwise, so only
+the $\tau=0$ term survives:
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i f\tau}=\sigma_\eps^2,
+\qquad\text{for all }f .
+\]
+The spectrum is \textbf{flat} --- equal power at every frequency, which is why
+it is called ``white''.
+\end{solution}
+
+\begin{exercise}{Is a truncated ACVS a valid ACVS? \quad\textnormal{[Sheet 7]}}{p6-truncacvs}
+Let $\acvs_\tau=1$ for $\abs\tau\le K$ and $0$ otherwise, $K$ a positive
+integer. Is $\{\acvs_\tau\}$ a valid ACVS? What would the SDF be?
+\end{exercise}
+\begin{solution}
+It is summable and symmetric, so we may form
+\[
+\sdf(f)=\sum_{\tau=-K}^{K} e^{-2\pi i\tau f}
+=1+2\sum_{\tau=1}^{K}\cos(2\pi\tau f)
+=\frac{\sin\big((2K+1)\pi f\big)}{\sin(\pi f)}
+\]
+(the Dirichlet kernel). This is \emph{not} non-negative everywhere. Evaluate at
+the Nyquist endpoint $f=\tfrac12$: using $\cos(\pi\tau)=(-1)^\tau$,
+\[
+\sdf(\tfrac12)=1+2\sum_{\tau=1}^{K}(-1)^\tau=(-1)^K .
+\]
+So $\sdf(\tfrac12)=-1<0$ whenever $K$ is \textbf{odd} (write $K=2q+1$). Since the
+SDF goes negative, $\{\acvs_\tau\}$ is \textbf{not} a valid ACVS for any
+stationary process. (It fails to be non-negative definite.)
+\end{solution}
+
+\begin{intuition}
+Truncating a genuine ACVS to a finite window in general breaks
+non-negative-definiteness --- exactly why one cannot just chop the ACVS and
+hope. The clean way to ``truncate'' is to taper the spectrum, not the ACVS.
+\end{intuition}
+
+\begin{exercise}{ACVS from a triangular SDF \quad\textnormal{[Sheet 7]}}{p6-triangsdf}
+Find the ACVS of $\{X_t\}$ with
+$\sdf(f)=\dfrac{\sigma^2}{\pi}\,(1-2\abs f)\,\ind_{\{\abs f\le 1/2\}}$.
+\end{exercise}
+\begin{solution}
+For $\tau\ne0$, since $\sdf$ is even the $\sin$ part drops out:
+\[
+\acvs_\tau=\int_{-1/2}^{1/2} e^{2\pi i f\tau}\sdf(f)\,df
+=\frac{2\sigma^2}{\pi}\int_{0}^{1/2}\cos(2\pi f\tau)(1-2f)\,df
+=\frac{2\sigma^2}{\pi}\big(I_1-2I_2\big),
+\]
+with $I_1=\int_0^{1/2}\cos(2\pi f\tau)\,df$ and
+$I_2=\int_0^{1/2} f\cos(2\pi f\tau)\,df$. Computing,
+\[
+I_1=\frac{\sin(\pi\tau)}{2\pi\tau},\qquad
+I_2=\frac{\sin(\pi\tau)}{4\pi\tau}+\frac{\cos(\pi\tau)-1}{4\pi^2\tau^2}.
+\]
+Then $I_1-2I_2=-\dfrac{\cos(\pi\tau)-1}{2\pi^2\tau^2}
+=\dfrac{1-\cos(\pi\tau)}{2\pi^2\tau^2}$, so
+\[
+\boxed{\;\acvs_\tau=\frac{\sigma^2}{\pi^3}\,\frac{1-\cos(\pi\tau)}{\tau^2}\;}
+\qquad(\tau\ne0).
+\]
+For $\tau=0$, $\acvs_0=\dfrac{2\sigma^2}{\pi}\int_0^{1/2}(1-2f)\,df
+=\dfrac{2\sigma^2}{\pi}\cdot\tfrac14=\dfrac{\sigma^2}{2\pi}$. (Note
+$1-\cos(\pi\tau)=0$ for even $\tau$, $=2$ for odd $\tau$, so the ACVS is
+supported on odd lags plus $\tau=0$. Numerically: $\acvs_0=\sigma^2/(2\pi)$,
+$\acvs_1=2\sigma^2/\pi^3$, $\acvs_2=0$, $\acvs_3=2\sigma^2/(9\pi^3)$, all
+verified.)
+\end{solution}
+
+\begin{exercise}{SDF of an MA(q) process \quad\textnormal{[Sheet 7]}}{p6-maqsdf}
+What is the SDF of an MA($q$) process
+$X_t=\sum_{j=0}^{q}\theta_j\eps_{t-j}$ (here writing $\theta_0=1$ for
+concreteness, $\eps$ white noise of variance $\sigma_\eps^2$)?
+\end{exercise}
+\begin{solution}
+Its ACVS is $\acvs_\tau=\sigma_\eps^2\sum_{j=0}^{q}\theta_j\theta_{j+\abs\tau}$
+for $\abs\tau\le q$ (zero otherwise), which we write as the double sum
+$\acvs_\tau=\sigma_\eps^2\sum_{j=0}^{q}\sum_{k=0}^{q}
+\theta_j\theta_k\ind_{\{\tau=k-j\}}$. Since $\acvs\in\ell^1$ the SDF exists:
+\[
+\begin{aligned}
+\sdf(f)&=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i\tau f}
+       =\sigma_\eps^2\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k
+        \sum_{\tau}\ind_{\{\tau=k-j\}}e^{-2\pi i\tau f}\\
+       &=\sigma_\eps^2\sum_{j=0}^{q}\sum_{k=0}^{q}\theta_j\theta_k
+        e^{-2\pi i(k-j)f}
+       =\sigma_\eps^2\Big(\sum_{j=0}^{q}\theta_j e^{-2\pi i j f}\Big)
+        \conj{\Big(\sum_{k=0}^{q}\theta_k e^{-2\pi i k f}\Big)}\\
+       &=\sigma_\eps^2\,\Big|\,\sum_{j=0}^{q}\theta_j e^{-2\pi i j f}\,\Big|^2
+        =\sigma_\eps^2\,\abs{\Theta(e^{-2\pi i f})}^2 .
+\end{aligned}
+\]
+The SDF is the squared modulus of the MA transfer function --- automatically
+non-negative, as any SDF must be.
+\end{solution}
+
+\begin{exercise}{Time-varying-amplitude harmonic process \quad\textnormal{[Sheet 7]}}{p6-tvharm}
+Let $X_t=\eps_t\cos(\nu t+\Theta)$ with $\nu$ fixed, $\eps_t$ mean-zero white
+noise of variance $\sigma^2$ (not constrained positive), independent of the
+random phase $\Theta$ whose pdf is
+$f_\Theta(\theta)=\tfrac1{2\pi}(1+\cos\theta)$ on $\abs\theta\le\pi$. Find the
+first two moments of $X_t$; are they $t$-free?
+\end{exercise}
+\begin{solution}
+\textbf{Mean.} By independence,
+$\E[X_t]=\E[\eps_t]\,\E[\cos(\nu t+\Theta)]=0\cdot(\cdot)=0$, constant in $t$
+(the second factor is finite since $\abs{\cos}\le1$).\\
+\textbf{Autocovariance.} By independence,
+$\E[X_tX_{t+\tau}]
+=\E[\eps_t\eps_{t+\tau}]\,\E[\cos(\nu t+\Theta)\cos(\nu(t+\tau)+\Theta)]$.
+White noise gives $\E[\eps_t\eps_{t+\tau}]=\sigma^2\ind_{\{\tau=0\}}$. Using
+$\cos A\cos B=\tfrac12[\cos(A-B)+\cos(A+B)]$,
+\[
+\E\big[\cos(\nu t+\Theta)\cos(\nu(t+\tau)+\Theta)\big]
+=\tfrac12\big[\cos(\nu\tau)+\E[\cos(\nu(2t+\tau)+2\Theta)]\big].
+\]
+The remaining expectation vanishes for this $\Theta$:
+\[
+\begin{aligned}
+\E[\cos(\nu(2t+\tau)+2\Theta)]
+&=\frac1{2\pi}\int_{-\pi}^{\pi}\cos(\nu(2t+\tau)+2\theta)\,d\theta\\
+&\quad+\frac1{2\pi}\int_{-\pi}^{\pi}\cos(\nu(2t+\tau)+2\theta)\cos\theta\,d\theta .
+\end{aligned}
+\]
+The first integral is
+$\tfrac1{4\pi}\big[\sin(\nu(2t+\tau)+2\theta)\big]_{-\pi}^{\pi}=0$.
+For the second, write
+$\cos(\cdots+2\theta)\cos\theta=\tfrac12[\cos(\cdots+\theta)+\cos(\cdots+3\theta)]$;
+both pieces integrate to $0$ over the full period. Hence
+$\E[\cos(\nu(2t+\tau)+2\Theta)]=0$, and
+\[
+\E[X_tX_{t+\tau}]=\sigma^2\ind_{\{\tau=0\}}\cdot\tfrac12\cos(\nu\tau)
+=\begin{cases}\sigma^2/2,&\tau=0,\\[2pt]0,&\tau\ne0.\end{cases}
+\]
+Both moments are independent of $t$, so $\{X_t\}$ is stationary; in fact it is
+white noise with variance $\sigma^2/2$. (The non-uniform phase did not spoil
+stationarity precisely because its $2\theta$-harmonics integrate out.)
+\end{solution}
+
+\begin{exercise}{Periodogram as $\abs{J(f)}^2$ \quad\textnormal{[Sheet 8]}}{p6-perioJ}
+With $T=\{1,\dots,n\}$, show $\hat\sdf^{(p)}(f)=\abs{J(f)}^2$ for
+$J(f)=\sqrt{1/n}\sum_{t\in T}(X_t-\bar X)e^{-2\pi i t f}$.
+\end{exercise}
+\begin{solution}
+Put $Y_t=X_t-\bar X$. Starting from the definition and re-indexing the lag sum
+as a free double sum over $s,t\in\{1,\dots,n\}$ (the substitution $\tau=t-s$
+sweeps all $\abs\tau\le n-1$),
+\[
+\begin{aligned}
+\hat\sdf^{(p)}(f)
+&=\sum_{\tau=-n+1}^{n-1}\frac1n\sum_{t=1}^{n-\abs\tau} Y_tY_{t+\abs\tau}e^{-2\pi i\tau f}
+ =\frac1n\sum_{s=1}^{n}\sum_{t=1}^{n} Y_tY_s\,e^{-2\pi i s f}e^{2\pi i t f}\\
+&=\Big(\sqrt{\tfrac1n}\sum_{t=1}^{n} Y_t e^{-2\pi i t f}\Big)
+  \conj{\Big(\sqrt{\tfrac1n}\sum_{s=1}^{n} Y_s e^{-2\pi i s f}\Big)}
+ =J(f)\,\conj{J(f)}=\abs{J(f)}^2 .
+\end{aligned}
+\]
+(In the second equality we relabel $s=t+|\tau|$ so the lag $\tau=t-s$ runs
+freely, and $e^{-2\pi i\tau f}=e^{2\pi i t f}e^{-2\pi i s f}$ separates the two
+conjugate sums.)
+\end{solution}
+
+\begin{exercise}{Expectation of the tapered periodogram \quad\textnormal{[Sheet 8]}}{p6-tapexp}
+Replacing $\bar X$ by $\mu$, show
+$\E[\hat\sdf^{(p)}_h(f)]=\int_{-1/2}^{1/2}\sdf(f')\abs{H(f-f')}^2\,df'$, with
+$H$ the transform of $h$.
+\end{exercise}
+\begin{solution}
+With $Y_t=X_t-\mu$ and $g_t=h_t$ ($g_t=0$ off $T$),
+\[
+\hat\sdf^{(p)}_h(f)=\Big|\sum_{t=1}^{n} g_t Y_t e^{-2\pi i f t}\Big|^2
+=\sum_{\tau=-n+1}^{n-1}\sum_{t} g_t g_{t+\abs\tau}\,Y_t Y_{t+\tau}\,e^{-2\pi i f\tau}.
+\]
+Taking expectations ($\E[Y_tY_{t+\tau}]=\acvs_\tau$),
+\[
+\E\big[\hat\sdf^{(p)}_h(f)\big]
+=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi i f\tau},
+\qquad w_\tau=\sum_{t\in\Ints} h_t h_{t+\tau}.
+\]
+By the convolution theorem $\E[\hat\sdf^{(p)}_h(f)]=\int_{-1/2}^{1/2}
+\sdf(f')W(f-f')\,df'$ where $W$ is the transform of $w$. Setting
+$\tilde h_t=h_{-t}$ and $\bar h_t=h_t$, we recognise $w=\tilde h*\bar h$, so by
+the convolution theorem again $W(f)=\tilde H(f)\bar H(f)=\abs{H(f)}^2$.
+Therefore
+$\E[\hat\sdf^{(p)}_h(f)]=\int_{-1/2}^{1/2}\sdf(f')\abs{H(f-f')}^2\,df'$.
+\end{solution}
+
+\begin{exercise}{Unbiased tapered periodogram for white noise \quad\textnormal{[Sheet 8]}}{p6-tunbias}
+If $\{X_t\}$ is white noise with variance $\sigma^2$, prove
+$\hat\sdf^{(p)}_h(f)$ is unbiased for all $n$ provided $\norm h_2^2=1$.
+\end{exercise}
+\begin{solution}
+White noise has $\sdf\equiv\sigma^2$. Using the tapered-expectation formula and
+relabelling (periodicity),
+\[
+\begin{aligned}
+\E\big[\hat\sdf^{(p)}_h(f)\big]
+&=\int_{-1/2}^{1/2}\sdf(f-f')\abs{H(f')}^2\,df'
+ =\sigma^2\int_{-1/2}^{1/2}\abs{H(f')}^2\,df'\\
+&=\sigma^2\sum_{t\in\Ints}\sum_{s\in\Ints} h_t h_s
+   \int_{-1/2}^{1/2} e^{-2\pi i(t-s)f'}\,df'
+ =\sigma^2\sum_{t} h_t^2=\sigma^2\norm h_2^2,
+\end{aligned}
+\]
+where $\int_{-1/2}^{1/2}e^{-2\pi i\tau f}\,df=\ind_{\{\tau=0\}}$ collapses the
+double sum (Parseval). Hence if $\norm h_2^2=1$ then
+$\E[\hat\sdf^{(p)}_h(f)]=\sigma^2=\sdf(f)$, i.e.\ exactly unbiased.
+\end{solution}
+
+% ---------------------- NEW EXERCISES ----------------------------------
+
+\begin{exercise}{SDF of an MA(1) process \quad\textnormal{[New]}}{p6-ma1sdf}
+Let $X_t=\eps_t-\theta\eps_{t-1}$ with $\eps$ white noise of variance
+$\sigma^2$. Find $\sdf(f)$ two ways (from the ACVS and from the transfer
+function), and locate its maximum and minimum.
+\end{exercise}
+\begin{solution}
+\textbf{From the ACVS.} $\acvs_0=\sigma^2(1+\theta^2)$,
+$\acvs_{\pm1}=-\sigma^2\theta$, $0$ otherwise. Then
+\[
+\sdf(f)=\acvs_0+2\acvs_1\cos(2\pi f)
+=\sigma^2\big(1+\theta^2-2\theta\cos(2\pi f)\big).
+\]
+\textbf{From the transfer function.} $\Theta(z)=1-\theta z$, so
+\[
+\sdf(f)=\sigma^2\abs{1-\theta e^{-2\pi i f}}^2
+=\sigma^2\big(1-\theta e^{-2\pi i f}\big)\big(1-\theta e^{2\pi i f}\big)
+=\sigma^2(1+\theta^2-2\theta\cos(2\pi f)),
+\]
+the same answer. Since $\cos(2\pi f)$ ranges over $[-1,1]$: for $\theta>0$ the
+\textbf{minimum} is at $f=0$, $\sdf(0)=\sigma^2(1-\theta)^2$, and the
+\textbf{maximum} at $f=\tfrac12$, $\sdf(\tfrac12)=\sigma^2(1+\theta)^2$
+(high-pass shape); for $\theta<0$ these swap (low-pass). The SDF is
+non-negative everywhere, as required (it touches $0$ only on the unit circle
+when $\abs\theta=1$).
+\end{solution}
+
+\begin{exercise}{SDF of an AR(1) process \quad\textnormal{[New]}}{p6-ar1sdf}
+Let $X_t=\phi X_{t-1}+\eps_t$, $\abs\phi<1$, $\eps$ white noise of variance
+$\sigma^2$. Find $\sdf(f)$ from the ACVS and confirm it via the transfer
+function. Describe its shape for $\phi>0$ and $\phi<0$.
+\end{exercise}
+\begin{solution}
+The ACVS is $\acvs_\tau=\dfrac{\sigma^2}{1-\phi^2}\,\phi^{\abs\tau}$. Summing the
+two geometric tails,
+\[
+\begin{aligned}
+\sdf(f)&=\frac{\sigma^2}{1-\phi^2}\sum_{\tau\in\Ints}\phi^{\abs\tau}e^{-2\pi i f\tau}
+        =\frac{\sigma^2}{1-\phi^2}\Big(1+\sum_{\tau\ge1}\phi^\tau
+         (e^{-2\pi i f\tau}+e^{2\pi i f\tau})\Big)\\
+       &=\frac{\sigma^2}{1-\phi^2}\Big(1+\frac{\phi e^{-2\pi i f}}{1-\phi e^{-2\pi i f}}
+         +\frac{\phi e^{2\pi i f}}{1-\phi e^{2\pi i f}}\Big)
+        =\frac{\sigma^2}{1-\phi^2}\cdot\frac{1-\phi^2}
+         {1-2\phi\cos(2\pi f)+\phi^2}\\
+       &=\frac{\sigma^2}{1-2\phi\cos(2\pi f)+\phi^2}.
+\end{aligned}
+\]
+\textbf{Transfer-function check.} $\Phi(z)=1-\phi z$, so
+$\sdf(f)=\sigma^2/\abs{1-\phi e^{-2\pi i f}}^2
+=\sigma^2/(1-2\phi\cos(2\pi f)+\phi^2)$ --- identical. For $\phi>0$ the
+denominator is smallest at $f=0$, so $\sdf$ peaks at low frequency (slowly
+varying, ``red'' spectrum); for $\phi<0$ it peaks at $f=\tfrac12$ (rapidly
+alternating, ``blue'' spectrum). As $\phi\to1$ the peak at $0$ blows up
+(near-unit-root, very long-range dependence).
+\end{solution}
+
+\begin{exercise}{Endpoint test for a candidate ACVS \quad\textnormal{[New]}}{p6-endpoint}
+Decide whether $\acvs_0=1,\ \acvs_{\pm1}=\rho,\ \acvs_\tau=0\ (\abs\tau\ge2)$ is
+a valid ACVS, as a function of $\rho\in\Reals$.
+\end{exercise}
+\begin{solution}
+This is the ACVS shape of an MA(1). Compute the SDF:
+\[
+\sdf(f)=1+2\rho\cos(2\pi f).
+\]
+Since $\cos(2\pi f)\in[-1,1]$, the minimum of $\sdf$ is $1-2\abs\rho$, attained
+at $f=0$ (if $\rho<0$) or $f=\tfrac12$ (if $\rho>0$). Non-negativity
+$\sdf(f)\ge0$ for all $f$ holds \emph{iff} $1-2\abs\rho\ge0$, i.e.
+\[
+\boxed{\;\abs\rho\le\tfrac12\;}
+\]
+For $\abs\rho>\tfrac12$ the SDF dips below zero and the sequence is \textbf{not}
+a valid ACVS. (Consistent with the fact that an MA(1) cannot have
+$\abs{\acf_1}>\tfrac12$.)
+\end{solution}
+
+\begin{exercise}{Variance from the SDF; Parseval \quad\textnormal{[New]}}{p6-parseval}
+For a stationary process with SDF $\sdf$, show
+$\Var(X_t)=\int_{-1/2}^{1/2}\sdf(f)\,df$, and use it to read off $\acvs_0$ for
+the AR(1) SDF $\sdf(f)=\sigma^2/(1-2\phi\cos(2\pi f)+\phi^2)$.
+\end{exercise}
+\begin{solution}
+By the inversion formula at lag $\tau=0$,
+\[
+\acvs_0=\int_{-1/2}^{1/2}\sdf(f)e^{2\pi i f\cdot 0}\,df
+=\int_{-1/2}^{1/2}\sdf(f)\,df=\Var(X_t),
+\]
+the spectral statement of Parseval: total variance equals total spectral mass.
+For the AR(1), rather than integrate directly we use the known
+$\acvs_0=\sigma^2/(1-\phi^2)$; consistency is the standard integral
+\[
+\int_{-1/2}^{1/2}\frac{\sigma^2\,df}{1-2\phi\cos(2\pi f)+\phi^2}
+=\frac{\sigma^2}{1-\phi^2},
+\]
+which one can verify by residues (substitute $z=e^{2\pi i f}$; the integrand has
+poles at $z=\phi$ and $z=1/\phi$, only $z=\phi$ lying inside the unit circle).
+Thus $\Var(X_t)=\sigma^2/(1-\phi^2)$, matching the time-domain computation.
+\end{solution}

@@ -1,0 +1,119 @@
+\documentclass[11pt]{article}
+\input{weekpreamble}
+\begin{document}
+\weekheader{03}{5 March 2026}{Backshift Operator, Wold Decomposition, Causality \& Invertibility}{In polynomial form $\Phi(B)X_t=\Theta(B)\eps_t$, the location of the roots relative to the unit circle decides stationarity (causality) and invertibility.}
+
+This week we repackage AR, MA and ARMA models with the \textbf{backshift operator} $\Bsh$. Difference equations become an algebra of \emph{polynomials} $\Phi(z),\Theta(z)$, and every structural question (Is it stationary? Invertible? What is its $\mathrm{MA}(\infty)$ form?) turns into a question about the \emph{roots} of these polynomials. Throughout, $\{\eps_t\}$ is mean-zero white noise with $\Var(\eps_t)=\sigma^2$.
+
+\section*{Key definitions}
+
+\begin{defn}{Backshift operator $\Bsh$}
+$\Bsh$ shifts a series back one step in time: $\Bsh X_t = X_{t-1}$, and iterating $\Bsh^k X_t = X_{t-k}$ (with $\Bsh^0=I$). It is linear and shifts commute, so polynomials in $\Bsh$ multiply and reorder like ordinary polynomials.
+\end{defn}
+
+\begin{intu}[Why treat $\Bsh$ as a variable $z$?]
+$\Bsh$ is just ``$X_t\mapsto X_{t-1}$''. But treating it as an algebraic symbol $z$ lets us \emph{factor}, \emph{invert} and \emph{expand} model equations. Every result this week is really a statement about the polynomial $\Phi(z)$ or $\Theta(z)$ you get by replacing $\Bsh$ with the complex variable $z$.
+\end{intu}
+
+\begin{defn}{ARMA in polynomial (backshift) form}
+An $\mathrm{ARMA}(p,q)$ process is written compactly as
+\[
+\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t,\qquad
+\Phi(z)=\sum_{j=0}^{p}\phi_j z^{j},\quad
+\Theta(z)=\sum_{k=0}^{q}\theta_k z^{k}.
+\]
+$\Phi(z)$ is the \textbf{characteristic polynomial of the AR part}, $\Theta(z)$ that of the \textbf{MA part}. Pure cases: $\mathrm{AR}(p)$ is $\Phi(\Bsh)X_t=\eps_t$; $\mathrm{MA}(q)$ is $X_t=\Theta(\Bsh)\eps_t$. The \emph{roots} of these polynomials govern stationarity and invertibility.
+\end{defn}
+
+\begin{defn}{General linear process (one-sided $\mathrm{MA}(\infty)$)}
+A \textbf{general linear process} is
+\[
+X_t=\sum_{k=0}^{\infty}g_k\,\eps_{t-k},\qquad \norm{g}_2^2=\sum_k g_k^2<\infty,\quad g_0=1.
+\]
+It depends only on \emph{past and present} noise, so it is \textbf{causal}. In operator form $X_t=G(\Bsh)\eps_t$ with the \textbf{transfer function} $G(z)=\sum_{k\ge0}g_k z^k$. (A \emph{two-sided} linear process also allows $k<0$, i.e.\ future noise.)
+\end{defn}
+
+\begin{defn}{Transfer function: zeros and poles}
+For $X_t=G(\Bsh)\eps_t$ with rational $G(z)=G_1(z)/G_2(z)$: roots of the numerator $G_1$ are the \textbf{zeros} of $G$; roots of the denominator $G_2$ are the \textbf{poles}. For an ARMA, $G(z)=\Theta(z)/\Phi(z)$, so \emph{roots of $\Phi$ are the poles} and \emph{roots of $\Theta$ are the zeros}. Whether $G$ expands using only past/present (vs.\ future) noise is decided by where these roots sit relative to $|z|=1$.
+\end{defn}
+
+The summability $\norm{g}_2^2<\infty$ is what makes the moments finite: $\E[X_t]=0$, $\Var(X_t)=\sigma^2\norm{g}_2^2<\infty$, so any linear process is second-order stationary. An \textbf{innovations outlier} is a value of $\eps_t$ that affects $X_t$ \emph{and all subsequent} $X_{t+1},X_{t+2},\dots$ --- exactly the forward-propagation of a one-sided process.
+
+\section*{Key results \& formulas}
+
+\begin{result}{Theorem --- Wold decomposition}
+Any zero-mean second-order stationary $\{X_t\}$ splits as
+\[
+X_t=U_t+V_t,\qquad U_t\perp V_t,
+\]
+where $U_t=\sum_{k\ge0}g_k\eps_{t-k}$ is a one-sided $\mathrm{MA}(\infty)$ ($g_0=1$, $\norm{g}_2^2<\infty$, $\{g_k\},\{\eps_t\}$ \emph{uniquely} determined), and $V_t$ is \textbf{singular} (deterministic: perfectly predictable from its own past).
+\emph{Idea:} project $X_t$ onto the span of its own past; the one-step residuals are the white noise $\eps_t$, the $g_k$ are projection coefficients, $V_t$ is the infinite-past part.
+\end{result}
+
+\begin{intu}[What Wold really says]
+The only \emph{new information} arriving at time $t$ is the innovation $\eps_t$; everything else is either an echo of past innovations ($U_t$) or perfectly forecastable ($V_t$, e.g.\ a fixed sinusoid). For the processes we study $V_t=0$, leaving the pure $\mathrm{MA}(\infty)$ form $X_t=G(\Bsh)\eps_t$. This is \emph{why} the linear/ARMA world is central: ARMA models are finite rational approximations to this $\mathrm{MA}(\infty)$.
+\end{intu}
+
+\textbf{ACVS of a causal linear process.} Once the $\mathrm{MA}(\infty)$ weights $\{g_k\}=\{\psi_k\}$ are known,
+\[
+\acvs_\tau=\sigma^2\sum_{k=0}^{\infty}g_k\,g_{k+\abs\tau}.
+\]
+This is the engine for the autocovariance of \emph{any} causal ARMA.
+
+\begin{result}{The root test (causality \& invertibility)}
+For $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$:
+\[
+\begin{aligned}
+\textbf{AR}(p):&\ \text{stationary}\iff\text{roots of }\Phi\text{ outside }|z|=1;\quad \emph{always}\text{ invertible.}\\
+\textbf{MA}(q):&\ \emph{always}\text{ stationary};\quad \text{invertible}\iff\text{roots of }\Theta\text{ outside }|z|=1.\\
+\textbf{ARMA}(p,q):&\ \text{stationary}\iff\text{roots of }\Phi\text{ outside};\ \ \text{invertible}\iff\text{roots of }\Theta\text{ outside.}
+\end{aligned}
+\]
+\end{result}
+
+\begin{intu}[One test, two polynomials]
+Stationarity (causality) and invertibility are the \emph{same} test (``all roots outside the unit circle'') applied to \emph{two different} polynomials. ``Roots of $\Phi$ outside'' means $X_t=G(\Bsh)\eps_t$ uses only past/present \emph{noise} (causal). ``Roots of $\Theta$ outside'' means $\eps_t=G^{-1}(\Bsh)X_t$ uses only past/present \emph{data} (invertible). An AR has no $\Theta$ to fail $\Rightarrow$ always invertible; an MA has no $\Phi$ to fail $\Rightarrow$ always stationary.
+\end{intu}
+
+\textbf{Why ``outside''.} For $X_t=G(\Bsh)\eps_t$, the one-sided (past/present) expansion of $1/G_2$ exists \emph{iff} all poles of $G$ lie outside $|z|=1$ --- equivalently $|G(z)|<\infty$ for $|z|\le1$, i.e.\ $G$ is \emph{analytic inside and on} the unit circle. The Laurent expansion shows a pole \emph{inside} the circle forces a \emph{future-noise} branch.
+\begin{intu}[Reciprocal-root warning]
+``Outside'' refers to roots of $\Phi(z)=\sum_j\phi_j z^j$, i.e.\ $|z|>1$. In terms of \emph{reciprocal} roots $g=1/z$ this is $|g|<1$ --- exactly the $\mathrm{AR}(1)$ condition $|\phi|<1$ (root of $1-\phi z$ is $z=1/\phi$). Do not mix the conventions, and never check \emph{inside} the circle.
+\end{intu}
+
+\textbf{Diagnostic mirror.} A causal $\mathrm{AR}(p)$ has $\pacf_\tau=0$ for $\tau>p$ (PACF cuts off at lag $p$) --- the mirror image of the ACF cutting off at lag $q$ for an $\mathrm{MA}(q)$.
+
+\textbf{$\psi$-weights by coefficient matching.} For a causal ARMA, equate $\Phi(z)\big(\sum_{j\ge0}\psi_j z^j\big)=\Theta(z)$ and match powers of $z$, giving the forward recurrence $\psi_j=\theta_j^\star+\sum_{i=1}^p\phi_i\psi_{j-i}$ ($\psi_0=1$). The closed form is a sum $\sum_i(\text{poly in }j)\,r_i^{-j}$ over the AR roots $r_i$.
+
+\textbf{Spectral density from the polynomials.} For a causal, invertible ARMA,
+\[
+\sdf(f)=\sigma^2\,\frac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2},\qquad -\tfrac12\le f\le\tfrac12.
+\]
+
+\section*{Intuition}
+
+\begin{exmpl}[Tiny worked example --- the root test on an ARMA(2,1)]
+For $Y_t-\tfrac14 Y_{t-1}+\tfrac1{16}Y_{t-2}=\eps_t-\tfrac12\eps_{t-1}$: write
+$\Phi(z)=1-\tfrac14 z+\tfrac1{16}z^2$ and $\Theta(z)=1-\tfrac12 z$.
+\[
+\begin{aligned}
+\textbf{Stationary?}\quad &\Phi(z)=0\iff z^2-4z+16=0\iff z=2\pm 2\sqrt3\,i,\ |z|=\sqrt{16}=4>1\ \checkmark\\
+\textbf{Invertible?}\quad &\Theta(z)=0\iff z=2,\ |2|=2>1\ \checkmark
+\end{aligned}
+\]
+All roots outside the unit circle, so the process is both stationary and invertible.
+\end{exmpl}
+
+\section*{Key takeaways}
+
+\begin{retenir}
+\begin{itemize}
+  \item \textbf{Translate first:} put the model in backshift form $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ and read off $\Phi(z),\Theta(z)$.
+  \item \textbf{Root test:} stationary $\iff$ all roots of $\Phi$ have $|z|>1$; invertible $\iff$ all roots of $\Theta$ have $|z|>1$. Two independent checks.
+  \item \textbf{Free checks:} never test an AR for invertibility (always invertible) nor an MA for stationarity (always stationary).
+  \item \textbf{Find the $\mathrm{MA}(\infty)$ weights} $\psi_j$ by matching $\Phi(z)\sum\psi_j z^j=\Theta(z)$, then get the ACVS via $\acvs_\tau=\sigma^2\sum_k\psi_k\psi_{k+\abs\tau}$.
+  \item \textbf{Wold} = every stationary process is (a deterministic part plus) a one-sided MA of white noise; the innovation $\eps_t$ is the only new information at time $t$.
+  \item \textbf{Convention:} ``roots outside $|z|=1$'' $\equiv$ ``reciprocal roots inside'' ($|\phi|<1$ for AR(1)). Don't check inside the circle.
+\end{itemize}
+\end{retenir}
+
+\end{document}

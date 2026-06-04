@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 1: Stationarity, Autocovariance \& Ergodicity}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} $\{X_t\}$ is \emph{weakly (second-order) stationary} if all first- and second-order moments are finite and shift-invariant: $\E[X_t]=\mu$ (constant), $\Var(X_t)=\sigma^2<\infty$ (constant), and $\Cov(X_t,X_{t+\tau})$ depends on the lag $\tau$ only (not on $t$). It is \emph{strictly stationary} if for every $n$ and all $t_1,\dots,t_n$, the joint law of $(X_{t_1},\dots,X_{t_n})$ equals that of $(X_{t_1+\tau},\dots,X_{t_n+\tau})$ for all $\tau$.
+
+\textbf{(b)(i)} $\E[X_t]=a$. By independence of the $Y_t$,
+\[
+\acvs_\tau=\begin{cases}(b^2+c^2)\sigma_Y^2,&\tau=0,\\ bc\,\sigma_Y^2,&\tau=\pm1,\\ 0,&\abs\tau\ge2.\end{cases}
+\]
+Depends on $\tau$ only and is finite $\Rightarrow$ weakly stationary; a linear combination of jointly Gaussian variables is Gaussian $\Rightarrow$ also strictly stationary.
+
+\textbf{(b)(ii)} $\E[X_t]=0$ but $\Cov(X_t,X_{t+\tau})=\sigma_Y^2\cos(ct)\cos\!\big(c(t+\tau)\big)$ \emph{depends on $t$} $\Rightarrow$ \emph{not} stationary (neither weakly nor strictly).
+
+\textbf{(c)} An i.i.d.\ sequence of Cauchy (Student-$t_1$) variables: i.i.d.\ hence strictly stationary, but it has no finite mean/variance, so the finite-variance requirement of weak stationarity fails. Thus strict $\not\Rightarrow$ weak.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Independence kills all cross-covariances $\Cov(X_s,\eps_u)=0$, and the white noise contributes variance only at lag $0$:
+\[
+\acvs^Z_\tau=\acvs_\tau+\sigma^2\,\ind_{\{\tau=0\}}.
+\]
+
+\textbf{(b)} By bilinearity and $\Cov(\eps_s,\eps_u)=\sigma^2\ind_{\{s=u\}}$ (only equal noise indices survive),
+\[
+\acvs^W_\tau=\begin{cases}(\theta_1^2+\theta_2^2)\sigma^2,&\tau=0,\\ \theta_1\theta_2\,\sigma^2,&\tau=\pm1,\\ 0,&\abs\tau\ge2,\end{cases}
+\qquad
+\acf_1=\frac{\theta_1\theta_2}{\theta_1^2+\theta_2^2}.
+\]
+By AM--GM, $\abs{\theta_1\theta_2}\le\tfrac12(\theta_1^2+\theta_2^2)$, hence $\abs{\acf_1}\le\tfrac12$, with equality iff $\abs{\theta_1}=\abs{\theta_2}$. (No process of this MA(1)-type can exceed $\abs{\acf_1}=\tfrac12$.)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Let $W=\sum_{j=1}^n a_j X_j$. A variance is non-negative, so
+\[
+0\le\Var(W)=\sum_{j=1}^n\sum_{k=1}^n a_j a_k\Cov(X_j,X_k)=\sum_{j=1}^n\sum_{k=1}^n a_j a_k\,\acvs_{j-k}.
+\]
+
+\textbf{(b)} Symmetry: $\acvs_{-\tau}=\Cov(X_t,X_{t-\tau})=\Cov(X_{t-\tau},X_t)=\acvs_\tau$ (real case). Bound: by Cauchy--Schwarz $\abs{\acvs_\tau}=\abs{\Cov(X_t,X_{t+\tau})}\le\sqrt{\Var(X_t)\Var(X_{t+\tau})}=\acvs_0$.
+
+\textbf{(c)} \textbf{No.} A valid ACVS must be positive semi-definite, equivalently have a non-negative spectral density. Here
+\[
+\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}=1+1.6\cos(2\pi f),
+\]
+which equals $1-1.6=-0.6<0$ at $f=\tfrac12$. The spectral density goes negative $\Rightarrow$ the sequence is not p.s.d.\ $\Rightarrow$ not a valid ACVS. (Already $\abs{\acf_1}=0.8>\tfrac12$ is impossible for an MA(1).)
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} $\tilde\acvs_\tau$ is \emph{unbiased} (known mean) but not always positive semi-definite; $\hat\acvs_\tau$ is \emph{biased} ($\E[\hat\acvs_\tau]=\tfrac{n-\abs\tau}{n}\acvs_\tau$) but positive semi-definite --- which is why it is the default.
+
+\textbf{(b)} For white noise both are unbiased, so $\MSE=\Var$. Now
+\[
+\Var(\hat\acvs_\tau)=\frac{n-\abs\tau}{n^2}\sigma^4=\Big(\tfrac{n-\abs\tau}{n}\Big)^2\frac{\sigma^4}{n-\abs\tau}=\Big(\tfrac{n-\abs\tau}{n}\Big)^2\Var(\tilde\acvs_\tau)\le\Var(\tilde\acvs_\tau).
+\]
+So the \emph{biased} estimator $\hat\acvs_\tau$ has the smaller MSE. (Lesson: the goal is low MSE and positive semi-definiteness, not unbiasedness.)
+
+\textbf{(c)} $\E[\bar X]=\mu$, and grouping by lag,
+\[
+\Var(\bar X)=\frac1{n^2}\sum_{i,j=1}^n\acvs_{j-i}=\frac1n\sum_{\tau=-(n-1)}^{n-1}\Big(1-\tfrac{\abs\tau}{n}\Big)\acvs_\tau .
+\]
+By Ces\`aro summability, $\sum_\tau\big(1-\tfrac{\abs\tau}{n}\big)\acvs_\tau\to\sum_{\tau=-\infty}^\infty\acvs_\tau=:C(\acvs)$, finite since $\sum_\tau\abs{\acvs_\tau}<\infty$. Hence $n\Var(\bar X)\to C(\acvs)$, i.e. $\Var(\bar X)=O(1/n)\to0$, so $\bar X\to\mu$ in mean square, therefore in probability: $\bar X$ is consistent (the process is mean-ergodic).
+
+\end{document}

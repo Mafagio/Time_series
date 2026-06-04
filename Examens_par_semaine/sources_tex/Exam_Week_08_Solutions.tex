@@ -1,0 +1,207 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\solheader{Week 8: Spectral Estimation --- Periodogram \& Tapering}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+Write $Y_t=X_t-\bar X$ throughout.
+
+\textbf{(a)} Substitute the definition of $\hat\acvs_\tau$ into the periodogram. Only lags $\abs\tau\le n-1$ contribute, and for each such $\tau$ the inner sum runs over $t=1,\dots,n-\abs\tau$:
+\[
+\hat\sdf^{(p)}(f)=\sum_{\tau=-(n-1)}^{n-1}\frac1n\sum_{t=1}^{n-\abs\tau} Y_t\,Y_{t+\abs\tau}\,e^{-2\pi i\tau f}.
+\]
+The pairs $(t,t+\abs\tau)$ with $1\le t$ and $t+\abs\tau\le n$ are exactly the pairs of indices $(t,s)$ with $s=t+\abs\tau\in T$, $t\in T$. As $\tau$ ranges over $-(n-1),\dots,n-1$ and $t$ over the admissible range, the pair $(t,s)$ ranges over \emph{all} of $T\times T$ once. Setting $s=t+\tau$ for the $\tau\ge0$ part and $s=t-\abs\tau$ for the $\tau<0$ part, we may rewrite the double sum as the free double sum over $(s,t)\in T\times T$ with $e^{-2\pi i\tau f}=e^{-2\pi i(s-t)f}$:
+\[
+\hat\sdf^{(p)}(f)
+=\frac1n\sum_{t=1}^{n}\sum_{s=1}^{n} Y_t\,Y_s\,e^{-2\pi i(s-t)f}
+=\frac1n\sum_{t=1}^{n}\sum_{s=1}^{n} Y_t\,Y_s\,e^{-2\pi i s f}\,e^{2\pi i t f}.
+\]
+The double sum factorises:
+\[
+\hat\sdf^{(p)}(f)
+=\Bigl(\sqrt{\tfrac1n}\sum_{t=1}^{n} Y_t\,e^{2\pi i t f}\Bigr)
+ \Bigl(\sqrt{\tfrac1n}\sum_{s=1}^{n} Y_s\,e^{-2\pi i s f}\Bigr)
+=\conj{J(f)}\,J(f)=\abs{J(f)}^2,
+\]
+since $Y_t\in\Reals$ makes $\sqrt{1/n}\sum_t Y_t e^{2\pi i tf}=\conj{J(f)}$. This is the claimed identity.
+
+\textbf{(b)} \emph{Non-negativity.} $\hat\sdf^{(p)}(f)=\abs{J(f)}^2\ge0$ for every $f$, being the squared modulus of a complex number. (No SDF estimate can be negative; the representation makes this automatic.)
+
+\emph{Evenness.} Because the $Y_t$ are real,
+\[
+J(-f)=\sqrt{\tfrac1n}\sum_t Y_t\,e^{2\pi i t f}=\conj{J(f)},
+\]
+hence $\hat\sdf^{(p)}(-f)=\abs{J(-f)}^2=\abs{\conj{J(f)}}^2=\abs{J(f)}^2=\hat\sdf^{(p)}(f)$. So $\hat\sdf^{(p)}$ is even.
+
+\textbf{(c)} At $f=0$ the exponential is $1$, so
+\[
+J(0)=\sqrt{\tfrac1n}\sum_{t=1}^{n} Y_t=\sqrt{\tfrac1n}\sum_{t=1}^{n}(X_t-\bar X)
+=\sqrt{\tfrac1n}\Bigl(\sum_{t=1}^n X_t-n\bar X\Bigr)=0,
+\]
+because $\sum_t X_t=n\bar X$ by definition of $\bar X$. Therefore $\hat\sdf^{(p)}(0)=\abs{J(0)}^2=0$: removing the sample mean annihilates the zero-frequency ordinate.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+Here $\mu=0$, so $Y_t=X_t$ and $\E[Y_tY_s]=\acvs_{t-s}$.
+
+\textbf{(a)} Take expectations in the factorised form of the periodogram (Problem 1(a)); expectation passes through the finite double sum:
+\[
+\E\bigl[\hat\sdf^{(p)}(f)\bigr]
+=\frac1n\sum_{t=1}^{n}\sum_{s=1}^{n}\E[Y_tY_s]\,e^{-2\pi i f(t-s)}
+=\frac1n\sum_{t=1}^{n}\sum_{s=1}^{n}\acvs_{t-s}\,e^{-2\pi i f(t-s)}.
+\]
+Collect terms by the lag $\tau=t-s$. For fixed $\tau$ with $\abs\tau\le n-1$, the number of pairs $(t,s)\in T\times T$ with $t-s=\tau$ is $n-\abs\tau$ (and there are none for $\abs\tau\ge n$). Hence
+\[
+\E\bigl[\hat\sdf^{(p)}(f)\bigr]
+=\frac1n\sum_{\tau=-(n-1)}^{n-1}(n-\abs\tau)\,\acvs_\tau\,e^{-2\pi i\tau f}
+=\sum_{\tau=-(n-1)}^{n-1}\Bigl(1-\frac{\abs\tau}{n}\Bigr)\acvs_\tau\,e^{-2\pi i\tau f},
+\]
+which is the stated expression with the triangular weight $w_\tau=1-\abs\tau/n$. (Equivalently, $\E[\hat\acvs_\tau]=(1-\abs\tau/n)\acvs_\tau$, then transform term by term.)
+
+\textbf{(b)} With $d_t=\ind_T(t)$ (so $d_t=1$ for $t\in\{1,\dots,n\}$ and $0$ otherwise), the autocorrelation of the window at lag $\tau$ is
+\[
+\sum_{t\in\Ints} d_t\,d_{t+\abs\tau}=\#\{t: t\in T,\ t+\abs\tau\in T\}=n-\abs\tau\quad(\abs\tau\le n-1),
+\]
+so indeed $w_\tau=\frac1n\sum_t d_t d_{t+\abs\tau}$. Write $w=\frac1n(\tilde d * d)$ where $\tilde d_t=d_{-t}$; equivalently $w_\tau=\frac1n(\tilde d * \bar d)_\tau$ with $\bar d=d$ (the window is real). By the discrete convolution theorem, the Fourier transform of a convolution is the product of the transforms, and the transform of $\tilde d$ is $\conj{D}$ where $D(f)=\sum_{t} d_t e^{-2\pi i t f}=\sum_{t=1}^{n}e^{-2\pi i t f}$. Hence the transform of $w$ is
+\[
+W(f)=\frac1n\,\conj{D(f)}\,D(f)=\frac1n\,\abs{D(f)}^2=\mathcal F_n(f),
+\]
+the Fej\'er kernel. Now the expected periodogram is the transform of the product $w_\tau\acvs_\tau$; by the (dual) convolution theorem the transform of a product is the convolution of the transforms, $W * \sdf$:
+\[
+\E\bigl[\hat\sdf^{(p)}(f)\bigr]
+=\sum_\tau w_\tau\acvs_\tau e^{-2\pi i\tau f}
+=\int_{-1/2}^{1/2}\sdf(f')\,\mathcal F_n(f-f')\,df'.
+\]
+So the expected periodogram is the true SDF convolved with (blurred by) the Fej\'er kernel.
+
+\textbf{(c)} Take $\sdf\equiv1$ in the convolution identity of (b): the corresponding ACVS is $\acvs_0=1$, $\acvs_\tau=0$ otherwise, so $\sum_\tau w_\tau\acvs_\tau e^{-2\pi i\tau f}=w_0=1$, while the right-hand side is $\int_{-1/2}^{1/2}\mathcal F_n(f-f')\,df'=\int_{-1/2}^{1/2}\mathcal F_n(u)\,du$ (periodicity, substitute $u=f-f'$). Equating,
+\[
+\int_{-1/2}^{1/2}\mathcal F_n(f)\,df=1.
+\]
+(Direct check: $\int_{-1/2}^{1/2}\mathcal F_n=\frac1n\int\abs{D}^2=\frac1n\sum_{t,s}\int_{-1/2}^{1/2}e^{-2\pi i(t-s)f}df=\frac1n\sum_{t,s}\ind_{\{t=s\}}=\frac1n\cdot n=1$.) Since $\mathcal F_n\ge0$ and integrates to $1$, it is a probability density on $[-\tfrac12,\tfrac12]$; as $n\to\infty$ it concentrates all its mass at $f=0$ (an approximate identity), so the convolution $\sdf * \mathcal F_n\to\sdf$ at every continuity point. Hence $\E[\hat\sdf^{(p)}(f)]\to\sdf(f)$: the periodogram is \emph{asymptotically} unbiased.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+Here $\mu$ is removed, $Y_t=X_t-\mu$, and we take $\E[Y_tY_s]=\acvs_{t-s}$.
+
+\textbf{(a)} Expand the squared modulus and take expectations:
+\[
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2
+=\sum_{t=1}^{n}\sum_{s=1}^{n} h_t h_s\,Y_t Y_s\,e^{-2\pi i f(t-s)},
+\]
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\sum_{t=1}^{n}\sum_{s=1}^{n} h_t h_s\,\acvs_{t-s}\,e^{-2\pi i f(t-s)}.
+\]
+Collect by $\tau=t-s$ (extend $h_t=0$ off $T$ so the $t$-sum is over $\Ints$):
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\sum_{\tau\in\Ints}\Bigl(\sum_{t\in\Ints} h_t\,h_{t-\tau}\Bigr)\acvs_\tau\,e^{-2\pi i\tau f}
+=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi i\tau f},
+\qquad
+w_\tau=\sum_{t\in\Ints} h_t\,h_{t+\tau},
+\]
+where in the last step we re-indexed ($t\mapsto t+\tau$) and used that $w_{-\tau}=w_\tau$, so $\sum_t h_t h_{t-\tau}=\sum_t h_t h_{t+\tau}$. Now identify $w$ as the autocorrelation of the taper: with $\tilde h_t=h_{-t}$ and $\bar h_t=h_t$,
+\[
+(\tilde h * \bar h)_\tau=\sum_{s\in\Ints}\tilde h_{\tau-s}\,\bar h_s=\sum_{s}h_{s-\tau}h_s=w_{-\tau}=w_\tau,
+\]
+so $w=\tilde h * \bar h$. By the discrete convolution theorem its transform is the product of the transforms; the transform of $\tilde h$ is $\conj{H}$ and that of $\bar h$ is $H$, so
+\[
+W(f)=\conj{H(f)}\,H(f)=\abs{H(f)}^2 .
+\]
+Finally the expected tapered periodogram is the transform of the product $w_\tau\acvs_\tau$, hence the convolution of the transforms:
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df' .
+\]
+
+\textbf{(b)} For white noise $\sdf(f')\equiv\sigma^2$ is constant, so it comes out of the integral; using periodicity and the substitution $u=f-f'$,
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]
+=\sigma^2\int_{-1/2}^{1/2}\abs{H(f-f')}^2\,df'
+=\sigma^2\int_{-1/2}^{1/2}\abs{H(u)}^2\,du .
+\]
+By Parseval for the discrete-time transform,
+\[
+\int_{-1/2}^{1/2}\abs{H(u)}^2\,du
+=\int_{-1/2}^{1/2}\sum_{t}\sum_{s}h_t h_s\,e^{-2\pi i(t-s)u}\,du
+=\sum_{t}\sum_{s}h_t h_s\,\ind_{\{t=s\}}
+=\sum_{t} h_t^2=\norm{h}_2^2,
+\]
+using $\int_{-1/2}^{1/2}e^{-2\pi i\tau u}\,du=\ind_{\{\tau=0\}}$. Therefore
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\sigma^2\,\norm{h}_2^2 .
+\]
+The true SDF of white noise is $\sdf(f)=\sigma^2$ for all $f$; the estimator is exactly unbiased, $\E[\hat\sdf^{(p)}_h(f)]=\sigma^2=\sdf(f)$ for \emph{every} $n$ and \emph{every} $f$, precisely when the normalisation $\norm{h}_2^2=1$ holds. (Any other normalisation would scale the estimate by the constant $\norm{h}_2^2$, biasing it; this is exactly why a taper is defined with unit energy.)
+
+\textbf{(c)} The multitaper estimator is the average $\hat\sdf^{(mt)}(f)=\frac1K\sum_{k=1}^{K}\hat\sdf^{(p)}_{h_k}(f)$. By bilinearity of the variance,
+\[
+\Var\bigl(\hat\sdf^{(mt)}(f)\bigr)
+=\frac{1}{K^2}\sum_{k=1}^{K}\sum_{k'=1}^{K}\Cov\bigl(\hat\sdf^{(p)}_{h_k}(f),\hat\sdf^{(p)}_{h_{k'}}(f)\bigr).
+\]
+Asymptotically the $K$ tapered periodograms are uncorrelated (orthogonal tapers), so that $\Cov(\hat\sdf^{(p)}_{h_k},\hat\sdf^{(p)}_{h_{k'}})\to\sdf(f)^2\,\delta_{k,k'}$. Only the $K$ diagonal terms survive, each $\to\sdf(f)^2$:
+\[
+\Var\bigl(\hat\sdf^{(mt)}(f)\bigr)\to\frac{1}{K^2}\cdot K\,\sdf(f)^2=\frac{\sdf(f)^2}{K}.
+\]
+Unlike the raw periodogram (whose variance $\to\sdf(f)^2\ne0$ and does \emph{not} shrink with $n$), here one may let $K\to\infty$ slowly as $n\to\infty$, driving $\Var\to0$ while the bias stays controlled; averaging independent estimates is what restores consistency.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Write $\theta_0=1$. For an $\mathrm{MA}(2)$, $X_t=\eps_t+\theta_1\eps_{t-1}+\theta_2\eps_{t-2}$, the ACVS is $\acvs_\tau=\sigma^2\sum_{j}\theta_j\theta_{j+\abs\tau}$ over the valid index range:
+\[
+\begin{aligned}
+\acvs_0&=\sigma^2\bigl(\theta_0^2+\theta_1^2+\theta_2^2\bigr)=\sigma^2\bigl(1+\theta_1^2+\theta_2^2\bigr),\\
+\acvs_1&=\sigma^2\bigl(\theta_0\theta_1+\theta_1\theta_2\bigr)=\sigma^2\bigl(\theta_1+\theta_1\theta_2\bigr),\\
+\acvs_2&=\sigma^2\,\theta_0\theta_2=\sigma^2\,\theta_2,
+\end{aligned}
+\]
+and $\acvs_\tau=0$ for $\abs\tau\ge3$ (no overlap of the taps), with $\acvs_{-\tau}=\acvs_\tau$. Since $\{\acvs_\tau\}\in\ell^1$ the SDF is the Fourier transform of the ACVS. Writing $\acvs_\tau=\sigma^2\sum_{j=0}^{2}\sum_{k=0}^{2}\theta_j\theta_k\ind_{\{\tau=k-j\}}$,
+\[
+\begin{aligned}
+\sdf(f)&=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i\tau f}
+=\sigma^2\sum_{j=0}^{2}\sum_{k=0}^{2}\theta_j\theta_k\,e^{-2\pi i(k-j)f}\\
+&=\sigma^2\Bigl(\sum_{k=0}^{2}\theta_k e^{-2\pi i k f}\Bigr)\conj{\Bigl(\sum_{j=0}^{2}\theta_j e^{-2\pi i j f}\Bigr)}
+=\sigma^2\,\Bigl|\sum_{k=0}^{2}\theta_k e^{-2\pi i k f}\Bigr|^2\\
+&=\sigma^2\,\abs{1+\theta_1 e^{-2\pi i f}+\theta_2 e^{-4\pi i f}}^2 ,
+\end{aligned}
+\]
+the squared modulus of the MA transfer function, as claimed (and automatically $\ge0$).
+
+\textbf{(b)} Expanding the squared modulus (or pairing $\tau$ with $-\tau$) gives the real cosine form
+\[
+\sdf(f)=\acvs_0+2\acvs_1\cos(2\pi f)+2\acvs_2\cos(4\pi f).
+\]
+With $\theta_1=1$, $\theta_2=\tfrac14$, $\sigma^2=1$:
+\[
+\acvs_0=1+1+\tfrac1{16}=\tfrac{33}{16},\qquad
+\acvs_1=1+\tfrac14=\tfrac54,\qquad
+\acvs_2=\tfrac14 .
+\]
+Hence
+\[
+\sdf(f)=\tfrac{33}{16}+\tfrac52\cos(2\pi f)+\tfrac12\cos(4\pi f).
+\]
+\emph{At $f=0$:} $\cos0=1$, so $\sdf(0)=\tfrac{33}{16}+\tfrac52+\tfrac12=\tfrac{33}{16}+\tfrac{48}{16}=\dfrac{81}{16}$. (Check: $\abs{1+1+\tfrac14}^2=(\tfrac94)^2=\tfrac{81}{16}$.)
+
+\emph{At $f=\tfrac12$:} $\cos(\pi)=-1$, $\cos(2\pi)=1$, so $\sdf(\tfrac12)=\tfrac{33}{16}-\tfrac52+\tfrac12=\tfrac{33}{16}-\tfrac{32}{16}=\dfrac{1}{16}$. (Check: at $f=\tfrac12$, $e^{-2\pi i f}=-1$, $e^{-4\pi i f}=1$, so $\abs{1-1+\tfrac14}^2=\tfrac1{16}$.)
+
+Both values are positive. This is consistent with the process being a genuine MA: by part (a) the SDF is the squared modulus $\sigma^2\abs{\Theta(e^{-2\pi i f})}^2\ge0$ at \emph{every} $f$, so non-negativity is automatic --- exactly the property a valid SDF must have.
+
+\textbf{(c)} The candidate sequence is symmetric and summable, so we may form
+\[
+\sdf(f)=\sum_{\tau\in\Ints}\acvs_\tau e^{-2\pi i\tau f}
+=\acvs_0+\acvs_1 e^{-2\pi i f}+\acvs_{-1}e^{2\pi i f}
+=1+2a\cos(2\pi f).
+\]
+A sequence is a valid ACVS of some stationary process iff it is non-negative definite, equivalently (in the summable case) iff its Fourier transform satisfies $\sdf(f)\ge0$ for all $f$. As $f$ ranges over $[-\tfrac12,\tfrac12]$, $\cos(2\pi f)$ takes every value in $[-1,1]$, so
+\[
+\min_f \sdf(f)=1-2\abs a,\qquad \max_f\sdf(f)=1+2\abs a .
+\]
+The binding constraint is the minimum: $\sdf(f)\ge0$ for all $f$ $\iff$ $1-2\abs a\ge0$ $\iff$ $\abs a\le\tfrac12$. Therefore
+\[
+\boxed{\;\{\acvs_\tau\}\ \text{is a valid ACVS}\iff a\in[-\tfrac12,\tfrac12].\;}
+\]
+(This is exactly the lag-$1$ autocorrelation bound of an $\mathrm{MA}(1)$: $\acf_1=a/\acvs_0=a$ must lie in $[-\tfrac12,\tfrac12]$, attained at the boundary by the unit-coefficient $\mathrm{MA}(1)$ $X_t=\eps_t\pm\eps_{t-1}$, which has $\acf_1=\pm\tfrac12$.)
+
+\end{document}

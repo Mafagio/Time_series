@@ -1,0 +1,115 @@
+% ======================================================================
+%  examstyle.tex — EPFL-style exam layout for the weekly Time Series exams
+%  Shared by every Exam_Week_NN(.tex / _Solutions.tex). Compiles with pdflatex.
+% ======================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{array}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\emergencystretch=3em
+\allowdisplaybreaks[1]
+
+% ---------- math macros (same names as the rest of the project) ----------
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\MSE}{MSE}
+\DeclareMathOperator{\trace}{tr}
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\Ints}{\mathbb{Z}}
+\newcommand{\Comp}{\mathbb{C}}
+\newcommand{\Nat}{\mathbb{N}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\Tr}{^{\mathsf{T}}}
+\newcommand{\conj}[1]{\overline{#1}}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\diff}{\nabla}
+\newcommand{\acvs}{\gamma}
+\newcommand{\acf}{\rho}
+\newcommand{\pacf}{\alpha}
+\newcommand{\sdf}{\mathcal{S}}
+\newcommand{\Bsh}{B}
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}
+
+\setlist[enumerate]{leftmargin=2em,topsep=2pt,itemsep=4pt}
+\setlist[itemize]{leftmargin=1.6em,topsep=2pt,itemsep=2pt}
+
+\newcounter{exo}
+
+% ---------- exam cover header :  \examheader{exam title}{duration} ----------
+\newcommand{\examheader}[2]{%
+  \thispagestyle{empty}
+  \begin{center}
+    {\Large\bfseries Time Series}\\[3pt]
+    Spring Semester 2026, EPFL\\
+    \'Ecole Polytechnique F\'ed\'erale de Lausanne\\
+    Prof.\ Dr.\ Sofia C.\ Olhede\\[7pt]
+    \hrule height 0.8pt
+    \vspace{9pt}
+    {\large\bfseries Practice Exam --- #1}\\[4pt]
+    {\normalsize Duration: #2 \quad$\cdot$\quad No calculator \quad$\cdot$\quad Answer on paper}\\
+    \vspace{8pt}
+    \hrule height 0.8pt
+  \end{center}
+  \vspace{14pt}
+  \begin{tabular}{@{}p{8.2cm}@{}p{8cm}@{}}
+    Name:\enspace\hrulefill & Surname:\enspace\hrulefill
+  \end{tabular}\\[14pt]
+  SCIPER (Student Card Number):\enspace\hrulefill
+  \vspace{16pt}
+}
+
+% ---------- points table (fixed: 4 problems) ----------
+\newcommand{\pointstable}{%
+  \begin{center}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{tabular}{|p{5cm}|p{4cm}|}
+    \hline
+    \textbf{Exercise} & \textbf{Points}\\\hline
+    1 & \\\hline
+    2 & \\\hline
+    3 & \\\hline
+    4 & \\\hline
+    \textbf{Total} & \\\hline
+  \end{tabular}
+  \end{center}
+}
+
+% ---------- problem heading (exam: one problem per page) ----------
+\newcommand{\problem}[1]{%
+  \clearpage
+  \stepcounter{exo}%
+  \begin{center}\textbf{\large Problem \theexo\ (#1 points)}\end{center}
+  \vspace{4pt}
+}
+% ---------- answer space: fill the statement page + one blank answer page ----------
+% Put \answerpage at the END of each problem so every exercise gets its own page(s).
+\newcommand{\answerpage}{\par\vfill\newpage\null\newpage}
+
+% ---------- solutions document ----------
+\newcommand{\solheader}[1]{%
+  \begin{center}
+    {\Large\bfseries Time Series --- Solutions}\\[3pt]
+    {\large Practice Exam --- #1}\\[2pt]
+    EPFL, MATH-342 \quad$\cdot$\quad Prof.\ S.\ C.\ Olhede\\[5pt]
+    \hrule height 0.8pt
+  \end{center}
+  \vspace{10pt}
+}
+\newcommand{\solproblem}[1]{%
+  \bigskip
+  \stepcounter{exo}%
+  {\large\bfseries Problem \theexo\ (#1 points)}\par\nobreak\vspace{2pt}
+}

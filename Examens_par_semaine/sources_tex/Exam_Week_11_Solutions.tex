@@ -1,0 +1,168 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+% --- local macros not in examstyle ---
+\DeclareMathOperator{\AIC}{AIC}
+\DeclareMathOperator{\AICc}{AICc}
+\DeclareMathOperator{\BIC}{BIC}
+\begin{document}
+
+\solheader{Week 11: Diagnostics, Model Selection \& Long Memory}
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Substitute the model equation into the residual: with $\hat X_t=\phi X_{t-1}$,
+\[
+e_t=X_t-\hat X_t=\bigl(\phi X_{t-1}+\eps_t\bigr)-\phi X_{t-1}=\eps_t .
+\]
+The AR structure cancels exactly, leaving the innovation. Consequently the residuals \emph{are} the white noise, so all four checks must pass: \textbf{(i) constant zero mean} because $\E[\eps_t]=0$ for all $t$; \textbf{(ii) constant variance} (homoscedasticity) because $\Var(\eps_t)=\sigma^2$ for all $t$; \textbf{(iii) no autocorrelation} because $\Cov(\eps_t,\eps_s)=0$ for $t\ne s$ (white noise); \textbf{(iv) Gaussianity} whenever the innovations $\eps_t$ are Gaussian (this is the only check that is \emph{conditional} on a distributional assumption on $\eps_t$ rather than automatic). This is the template for all residual diagnostics: any departure from these four properties is evidence \emph{against} the fitted model.
+
+\textbf{(b)} With $n=400$, $\sqrt n=20$, so the band is
+\[
+\left(-\frac{1.96}{\sqrt{400}},\ \frac{1.96}{\sqrt{400}}\right)
+=\left(-\frac{1.96}{20},\ \frac{1.96}{20}\right)
+=(-0.098,\ 0.098).
+\]
+Eyeballing this $\pm0.098$ band lag-by-lag is a \emph{pointwise} $95\%$ test for each single $\hat r_\tau$; checking many lags simultaneously creates a multiple-testing problem (under the null, about $5\%$ of the lags will breach the band by chance), so a single \emph{portmanteau} statistic that aggregates many lags at once (Box--Pierce / Ljung--Box) is needed to control the overall error rate.
+
+\textbf{(c)} For an AR$(1)$ the marginal (process) variance is the geometric sum of the squared $\mathrm{MA}(\infty)$ weights $\phi^{2j}$,
+\[
+s_y^2=\Var(X_t)=\sigma^2\sum_{j=0}^\infty\phi^{2j}=\frac{\sigma^2}{1-\phi^2},
+\]
+while the one-step residual variance is $s_e^2=\Var(e_t)=\Var(\eps_t)=\sigma^2$ by part (a). Hence
+\[
+R^2=1-\frac{s_e^2}{s_y^2}
+=1-\frac{\sigma^2}{\sigma^2/(1-\phi^2)}
+=1-(1-\phi^2)=\phi^2 .
+\]
+At $\phi=0.6$: $\boxed{R^2=0.6^2=0.36}$. A value of $0.36$ ``looks low'' but it is in fact the \emph{best attainable}: a stochastic process is not perfectly predictable, so even the true, optimal model leaves the fraction $1-\phi^2$ of the variance unexplained --- a low $R^2$ is therefore no indictment. Conversely, fitting a richer AR$(4)$ to the same data can only \emph{increase} the in-sample $R^2$ (adding parameters never reduces explained variance), so a higher $R^2$ is no endorsement of the larger model. The correct tool for choosing between AR$(1)$ and AR$(4)$ is an information criterion (AICc/BIC) or a Ljung--Box test on the AR$(1)$ residuals, \emph{not} $R^2$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Subtract the two criteria and put the bracket over a common denominator:
+\[
+\begin{aligned}
+\AICc-\AIC
+&=2k\left(\frac{n}{n-k-1}-1\right)
+=2k\cdot\frac{n-(n-k-1)}{n-k-1}\\
+&=2k\cdot\frac{k+1}{n-k-1}
+=\frac{2k(k+1)}{n-k-1}\;(>0).
+\end{aligned}
+\]
+The correction is always positive (AICc penalises complexity more heavily). The two criteria are approximately equivalent exactly when this term is small:
+\begin{itemize}
+  \item if $k$ is \textbf{fixed} and $n\to\infty$, then $\dfrac{2k(k+1)}{n-k-1}\to0$, so $\AICc\to\AIC$;
+  \item if $k=k_n$ grows with $n$, the gap is still negligible provided $n$ is large relative to $k_n^2$, e.g.\ $k_n^2/n\to0$. If $k$ grows too fast ($k_n^2/n\not\to0$) the gap need not vanish and AICc stays meaningfully larger.
+\end{itemize}
+In words: \emph{large samples relative to the number of parameters} make the two agree; small samples or richly parameterised models keep AICc strictly more conservative.
+
+\textbf{(b)} If $m$ of the $p+q$ AR/MA coefficients are fixed (not estimated), only $p+q-m$ of them are estimated. Adding the innovation variance $\sigma^2$ (and, for a mean-zero model, no separate mean parameter), the estimated-parameter count is
+\[
+\boxed{\,k=p+q+1-m\,}.
+\]
+Substituting into the AICc formula,
+\[
+\AICc(\theta)=-2\ln L(\theta\mid y)
++2(p+q+1-m)\,\frac{n}{\,n-(p+q+1-m)-1\,}.
+\]
+Fixing coefficients to zero lowers $k$, which both shrinks the penalty and (in a subsequent Ljung--Box test) raises the residual degrees of freedom.
+
+\textbf{(c)} With $n=30$:
+\begin{itemize}
+  \item Full AR$(4)$: $k=p+q+1=4+0+1=5$, so
+        \[
+        2k\,\frac{n}{n-k-1}=2\cdot5\cdot\frac{30}{30-5-1}=10\cdot\frac{30}{24}=12.5 .
+        \]
+  \item Constrained AR$(4)$, $m=2$ fixed: $k=4+0+1-2=3$, so
+        \[
+        2k\,\frac{n}{n-k-1}=2\cdot3\cdot\frac{30}{30-3-1}=6\cdot\frac{30}{26}=\frac{180}{26}\approx6.923 .
+        \]
+\end{itemize}
+The constrained model carries the smaller penalty by $12.5-6.923=5.577$. Writing $\AICc=-2\ln L+\text{penalty}$, AICc prefers the full model only when
+\[
+\bigl[-2\ln L_{\text{full}}+12.5\bigr]<\bigl[-2\ln L_{\text{constr}}+6.923\bigr],
+\]
+i.e.\ when $-2\ln L_{\text{constr}}-(-2\ln L_{\text{full}})>12.5-6.923=5.577$. So the constrained model's $-2\ln L$ may exceed the full model's by up to $\boxed{\approx5.58}$ before AICc switches its preference to the full AR$(4)$; equivalently, the two extra estimated coefficients must improve the log-likelihood by more than $\approx2.79$ to be worth keeping under AICc.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} With $n=200$ we have $n(n+2)=200\cdot202=40400$, and $m=5$. The Ljung--Box statistic is
+\[
+Q_5=40400\left(\frac{0.05^2}{199}+\frac{(-0.08)^2}{198}
++\frac{0.12^2}{197}+\frac{0.04^2}{196}+\frac{(-0.10)^2}{195}\right).
+\]
+Term by term,
+\[
+\begin{aligned}
+\frac{0.0025}{199}&=1.256\times10^{-5}, &
+\frac{0.0064}{198}&=3.232\times10^{-5}, &
+\frac{0.0144}{197}&=7.310\times10^{-5},\\[2pt]
+\frac{0.0016}{196}&=8.163\times10^{-6}, &
+\frac{0.0100}{195}&=5.128\times10^{-5}. & &
+\end{aligned}
+\]
+Summing the five terms gives
+\[
+1.256\times10^{-5}+3.232\times10^{-5}+7.310\times10^{-5}+8.163\times10^{-6}+5.128\times10^{-5}
+=1.7743\times10^{-4}.
+\]
+Hence
+\[
+\boxed{\,Q_5=40400\times1.7743\times10^{-4}\approx7.17\,}.
+\]
+
+\textbf{(b)} For the ARMA$(2,1)$ fit, $p=2$ and $q=1$, so the degrees of freedom are
+\[
+\mathrm{df}=m-p-q=5-2-1=2 .
+\]
+The $5\%$ critical value is $\chi^2_{2,0.95}=5.991$. Since $Q_5\approx7.17>5.991$, we \textbf{reject} $H_0$ at the $5\%$ level: there is significant residual autocorrelation up to lag $5$, so the ARMA$(2,1)$ model is \emph{inadequate} and should be revised.
+
+\textbf{(c)} For an AR$(1)$ fit, $p=1$, $q=0$, so
+\[
+\mathrm{df}=m-p-q=5-1-0=4,
+\]
+and the critical value rises to $\chi^2_{4,0.95}=9.488$. Now $Q_5\approx7.17<9.488$, so we would \textbf{fail to reject} $H_0$ (the test deems the residuals adequately white). The \emph{same} numbers thus give opposite conclusions purely through the degrees of freedom: subtracting the correct number of estimated ARMA parameters ($p+q$) is essential, because using $\mathrm{df}=m$ would inflate the critical value (here $\chi^2_{5,0.95}=11.07$) and make the test reject far too rarely, masking genuine misspecification.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\textbf{(a)} Iterating the causal AR$(1)$ recursion gives the $\mathrm{MA}(\infty)$ representation $X_t=\sum_{j=0}^\infty\phi^{\,j}\eps_{t-j}$, so the weights are
+\[
+\psi_j=\phi^{\,j},\qquad j=0,1,2,\dots
+\]
+For the best linear (here, since Gaussian, also overall best) predictor, write $X_{n+h}=\phi^{\,h}X_n+\sum_{j=1}^{h}\phi^{\,h-j}\eps_{n+j}$ and take the conditional expectation given $X_1,\dots,X_n$. Every future innovation $\eps_{n+1},\dots,\eps_{n+h}$ has conditional expectation $0$ (it is uncorrelated with the data, and zero-mean), leaving
+\[
+X^{\,n}_{n+h}=\E\bigl[X_{n+h}\mid X_1,\dots,X_n\bigr]=\phi^{\,h}X_n .
+\]
+
+\textbf{(b)} The $h$-step forecast error is $e_n(h)=X_{n+h}-X^{\,n}_{n+h}=\sum_{j=0}^{h-1}\psi_j\eps_{n+h-j}=\sum_{j=0}^{h-1}\phi^{\,j}\eps_{n+h-j}$, a sum of uncorrelated terms, so
+\[
+\Var\bigl(e_n(h)\bigr)=\sigma^2\sum_{j=0}^{h-1}\psi_j^2
+=\sigma^2\sum_{j=0}^{h-1}\phi^{2j}
+=\sigma^2\,\frac{1-\phi^{2h}}{1-\phi^2}.
+\]
+As $h\to\infty$, since $\abs\phi<1$ we have $\phi^{\,h}\to0$, so the point forecast $X^{\,n}_{n+h}=\phi^{\,h}X_n\to0$, the process mean; and $\phi^{2h}\to0$, so
+\[
+\Var\bigl(e_n(h)\bigr)\longrightarrow\frac{\sigma^2}{1-\phi^2}=\acvs_0,
+\]
+the marginal variance of the AR$(1)$. Far-ahead forecasting thus reverts to ``the unconditional distribution'': point forecast $\to$ mean, error variance $\to\acvs_0$.
+
+\textbf{(c)} With $\phi=0.6$, $\sigma^2=4$, $X_n=5$:
+\[
+X^{\,n}_{n+2}=\phi^2X_n=0.36\times5=1.8 .
+\]
+The two-step forecast-error variance is
+\[
+\Var\bigl(e_n(2)\bigr)=\sigma^2(1+\phi^2)=4\,(1+0.36)=4\times1.36=5.44,
+\]
+so the standard error is $\sqrt{5.44}\approx2.332$. A $95\%$ Gaussian prediction interval for $X_{n+2}$ is
+\[
+X^{\,n}_{n+2}\pm z_{0.975}\sqrt{\Var(e_n(2))}
+=1.8\pm1.96\times2.332
+=1.8\pm4.571,
+\]
+i.e.\
+\[
+\boxed{\,X_{n+2}\in(-2.77,\ 6.37)\ \text{with }95\%\text{ confidence}.}
+\]
+(As a check, $\acvs_0=\sigma^2/(1-\phi^2)=4/0.64=6.25$, and indeed $\Var(e_n(2))=5.44<6.25$, with the gap closing as $h$ grows.)
+
+\end{document}

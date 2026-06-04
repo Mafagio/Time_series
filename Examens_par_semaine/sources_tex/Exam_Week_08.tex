@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\input{examstyle}
+\begin{document}
+
+\examheader{Week 8: Spectral Estimation --- Periodogram \& Tapering}{60 minutes}
+\pointstable
+\begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
+
+% ---------------------------------------------------------------
+\problem{5}
+We observe $X_1,\dots,X_n$ ($T=\{1,\dots,n\}$, sampling interval $\Delta=1$). The \emph{periodogram} is the Fourier transform of the biased sample ACVS,
+\[
+\hat\sdf^{(p)}(f)=\sum_{\tau\in\Ints}\hat\acvs_\tau\,e^{-2\pi i\tau f},
+\qquad
+\hat\acvs_\tau=\frac1n\sum_{t=1}^{n-\abs\tau}\bigl(X_t-\bar X\bigr)\bigl(X_{t+\abs\tau}-\bar X\bigr)
+\]
+for $\abs\tau\le n-1$ (and $0$ otherwise). Write $Y_t=X_t-\bar X$ throughout.
+
+\textbf{(a)} Show that
+\[
+\hat\sdf^{(p)}(f)=\abs{J(f)}^2,\qquad J(f)=\sqrt{\tfrac1n}\sum_{t\in T} Y_t\,e^{-2\pi i t f}.
+\]
+\emph{Hint:} re-index the double sum over $(t,\tau)$ as a free double sum over $(s,t)\in T\times T$. \hfill(2.5 pts)
+
+\textbf{(b)} Deduce two structural properties from the representation in (a): that $\hat\sdf^{(p)}(f)\ge0$ for every $f$, and that $\hat\sdf^{(p)}$ is even, $\hat\sdf^{(p)}(-f)=\hat\sdf^{(p)}(f)$. \hfill(1.5 pts)
+
+\textbf{(c)} Show that $\hat\sdf^{(p)}(0)=0$. (The mean removal makes the periodogram blind to the zero frequency.) \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+This problem develops the expectation (bias) of the periodogram. Assume $\{X_t\}$ is zero-mean stationary with ACVS $\{\acvs_\tau\}\in\ell^1$ and SDF $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i\tau f}$, and replace $\bar X$ by the true mean $\mu=0$, so that $Y_t=X_t$.
+
+\textbf{(a)} Starting from $\hat\sdf^{(p)}(f)=\frac1n\sum_{t=1}^{n}\sum_{s=1}^{n} Y_tY_s\,e^{-2\pi i f(t-s)}$, take expectations and show that
+\[
+\E\bigl[\hat\sdf^{(p)}(f)\bigr]=\sum_{\tau=-(n-1)}^{n-1} w_\tau\,\acvs_\tau\,e^{-2\pi i\tau f},
+\qquad
+w_\tau=1-\frac{\abs\tau}{n}.
+\]
+\hfill(2 pts)
+
+\textbf{(b)} The triangular weight is $w_\tau=\frac1n\sum_{t} d_t\,d_{t+\abs\tau}$, the autocorrelation of the rectangular data window $d_t=\ind_T(t)$. Using the discrete convolution theorem, show that the Fourier transform of $\{w_\tau\}$ is the \textbf{Fej\'er kernel}
+\[
+\mathcal F_n(f)=\frac1n\,\abs{D(f)}^2,\qquad D(f)=\sum_{t=1}^{n} e^{-2\pi i t f},
+\]
+and conclude that $\E[\hat\sdf^{(p)}(f)]=\int_{-1/2}^{1/2}\sdf(f')\,\mathcal F_n(f-f')\,df'$, i.e.\ the expected periodogram is the true SDF \emph{blurred} by $\mathcal F_n$. \hfill(2 pts)
+
+\textbf{(c)} Show that $\mathcal F_n$ is a genuine averaging kernel by proving the normalisation $\int_{-1/2}^{1/2}\mathcal F_n(f)\,df=1$. Then state in one sentence why the periodogram is nevertheless \emph{asymptotically} unbiased as $n\to\infty$. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+This problem treats \emph{tapering}, the cure for periodogram bias. A \textbf{data taper} is a sequence $\{h_t\}_{t\in T}$ (extended by $h_t=0$ off $T$) with $\norm{h}_2^2=\sum_t h_t^2=1$. With $\mu$ removed ($Y_t=X_t-\mu$), the tapered periodogram is
+\[
+\hat\sdf^{(p)}_h(f)=\abs{J_h(f)}^2,\qquad J_h(f)=\sum_{t\in T} h_t\,Y_t\,e^{-2\pi i t f},
+\]
+and $H(f)=\sum_{t\in\Ints} h_t e^{-2\pi i t f}$ is the Fourier transform of the taper.
+
+\textbf{(a)} For zero-mean stationary $\{X_t\}$, show that
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\sum_{\tau\in\Ints} w_\tau\,\acvs_\tau\,e^{-2\pi i\tau f},
+\qquad
+w_\tau=\sum_{t\in\Ints} h_t\,h_{t+\tau},
+\]
+and, using the convolution theorem on $w=\tilde h * \bar h$ (with $\tilde h_t=h_{-t}$, $\bar h_t=h_t$), deduce the kernel form
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\int_{-1/2}^{1/2}\sdf(f')\,\abs{H(f-f')}^2\,df'.
+\]
+\hfill(2.5 pts)
+
+\textbf{(b)} \emph{(Unbiasedness for white noise.)} Suppose $\{X_t\}=\{\eps_t\}$ is white noise, so $\sdf\equiv\sigma^2$. Using Parseval, $\int_{-1/2}^{1/2}\abs{H(f)}^2\,df=\sum_t h_t^2$, prove that
+\[
+\E\bigl[\hat\sdf^{(p)}_h(f)\bigr]=\sigma^2\,\norm{h}_2^2 ,
+\]
+and conclude that $\hat\sdf^{(p)}_h(f)$ is \emph{exactly} unbiased for every $n$ and every $f$ precisely because $\norm{h}_2^2=1$. \hfill(1.5 pts)
+
+\textbf{(c)} \emph{(Multitapering.)} Given $K$ orthonormal tapers $\{h_{t,k}\}$ with $\sum_t h_{t,k}h_{t,k'}=\delta_{k,k'}$, the multitaper estimator is $\hat\sdf^{(mt)}(f)=\frac1K\sum_{k=1}^{K}\hat\sdf^{(p)}_{h_k}(f)$. Assuming the $K$ individual tapered periodograms are asymptotically uncorrelated, each with variance $\to\sdf(f)^2$, derive $\Var\bigl(\hat\sdf^{(mt)}(f)\bigr)\to\sdf(f)^2/K$, and explain in one sentence why this (unlike the raw periodogram) restores consistency. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{(Revision of Week 7: spectral density of an MA process; the valid-ACVS test.)} Throughout, frequencies are ordinary ($\Delta=1$) and $\eps_t$ is white noise of variance $\sigma^2$.
+
+\textbf{(a)} Let $\{X_t\}$ be the $\mathrm{MA}(2)$ process $X_t=\eps_t+\theta_1\eps_{t-1}+\theta_2\eps_{t-2}$. Compute its ACVS $\acvs_0,\acvs_1,\acvs_2$ (and note $\acvs_\tau=0$ for $\abs\tau\ge3$), and show that its SDF equals
+\[
+\sdf(f)=\sigma^2\,\abs{1+\theta_1 e^{-2\pi i f}+\theta_2 e^{-4\pi i f}}^2 .
+\]
+\hfill(2 pts)
+
+\textbf{(b)} Evaluate $\sdf(f)$ in the fully real cosine form $\sdf(f)=\acvs_0+2\acvs_1\cos(2\pi f)+2\acvs_2\cos(4\pi f)$ for the values $\theta_1=1$, $\theta_2=\tfrac14$, $\sigma^2=1$. Give $\sdf(0)$ and $\sdf(\tfrac12)$, and verify non-negativity is consistent with the process being a genuine MA. \hfill(1.5 pts)
+
+\textbf{(c)} \emph{(Valid-ACVS test.)} Consider the candidate sequence $\acvs_0=1$, $\acvs_{\pm1}=a$, and $\acvs_\tau=0$ for $\abs\tau\ge2$ (with $a\in\Reals$). Compute the associated $\sdf(f)=1+2a\cos(2\pi f)$, and determine the exact range of $a$ for which $\{\acvs_\tau\}$ is a valid ACVS of some stationary process. \hfill(1.5 pts)
+\answerpage
+
+\end{document}

@@ -1,0 +1,346 @@
+% ======================================================================
+%  PART 9 -- Diagnostics, Model Selection and Long Memory
+% ======================================================================
+\section{Diagnostics, Model Selection and Long Memory}
+\label{sec:diagnostics}
+
+Once a candidate ARIMA model has been identified and fitted, two questions
+remain: \emph{does it fit?} (diagnostics, based on the residuals) and \emph{is
+it the right model among several?} (model selection, based on information
+criteria). This part collects the standard residual checks (mean, variance,
+Gaussianity, autocorrelation), the Box--Pierce and Ljung--Box portmanteau
+tests, the AIC/AICc/BIC criteria, and the Box--Jenkins methodology that ties
+them together. It then steps outside the ARMA world entirely: ARMA covariances
+decay exponentially fast, but many real series have covariances that decay only
+\emph{polynomially}. This is \textbf{long memory}, modelled by fractional
+differencing $(1-\Bsh)^d$ and the FARIMA class, and intimately related to
+self-similarity and fractional Brownian motion.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Residuals and standardized residuals}{p9-resid}
+For a fitted model with fitted value $\hat X_t$ at time $t$, the
+\textbf{residuals} are
+\[
+e_t = X_t - \hat X_t ,
+\]
+and the \textbf{standardized residuals} are
+\[
+\tilde e_t = \frac{e_t}{\sqrt{\Var(e_t)}} .
+\]
+Model checking is built almost entirely on the $\{e_t\}$ (or $\{\tilde e_t\}$):
+if the model is correct, the residuals should behave like the driving white
+noise. The four questions to ask are:
+\begin{enumerate}
+  \item Do the residuals have constant zero mean?
+  \item Is their variance constant in $t$ (\emph{homoscedasticity})?
+  \item Are they uncorrelated in $t$?
+  \item Are they Gaussian?
+\end{enumerate}
+\end{definition}
+
+\begin{definition}{Checking mean, variance and Gaussianity}{p9-checks}
+Three of the four checks are visual:
+\begin{itemize}
+  \item \textbf{Mean:} plot $\{(t,\tilde e_t)\}$. There should be no trend and
+        the points should hover around zero.
+  \item \textbf{Variance (homoscedasticity):} plot $\{(t,\tilde e_t)\}$ and
+        look for constant spread; a fanning-out or fanning-in band signals
+        non-constant variance.
+  \item \textbf{Gaussianity:} a \textbf{Q--Q plot} of the residual quantiles
+        against normal quantiles; Gaussian residuals lie on a straight line,
+        whereas heavy tails (e.g.\ Student) curve away at the ends. Note this
+        checks only \emph{marginal} Gaussianity.
+\end{itemize}
+\end{definition}
+
+\begin{definition}{Sample residual autocorrelation \& the correlogram band}{p9-residacf}
+The residual sample autocorrelation at lag $\tau$ is
+\[
+\hat r_\tau = \hat\acf^{(e)}_\tau
+= \frac{\sum_{t=1}^{n-\tau}(e_{t+\tau}-\bar e)(e_t-\bar e)}
+       {\sum_{t=1}^{n}(e_t-\bar e)^2 }.
+\]
+Plotting $\hat r_\tau$ against $\tau$ gives the residual \textbf{correlogram}.
+Under the null hypothesis that the residuals are white noise, each $\hat r_\tau$
+is approximately $\mathcal N(0,1/n)$, so individual values are compared against
+the band
+\[
+\left(-\frac{1.96}{\sqrt n},\ \frac{1.96}{\sqrt n}\right),
+\]
+the (pointwise) $95\%$ acceptance band for ``$\hat r_\tau$ is zero''.
+\end{definition}
+
+\begin{definition}{$R^2$ statistic}{p9-r2}
+With $s_e^2$ the residual variance and $s_y^2$ the sample variance of the data,
+\[
+R^2 = 1 - \frac{s_e^2}{s_y^2}.
+\]
+It measures the fraction of variance ``explained'' by the fit. In time-series
+model selection it is a \textbf{dangerous} criterion (see
+Proposition~\ref{prop:p9-r2danger}): adding parameters can only increase $R^2$,
+and even the \emph{true} model has a bounded $R^2$ because a stochastic process
+is not perfectly predictable.
+\end{definition}
+
+\begin{definition}{Information criteria: AIC, AICc, BIC}{p9-ic}
+For a model with $k$ estimated parameters fitted to $n$ observations, with
+maximized likelihood $L(\theta\mid y)$:
+\[
+\begin{aligned}
+\mathrm{AIC}(\theta)  &= -2\log L(\theta\mid y) + 2k, \\[2pt]
+\mathrm{AICc}(\theta) &= -2\log L(\theta\mid y) + 2k\,\frac{n}{n-k-1}
+                       = \mathrm{AIC}(\theta) + \frac{2k(k+1)}{n-k-1}, \\[2pt]
+\mathrm{BIC}(\theta)  &= -2\log L(\theta\mid y) + k\log(n).
+\end{aligned}
+\]
+\textbf{Smaller is better} for all three. For an ARMA$(p,q)$ the parameter count
+is
+\[
+k = p+q+1
+\]
+($p$ AR coefficients, $q$ MA coefficients, plus the noise variance $\sigma^2$).
+AIC is known to \emph{overestimate} $p$; AICc (Hurvich \& Tsai, 1989) corrects
+the small-sample bias and coincides with AIC as $n\to\infty$; BIC penalizes
+parameters more heavily (for $n>e^2\approx 7.4$) and so favours more
+parsimonious models.
+\end{definition}
+
+\begin{definition}{Long memory (covariance definition)}{p9-lmcov}
+A second-order stationary process $\{X_t\}$ with ACVS $\{\acvs_\tau\}$ is said to
+exhibit \textbf{long memory} (long-range dependence) if its covariances decay
+only polynomially:
+\[
+\acvs_\tau \sim L_\gamma(\tau)\,\abs{\tau}^{-\alpha},\qquad \abs{\tau}\to\infty,
+\]
+where $L_\gamma$ is a \emph{slowly varying} function and the exponent satisfies
+$0<\alpha<1$. Contrast this with ARMA models, whose covariances are either
+finite-support ($\acvs_\tau=0$ for $\abs\tau>q$) or exponentially decaying
+($\acvs_\tau\sim\abs\phi^{\,\tau}$). The full admissible range $0<\alpha<2$
+yields three regimes:
+\[
+\underbrace{0<\alpha<1}_{\text{long memory}}, \qquad
+\underbrace{\alpha=1}_{\text{short-range dependence}}, \qquad
+\underbrace{1<\alpha<2}_{\text{anti-persistence}} .
+\]
+\end{definition}
+
+\begin{definition}{Long memory (spectral definition)}{p9-lmspec}
+Equivalently, long memory is characterized by a spectral density that blows up
+(or vanishes) like a power of the frequency near the origin:
+\[
+\sdf(f) \sim L_S(f)\,\abs{f}^{\alpha-1},\qquad f\to0 ,
+\]
+with $L_S$ slowly varying. For $0<\alpha<1$ the exponent $\alpha-1\in(-1,0)$, so
+$\sdf(f)\to\infty$ as $f\to0$ (a spectral pole at zero): the process concentrates
+power at the lowest frequencies, the spectral signature of persistence. The
+slowly varying parts of the two definitions are linked by
+\[
+L_S(f) = 2\,\acvs(0)\,\Gamma(1-\alpha)\sin\!\frac{\pi\alpha}{2},\qquad
+L_\gamma(\tau) = 2\,\Gamma(\alpha)\sin\!\frac{\pi(1-\alpha)}{2}.
+\]
+The case $\alpha=1$ (short-range dependence) gives $\sdf(0)$ finite and nonzero,
+exactly the ARMA situation $\sdf(0)=\sum_\tau\acvs_\tau<\infty$; the
+anti-persistent case $1<\alpha<2$ forces $\sum_k\acvs_k=0$ (and $\sdf(0)=0$).
+\end{definition}
+
+\begin{definition}{Fractional differencing operator \& FARIMA}{p9-farima}
+The \textbf{fractional differencing operator} is defined for real $d$ via the
+binomial expansion of $(1-\Bsh)^d$ in the backshift operator $\Bsh$:
+\[
+(1-\Bsh)^d
+= \sum_{k=0}^{\infty}\binom{d}{k}(-1)^k \Bsh^{\,k}
+= \sum_{k=0}^{\infty}\frac{\Gamma(d+1)}{\Gamma(k+1)\,\Gamma(d-k+1)}(-1)^k \Bsh^{\,k}
+= \sum_{j=0}^{\infty}\frac{\Gamma(j-d)}{\Gamma(-d)\,\Gamma(j+1)}\Bsh^{\,j}.
+\]
+The simplest long-memory process is the \textbf{fractionally differenced} (pure)
+process $(1-\Bsh)^d X_t=\eps_t$. The general \textbf{FARIMA} (fractional ARIMA)
+class is the stationary solution of
+\[
+(1-\Bsh)^d\,\phi(\Bsh)\,X_t = \psi(\Bsh)\,\eps_t,
+\qquad d=\frac{1-\alpha}{2}\in(-0.5,0.5),
+\]
+where $\eps_t$ are i.i.d.\ zero-mean with variance $\sigma_\eps^2>0$, and
+$\phi(z)$, $\psi(z)$ are degree-$p$ and degree-$q$ polynomials with all roots
+outside the unit circle. Integer $d$ recovers ordinary ARIMA; fractional
+$d\in(0,0.5)$ gives long memory.
+\end{definition}
+
+\begin{definition}{Self-similarity \& fractional Brownian motion}{p9-fbm}
+A process $\{Y_t\}$ is \textbf{self-similar} with self-similarity parameter
+(Hurst exponent) $H$ if, for every $c>0$,
+\[
+Y_{ct} \eqdist c^{H} Y_t
+\]
+(equality in distribution, jointly over $t$). Self-similarity with stationary
+increments forces the covariance structure
+\[
+\Cov(Y_t,Y_s) = \frac{\sigma^2}{2}\Big(\abs{t}^{2H}+\abs{s}^{2H}-\abs{t-s}^{2H}\Big).
+\tag{$\star$}
+\]
+A \emph{Gaussian} process with covariance $(\star)$ is \textbf{fractional
+Brownian motion} $B_H(t)$; it is the \emph{only} self-similar Gaussian process.
+Its increment process $X_t=B_H(t)-B_H(t-1)$ is \textbf{fractional Gaussian
+noise}, with
+\[
+\acvs_X(\tau)=\frac{\sigma^2}{2}\Big(\abs{\tau+1}^{2H}-2\abs{\tau}^{2H}+\abs{\tau-1}^{2H}\Big)
+\sim H(2H-1)\,\abs{\tau}^{2H-2},\qquad\abs{\tau}\to\infty .
+\]
+The graph $(t,B_H(t))$ has Hausdorff (fractal) dimension $D=2-H$ in one
+dimension. Fractal dimension is a \emph{local} property; long-range dependence
+is a \emph{global} one --- the two can be made completely independent.
+\end{definition}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Residuals of a correctly specified AR(1) are the noise}{p9-ar1res}
+For an AR(1) model $X_t=\phi X_{t-1}+\eps_t$ with known true parameters, the
+fitted one-step value is $\hat X_t=\phi X_{t-1}$, so the residual is
+\[
+e_t = X_t - \phi X_{t-1} = \eps_t .
+\]
+\textit{Proof idea:} substitute the model equation; the AR structure cancels
+exactly, leaving the innovation.\\
+\textit{Why:} this is the template for \emph{all} residual diagnostics. If the
+model and parameters are right, residuals reproduce the white noise: constant
+zero mean, constant variance, uncorrelated, and Gaussian whenever $\eps_t$ is.
+Any departure from these is evidence \emph{against} the model.
+\end{proposition}
+
+\begin{proposition}{Box--Pierce portmanteau statistic}{p9-boxpierce}
+To test $H_0:\acf_1=\acf_2=\cdots=\acf_m=0$ (residuals white up to lag $m$)
+against the alternative that some $\acf_\tau\ne0$, the \textbf{Box--Pierce}
+statistic is
+\[
+Q_m = n\sum_{\tau=1}^{m}\hat r_\tau^{\,2}.
+\]
+Under $H_0$, for an ARMA$(p,q)$ fit, $Q_m$ is approximately
+$\chi^2_{m-p-q}$.\\
+\textit{Proof idea:} under white noise each $\sqrt n\,\hat r_\tau\todist
+\mathcal N(0,1)$ and the $\hat r_\tau$ are asymptotically independent, so
+$\sum_\tau(\sqrt n\,\hat r_\tau)^2$ is a sum of squared standard normals; fitting
+$p+q$ parameters removes $p+q$ degrees of freedom.\\
+\textit{Why:} it tests \emph{many} lags at once (a ``portmanteau''), avoiding the
+multiple-testing problem of eyeballing the correlogram lag by lag.
+\end{proposition}
+
+\begin{proposition}{Ljung--Box statistic (modified Box--Pierce)}{p9-ljungbox}
+The small-sample-corrected (\textbf{Ljung--Box}) statistic is
+\[
+Q_m = n(n+2)\sum_{\tau=1}^{m}\frac{\hat r_\tau^{\,2}}{n-\tau},
+\]
+again approximately $\chi^2_{m-p-q}$ under $H_0$ for an ARMA$(p,q)$.\\
+\textit{Proof idea:} the factor $\frac{n+2}{n-\tau}$ rescales each term so its
+finite-$n$ variance matches the $\chi^2$ target more closely than the plain
+$n\hat r_\tau^2$; as $n\to\infty$, $\frac{n(n+2)}{n-\tau}\to n$ and the two
+statistics agree.\\
+\textit{Why:} the Box--Pierce $\chi^2$ approximation is poor at realistic sample
+sizes, so Ljung--Box is the version used in practice (e.g.\ R's
+\texttt{Box.test(type="Ljung-Box")}). One usually computes $Q_m$ over a range of
+$m$ and plots the resulting $p$-values.
+\end{proposition}
+
+\begin{proposition}{The danger of $R^2$: an AR(1) caps at $\phi^2$}{p9-r2danger}
+For an AR(1) with innovation variance $\sigma^2$, the process variance is
+$s_y^2=\sigma^2/(1-\phi^2)$ and the one-step residual variance is
+$s_e^2=\sigma^2$, so
+\[
+R^2 = 1-\frac{s_e^2}{s_y^2}
+    = 1-\frac{\sigma^2(1-\phi^2)}{\sigma^2}
+    = \phi^2 .
+\]
+\textit{Proof idea:} substitute the AR(1) variance formula (geometric sum of the
+$\mathrm{MA}(\infty)$ coefficients $\phi^{2j}$) and the fact that the best
+one-step prediction error \emph{is} $\eps_t$.\\
+\textit{Why:} even the \emph{true} model has bounded $R^2$ ($\phi=0.4\Rightarrow
+R^2=0.16$, which ``looks bad'' but is optimal). A stochastic process is not
+perfectly predictable, so a low $R^2$ is no indictment, and a high one (from
+piling on parameters) is no endorsement. \textbf{Use information criteria, not
+$R^2$.}
+\end{proposition}
+
+\begin{proposition}{AIC vs.\ AICc gap}{p9-aicgap}
+The corrected and uncorrected AIC differ by exactly the parameter-count penalty
+\[
+\mathrm{AICc}(\theta)-\mathrm{AIC}(\theta)
+= 2k\left(\frac{n}{n-k-1}-1\right) = \frac{2k(k+1)}{n-k-1}\ \ (>0).
+\]
+\textit{Proof idea:} algebra --- put $\frac{n}{n-k-1}-1=\frac{k+1}{n-k-1}$ over a
+common denominator.\\
+\textit{Why:} the correction is always positive (it penalizes complexity more),
+vanishes as $n\to\infty$ with $k$ fixed, and stays negligible whenever
+$k^2/n\to0$. AICc is therefore the safe default in small samples or when $k$ is
+comparable to $n$.
+\end{proposition}
+
+\begin{proposition}{BIC penalty exceeds AIC penalty for $n>e^2$}{p9-bicpen}
+The per-parameter penalties are $2$ (AIC) and $\log n$ (BIC). Hence the BIC
+penalty is the larger of the two iff
+\[
+\log n > 2 \iff n > e^2 \approx 7.39 .
+\]
+\textit{Proof idea:} compare the per-parameter coefficients $2$ and $\log n$
+directly.\\
+\textit{Why:} for any realistic $n\ (\ge 8)$ BIC charges more per parameter,
+hence is more conservative and consistent (selects the true order with
+probability $\to1$), whereas AIC is more permissive and tends to over-fit
+$p$. Choose BIC when you want parsimony / consistency, AIC(c) for predictive
+performance.
+\end{proposition}
+
+\begin{proposition}{Long-memory inflation of $\Var(\bar X)$}{p9-varxbar}
+For a stationary process with absolutely continuous spectrum,
+$\Var(\bar X)\sim \sdf(0)/n$ (the classical $1/n$ rate, since
+$\sdf(0)=\sum_\tau\acvs_\tau<\infty$). Under long memory with
+$\acvs_\tau\sim\abs\tau^{-\alpha}$ ($0<\alpha<1$), however,
+\[
+\Var(\bar X) \sim \frac{c}{n^{\alpha}},\qquad 0<\alpha<1 ,
+\]
+i.e.\ the variance decays \emph{slower} than $1/n$.\\
+\textit{Proof idea:} $\Var(\bar X)=\frac1{n^2}\sum_{i,j}\acvs_{j-i}$; aggregating
+$\sum_{j=-n}^{n}\acvs_j$ with $\acvs_j\sim\abs j^{-\alpha}$ recovers a power
+$n^{1-\alpha}$, so dividing by $n$ gives $n^{-\alpha}$.\\
+\textit{Why:} this is the empirical fingerprint of long memory (Smith, 1938):
+sample means converge much more slowly than i.i.d.\ or short-range theory
+predicts, so naive standard errors $\sqrt{\sdf(0)/n}$ are badly too small.
+\end{proposition}
+
+\begin{theorem}{Spectral density of a FARIMA / fractionally differenced process}{p9-farimaspec}
+The spectral density of the FARIMA process
+$(1-\Bsh)^d\,\phi(\Bsh)X_t=\psi(\Bsh)\eps_t$ is
+\[
+\sdf(f) = \sigma_\eps^2\,
+\frac{\abs{\psi(e^{-2\pi i f})}^2}{\abs{\phi(e^{-2\pi i f})}^2}\,
+\abs{1-e^{-2\pi i f}}^{-2d}
+\;\overset{f\to0}{\sim}\; c_f\,\abs{f}^{-2d},
+\qquad
+c_f = \sigma_\eps^2\,\frac{\abs{\psi(1)}^2}{\abs{\phi(1)}^2}.
+\]
+\textit{Proof idea:} the spectral density of a filtered process multiplies the
+input spectrum by the squared transfer function; the fractional difference
+contributes $\abs{1-e^{-2\pi i f}}^{-2d}$, and near $f=0$,
+$\abs{1-e^{-2\pi i f}}\sim 2\pi\abs{f}$, leaving the pole $\abs{f}^{-2d}$.\\
+\textit{Why:} it shows the long-memory parameter $\alpha$ ($d=(1-\alpha)/2$, so
+$-2d=\alpha-1$) is read off the slope of $\log\sdf$ vs.\ $\log\abs f$ near the
+origin --- the basis of log-periodogram (GPH) estimation of $d$.
+\end{theorem}
+
+\begin{proposition}{Estimating $d$ from the periodogram (log-periodogram idea)}{p9-gph}
+Since $\E\,I(f)\approx \sdf(f)\sim L_S(f)\abs f^{\alpha-1}$ near $f=0$, taking
+logarithms gives, for low Fourier frequencies $f_j$,
+\[
+\log I(f_j) \approx \mathrm{const} + (\alpha-1)\log\abs{f_j} + \text{error}
+= \mathrm{const} - 2d\,\log\abs{f_j} + \text{error}.
+\]
+\textit{Proof idea:} the periodogram is an (asymptotically unbiased but
+inconsistent) estimate of the spectral density; regressing $\log I(f_j)$ on
+$\log\abs{f_j}$ over the lowest frequencies estimates the slope $\alpha-1=-2d$.\\
+\textit{Why:} it turns long-memory estimation into a simple linear regression on
+the log--log periodogram; one must take $\log$ \emph{before} taking expectations,
+because $\E\log I\ne\log\E I$.
+\end{proposition}
+
+% ----------------------------------------------------------------------
+% ----------------------------------------------------------------------

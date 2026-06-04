@@ -1,0 +1,630 @@
+% ======================================================================
+%  PART 11 -- Linear Time-Invariant (LTI) Filters
+% ======================================================================
+\section{Linear Time-Invariant (LTI) Filters}
+\label{sec:lti}
+
+A \emph{(digital) filter} is a map that turns one sequence into another,
+$\{Y_t\}=\filt[\{X_t\}]$, with index set $\Ints$. The filters that matter for
+time series are the \textbf{linear time-invariant} (LTI) ones: they treat all
+time points alike and act linearly. Two ``test inputs'' completely characterise
+such a filter --- a single impulse (giving the \emph{impulse response} $h$) and
+a pure complex wave (giving the \emph{transfer function} $H$). Their power is
+twofold: every LTI filter is a \emph{convolution} with $h$, and in the frequency
+domain it acts \emph{diagonally}, multiplying the spectral density by
+$\abs{H(f)}^2$. This single fact, $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$, is the
+engine behind the closed-form spectral density of any ARMA process. Throughout
+we allow time series to be \emph{complex-valued} and assume the (possibly
+infinite) sums involved converge, the standard sufficient condition being
+$h\in\ell^1$.
+
+% ----------------------------------------------------------------------
+\subsection{Definitions}
+
+\begin{definition}{Complex-valued time series \& its autocovariance}{p11-complex}
+A \textbf{complex-valued} time series can be written $X_t=U_t+iV_t$ with
+$\{U_t\},\{V_t\}$ real-valued, and has mean
+$\E[X_t]=\E[U_t]+i\,\E[V_t]$. Its \textbf{autocovariance} uses a
+\emph{conjugate} on the second factor:
+\[
+\acvs^{(X)}_\tau=\Cov(X_{t+\tau},X_t)=\E\!\big[(X_{t+\tau}-\mu)\conj{(X_t-\mu)}\big].
+\]
+This reduces to the usual real ACVS when $X_t\in\Reals$. (Stationarity is
+required jointly of the real and imaginary parts.) Throughout we drop the index
+set: $\{X_t\}=\{X_t\}_{t\in\Ints}$.
+\end{definition}
+
+\begin{definition}{Digital filter \& output notation}{p11-filter}
+A \textbf{digital filter} $\filt$ maps an input sequence to an output sequence,
+$\{Y_t\}=\filt[\{X_t\}]$. To name a single output entry we put the time index
+\emph{after} the bracket,
+\[
+Y_u=\filt[\{X_t\}]_u,\qquad u\in\Ints .
+\]
+The $t$ in $\{X_t\}$ is a \emph{dummy} variable; the $u\in\Ints$ after the
+bracket has a definite meaning (the output time).
+\end{definition}
+
+\begin{recallbox}[Recall: the backshift operator]
+The \textbf{backshift} $\Bsh$ satisfies $\Bsh[\{X_t\}]_u=X_{u-1}$ for every
+$u\in\Ints$. Iterating, $\Bsh^u[\{X_t\}]_s=X_{s-u}$ for all $s\in\Ints$ (for
+$u<0$ this applies $\Bsh^{-1}$ a total of $-u$ times). $\Bsh$ is itself the
+prototypical LTI filter.
+\end{recallbox}
+
+\begin{definition}{Linear time-invariant (LTI) filter}{p11-lti}
+A digital filter $\filt$ is \textbf{linear time-invariant} if for all sequences
+$\{X_t\},\{Y_t\}$ and all $\alpha\in\Comp$:
+\begin{enumerate}
+  \item \textbf{Linearity:}
+        $\displaystyle \filt[\{\alpha X_t+Y_t\}]=\alpha\,\filt[\{X_t\}]+\filt[\{Y_t\}]$;
+  \item \textbf{Time invariance:}
+        $\displaystyle \filt\big[\Bsh[\{X_t\}]\big]=\Bsh\big[\filt[\{X_t\}]\big]$,
+        i.e.\ $\filt$ \emph{commutes with the backshift}, $\filt\Bsh=\Bsh\filt$.
+\end{enumerate}
+Time invariance for the single shift $\Bsh$ already implies it for every shift:
+$\filt[\Bsh^u\{X_t\}]=\Bsh^u\filt[\{X_t\}]$ for all $u\in\Ints$. (The
+continuous-time analogue is usually stated with $\Bsh^u$, but the weaker
+one-step condition suffices.)
+\end{definition}
+
+\begin{example}{First LTI filters}{p11-examples}
+\textbf{(i)} The backshift $\Bsh$ itself is LTI. \\
+\textbf{(ii)} For fixed $\phi\in\Reals$, the one-tap filter
+$\filt[\{X_t\}]_u=X_u+\phi X_{u-1}$ is LTI: linearity is immediate from
+\[
+\filt[\{\alpha X_t+Y_t\}]_u=\alpha(X_u+\phi X_{u-1})+(Y_u+\phi Y_{u-1})
+=\alpha\,\filt[\{X_t\}]_u+\filt[\{Y_t\}]_u,
+\]
+and time invariance is checked the same way. This is exactly $\filt=I+\phi\Bsh$.
+\end{example}
+
+\begin{definition}{Impulse sequence \& impulse response}{p11-impulse}
+For $m\in\Ints$ the \textbf{impulse sequence} $\{\delta_{t,m}\}$ is
+$\delta_{t,m}=1$ if $t=m$ and $0$ otherwise. The \textbf{impulse response} of an
+LTI filter $\filt$ is the sequence $\{h_m\}$ defined by
+\[
+h_m=\filt[\{\delta_{t,-m}\}]_0,\qquad m\in\Ints,
+\]
+where the subscript $0$ is the \emph{output time index}. Informally $h_m$ is the
+response, read off at time $0$, to a unit shock placed at time $-m$. A common
+sufficient regularity condition is $h\in\ell^1$
+(then $\norm{h}_\infty\le\norm{h}_1<\infty$).
+\end{definition}
+
+\begin{definition}{Complex wave \& transfer function}{p11-transfer}
+For $f\in\Reals$ the \textbf{complex wave} is the sequence
+$\{\xi_{t,f}\}$ with $\xi_{t,f}=e^{2\pi i f t}$. The \textbf{transfer function}
+of an LTI filter $\filt$ that can be applied to these waves is
+\[
+H(f)=\filt[\{\xi_{t,f}\}]_0,\qquad f\in\Reals .
+\]
+It encodes the frequency-domain behaviour of $\filt$: how each pure frequency is
+re-weighted in amplitude and shifted in phase.
+\end{definition}
+
+\begin{recallbox}[Recall: mean-square equality]
+For random variables $U,V\in L^2$ we write $U\ms V$ to mean
+$\E[\,\abs{U-V}^2\,]=0$ (equality in mean square). This is the natural notion of
+equality for the stochastic infinite sums (convolutions, spectral integrals)
+appearing below.
+\end{recallbox}
+
+% ----------------------------------------------------------------------
+\subsection{Theorems \& Propositions}
+
+\begin{proposition}{Linear combination of LTI filters is LTI}{p11-lincomb}
+If $\filt_1,\filt_2$ are LTI and $\alpha\in\Comp$, then
+$\filt=\alpha\filt_1+\filt_2$ is LTI.\\[2pt]
+\textit{Proof idea:} apply linearity of $\filt_1,\filt_2$ to
+$\filt[\beta\{X_t\}+\{Y_t\}]$ and regroup; for time invariance use that each
+$\filt_j$ commutes with $\Bsh$ and that $\Bsh$ is linear, so
+$\filt[\Bsh\{X_t\}]=\Bsh[\filt\{X_t\}]$. (Full computation in
+Exercise~\ref{exo:p11-e1}.)\\
+\textit{Why:} it makes the LTI filters a \emph{vector space} (over $\Comp$); in
+particular any polynomial in $\Bsh$, e.g.\ $\Phi(\Bsh)=\sum_j\phi_j\Bsh^j$, is
+LTI.
+\end{proposition}
+
+\begin{proposition}{Cascade of LTI filters is LTI}{p11-cascade}
+If $\filt_1,\filt_2$ are LTI, then the \textbf{cascade}
+$\filt=\filt_1\filt_2$, defined by
+$\filt[\{X_t\}]=\filt_1\big[\filt_2[\{X_t\}]\big]$, is LTI.\\[2pt]
+\textit{Proof idea:} linearity is the composition of two linear maps; time
+invariance follows by pushing $\Bsh$ through both filters,
+$\filt_1[\filt_2[\Bsh\{X_t\}]]=\filt_1[\Bsh[\filt_2\{X_t\}]]
+=\Bsh[\filt_1[\filt_2\{X_t\}]]$. (Exercise~\ref{exo:p11-e2}.)\\
+\textit{Why:} filters can be \emph{chained} and the family is closed under
+composition; combined with the previous proposition, all of $\{$polynomials and
+power series in $\Bsh\}$ are LTI.
+\end{proposition}
+
+\begin{intuition}
+LTI filters are exactly the maps that ``do the same thing at every time and
+respect superposition''. Commuting with $\Bsh$ \emph{is} time invariance:
+shifting the input then filtering gives the same as filtering then shifting. Both
+closure properties (linear combinations, cascades) are inherited directly from
+those two structural rules.
+\end{intuition}
+
+\begin{theorem}{LTI $\Leftrightarrow$ convolution with the impulse response}{p11-conv}
+Under suitable convergence assumptions, an LTI filter with impulse response $h$
+acts as a \textbf{convolution}:
+\[
+\filt[\{X_t\}]_u\ms\sum_{m\in\Ints}h_{u-m}X_m,\qquad u\in\Ints .
+\]
+Conversely, any filter defined by such a convolution (with, say, $h\in\ell^1$)
+is LTI. The impulse response gives the convolution weights.\\[2pt]
+\textit{Proof idea (deterministic $\ell^1$ version, Exercise~\ref{exo:p11-e3}):}
+write $X^{(N)}=\sum_{\abs m\le N}X_m\delta_{\cdot,m}$; by continuity in
+$\ell^1$, $\filt[\{X_t\}]_u=\lim_N\filt[X^{(N)}]_u$. Linearity turns each finite
+truncation into a finite sum, and time invariance gives
+$\filt[\{\delta_{t,m}\}]_u=\filt[\{\delta_{t,m-u}\}]_0=h_{u-m}$; absolute
+convergence ($h\in\ell^1$, $X\in\ell^1$) lets the partial sums pass to the full
+series. The converse checks linearity and time invariance directly on the
+convolution (re-indexing $m'=m-1$ for the shift).\\
+\textit{Why:} this is the master representation --- it reduces \emph{any} LTI
+filter to a single object, the weights $h$, and underlies every spectral
+computation below.
+\end{theorem}
+
+\begin{intuition}
+Two complementary pictures of a time series, and an LTI filter acts simply on
+both ``building blocks'':
+\[
+X_t=\sum_{m\in\Ints}X_m\,\delta_{m,t}\quad(\text{sum of impulses}),
+\qquad
+X_t\ms\mu+\int_{-1/2}^{1/2}e^{2\pi i f t}\,dZ(f)\quad(\text{sum of waves}).
+\]
+Applying $\filt$ gives, respectively,
+$\filt[\{X_t\}]_u\ms\sum_m X_m\,\filt[\{\delta_{m,t}\}]_u$ (the impulse-response
+view) and
+$\filt[\{X_t\}]_u\ms\mu H(0)+\int_{-1/2}^{1/2}H(f)e^{2\pi i f u}\,dZ(f)$ (the
+transfer-function view).
+\end{intuition}
+
+\begin{theorem}{Complex waves are eigensequences; $H(f)$ is the eigenvalue}{p11-eigen}
+Let $\filt$ be an LTI filter applicable to the complex waves $\{\xi_{t,f}\}$.
+Then each wave is an \textbf{eigensequence}: for every $f\in\Reals$,
+\[
+\filt[\{\xi_{t,f}\}]=H(f)\,\{\xi_{t,f}\},
+\]
+i.e.\ $\filt$ only rescales amplitude and shifts phase while preserving the
+frequency.\\[2pt]
+\textit{Proof idea:} since
+$\Bsh^{-u}[\{\xi_{t,f}\}]_\tau=\xi_{\tau+u,f}=e^{2\pi i u f}\xi_{\tau,f}$, we have
+$\Bsh^{-u}[\{\xi_{t,f}\}]=e^{2\pi i u f}\{\xi_{t,f}\}$. Then for any $u$,
+\[
+\filt[\{\xi_{t,f}\}]_u
+=\Bsh^{u}\!\big[\filt[\Bsh^{-u}\{\xi_{t,f}\}]\big]_u
+=\filt\big[e^{2\pi i f u}\{\xi_{t,f}\}\big]_0
+=e^{2\pi i f u}\filt[\{\xi_{t,f}\}]_0=\xi_{u,f}\,H(f),
+\]
+using time invariance, the shift identity, linearity and the definition of $H$.\\
+\textit{Why:} it diagonalises every LTI filter in the frequency basis ---
+filtering becomes \emph{pointwise multiplication} by $H(f)$, the source of all
+clean frequency-domain formulas.
+\end{theorem}
+
+\begin{theorem}{Transfer function $=$ Fourier transform of $h$}{p11-Hfourier}
+If the impulse response satisfies $h\in\ell^1$, the transfer function is the
+(discrete) Fourier transform of $h$:
+\[
+H(f)=\sum_{m\in\Ints}h_m\,e^{-2\pi i f m},\qquad f\in\Reals .
+\]
+\textit{Proof idea:} feed the wave $\xi_{t,f}$ into the convolution
+representation: $H(f)=\filt[\{\xi_{t,f}\}]_0=\sum_m h_{-m}e^{2\pi i f m}
+=\sum_m h_m e^{-2\pi i f m}$ (re-index $m\mapsto -m$); $h\in\ell^1$ makes the sum
+absolutely convergent. (Exercise.)\\
+\textit{Why:} the practical recipe --- read off $h$ from the filter, then sum the
+series to get $H$ (and conversely, recover $h$ as Fourier coefficients of $H$).
+\end{theorem}
+
+\begin{theorem}{Filtering preserves stationarity}{p11-statpres}
+Let $\{X_t\}$ be stationary and $\filt$ an LTI filter with $h\in\ell^1$. Then
+$\{Y_t\}=\filt[\{X_t\}]$ is stationary.\\[2pt]
+\textit{Proof idea:} by the convolution theorem $Y_t\ms\sum_m h_m X_{t-m}$.
+By Fubini, $\E[Y_t]=\sum_m h_m\E[X_{t-m}]=\mu_X\sum_m h_m$ is $t$-free; the
+covariance
+$\acvs^{(Y)}_\tau=\sum_{m,s}h_m\conj{h_s}\,\acvs^{(X)}_{\tau-m+s}$
+depends only on $\tau$; and $\acvs^{(Y)}_0\le\acvs^{(X)}_0\norm{h}_1^2<\infty$,
+so all is finite.\\
+\textit{Why:} it licenses speaking of $\sdf_Y$ at all --- only a stationary
+output has a spectral density.
+\end{theorem}
+
+\begin{theorem}{Output spectrum: $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$}{p11-outspec}
+Let $\{X_t\}$ be stationary with $\acvs^{(X)}\in\ell^1$, and $\filt$ an LTI
+filter with $h\in\ell^1$ and transfer function $H$. If
+$\{Y_t\}=\filt[\{X_t\}]$ then
+\[
+\sdf_Y(f)=\abs{H(f)}^2\,\sdf_X(f),\qquad f\in\Reals .
+\]
+\textit{Proof idea:} from the covariance formula above,
+$\acvs^{(Y)}_\tau=\sum_u w_u\,\acvs^{(X)}_{\tau-u}$ where
+$w_u=\sum_s h_{u+s}\conj{h_s}$ (set $u=m-s$). With $\tilde h_t=\conj{h_{-t}}$ one
+has $w=h*\tilde h\in\ell^1$, so the convolution theorem gives
+$\sdf_Y=W\,\sdf_X$ with
+$W(f)=H(f)\,\widetilde H(f)=H(f)\conj{H(f)}=\abs{H(f)}^2$, since
+$\widetilde H(f)=\conj{H(f)}$.\\
+\textit{Why:} the workhorse identity. It converts \emph{any} filtering question
+into multiplying the input spectrum by a gain $\abs{H(f)}^2$ --- and, applied to
+$\Phi(\Bsh)$ and $\Theta(\Bsh)$, it yields the ARMA spectral density below.
+\end{theorem}
+
+\begin{lemma}{Transfer function of a polynomial filter $\Phi(\Bsh)$}{p11-polyfilter}
+For a degree-$p$ polynomial $\Phi(z)=\sum_{j=0}^p\phi_j z^j$, the filter
+$\Phi(\Bsh)$ is LTI with transfer function
+\[
+H(f)=\Phi\!\big(e^{-2\pi i f}\big),\qquad f\in\Reals .
+\]
+\textit{Proof idea:} $\Phi(\Bsh)$ is a linear combination of the LTI filters
+$\Bsh^j$, hence LTI, with impulse response $h_m=\phi_m$ for $0\le m\le p$ and $0$
+otherwise. Then $H(f)=\sum_m h_m e^{-2\pi i f m}
+=\sum_{j=0}^p\phi_j e^{-2\pi i f j}=\Phi(e^{-2\pi i f})$.\\
+\textit{Why:} it turns the operator $\Phi(\Bsh)$ into a concrete function of
+$f$; the bridge from time-domain difference equations to the spectrum.
+\end{lemma}
+
+\begin{theorem}{ARMA spectral density}{p11-arma}
+For a stationary $\mathrm{ARMA}(p,q)$ process $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$
+with $\eps_t$ white noise of variance $\sigma^2$,
+\[
+\sdf_X(f)=\sigma^2\,\frac{\abs{\Theta(e^{-2\pi i f})}^2}{\abs{\Phi(e^{-2\pi i f})}^2}
+=\sigma^2\,\left|\frac{\sum_{j=0}^q\theta_j e^{-2\pi i j f}}
+{\sum_{j=0}^p\phi_j e^{-2\pi i j f}}\right|^2 .
+\]
+\textit{Proof idea:} write $\Phi(\Bsh)[\{X_t\}]=\Theta(\Bsh)[\{\eps_t\}]$.
+Applying the output-spectrum theorem to each side and the polynomial-filter
+lemma,
+$\abs{\Phi(e^{-2\pi i f})}^2\sdf_X(f)=\abs{\Theta(e^{-2\pi i f})}^2\sdf_\eps(f)$
+with $\sdf_\eps(f)=\sigma^2$; divide, legal because stationarity forbids zeros
+of $\Phi$ on the unit circle, so $\Phi(e^{-2\pi i f})\ne0$.\\
+\textit{Why:} ARMA processes have \emph{no} closed-form ACVS but a clean
+closed-form spectral density --- the practical way to read off their
+frequency content.
+\end{theorem}
+
+\begin{pitfall}
+The conjugate sits on the \emph{second} factor in the complex ACVS,
+$\Cov(X_{t+\tau},X_t)=\E[(X_{t+\tau}-\mu)\conj{(X_t-\mu)}]$. Forgetting it
+breaks Hermitian symmetry. Also: the gain is $\abs{H(f)}^2$, \emph{not} $H(f)$
+or $H(f)^2$ --- the $\sdf$ multiplier is always the squared modulus, which is
+real and nonnegative as a spectral density must be.
+\end{pitfall}
+
+% ----------------------------------------------------------------------
+\subsection{Key Techniques}
+
+\begin{keytech}{Spectral density of a filtered process}{p11-ktspec}
+To get $\sdf_Y$ when $\{Y_t\}=\filt[\{X_t\}]$ for an LTI filter:
+\begin{enumerate}
+  \item \textbf{Identify the impulse response} $h$ (the convolution weights), or
+        write $\filt$ as a polynomial $\Phi(\Bsh)$.
+  \item \textbf{Form the transfer function}
+        $H(f)=\sum_m h_m e^{-2\pi i f m}$ (for $\Phi(\Bsh)$ this is
+        $\Phi(e^{-2\pi i f})$).
+  \item \textbf{Multiply by the squared gain:}
+        $\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)$.
+\end{enumerate}
+Handy simplification: $\abs{1-e^{-2\pi i f}}^2=2-2\cos(2\pi f)=4\sin^2(\pi f)$.
+\end{keytech}
+
+\begin{keytech}{Transfer function from an impulse response (and back)}{p11-kth}
+\textbf{Forward} ($h\to H$): sum the Fourier series
+$H(f)=\sum_m h_m e^{-2\pi i f m}$; for a \emph{finite} filter this is a finite
+trigonometric polynomial. \textbf{Backward} ($H\to h$): the weights are the
+Fourier coefficients, $h_m=\int_{-1/2}^{1/2}H(f)e^{2\pi i f m}\,df$. To read $h$
+straight off a convolution filter, recall $\filt[\{X_t\}]_u=\sum_m h_{u-m}X_m
+=\sum_k h_k X_{u-k}$, so the coefficient of $X_{u-k}$ is $h_k$.
+\end{keytech}
+
+\begin{keytech}{Composing filters (cascades) in the frequency domain}{p11-ktcascade}
+Filtering is multiplication by $H$ on each frequency, so a cascade
+$\filt=\filt_1\filt_2$ has transfer function $H(f)=H_1(f)H_2(f)$ and squared
+gain $\abs{H_1(f)}^2\abs{H_2(f)}^2$. Likewise convolution in time corresponds to
+\emph{product} in frequency: $h^{(1)}*h^{(2)}\leftrightarrow H_1 H_2$. This is
+why ARMA decomposes as ``MA part on top, AR part on the bottom''.
+\end{keytech}
+
+\begin{keytech}{Proving a filter is LTI}{p11-ktlti}
+Check the two axioms on a generic input:
+\begin{enumerate}
+  \item \textbf{Linearity:} expand $\filt[\{\alpha X_t+Y_t\}]_u$ and match
+        $\alpha\filt[\{X_t\}]_u+\filt[\{Y_t\}]_u$.
+  \item \textbf{Time invariance:} show $\filt[\Bsh\{X_t\}]_u=\Bsh[\filt\{X_t\}]_u
+        =\filt[\{X_t\}]_{u-1}$, typically by re-indexing the sum
+        ($m'=m-1$); absolute convergence ($h\in\ell^1$) justifies the
+        re-indexing.
+\end{enumerate}
+Shortcut: any linear combination or cascade of known LTI filters is automatically
+LTI --- and any filter expressible as a convolution with $h\in\ell^1$ is LTI.
+\end{keytech}
+
+% ----------------------------------------------------------------------
+\subsection{Exercises}
+
+\begin{exercise}{Linear combination of LTI filters \quad\textnormal{[Sheet 13]}}{p11-e1}
+Let $\filt_1,\filt_2$ be LTI and $\alpha\in\Comp$. Show
+$\filt=\alpha\filt_1+\filt_2$ is LTI.
+\end{exercise}
+\begin{solution}
+\textbf{Linearity.} For sequences $\{X_t\},\{Y_t\}$ and $\beta\in\Comp$, using
+linearity of $\filt_1,\filt_2$,
+\[
+\begin{aligned}
+\filt[\beta\{X_t\}+\{Y_t\}]
+&=\alpha\filt_1[\beta\{X_t\}+\{Y_t\}]+\filt_2[\beta\{X_t\}+\{Y_t\}]\\
+&=\alpha\big(\beta\filt_1[\{X_t\}]+\filt_1[\{Y_t\}]\big)
+ +\big(\beta\filt_2[\{X_t\}]+\filt_2[\{Y_t\}]\big)\\
+&=\beta\big(\alpha\filt_1[\{X_t\}]+\filt_2[\{X_t\}]\big)
+ +\big(\alpha\filt_1[\{Y_t\}]+\filt_2[\{Y_t\}]\big)\\
+&=\beta\,\filt[\{X_t\}]+\filt[\{Y_t\}].
+\end{aligned}
+\]
+\textbf{Time invariance.} Using that each $\filt_j$ commutes with $\Bsh$ and that
+$\Bsh$ is linear,
+\[
+\begin{aligned}
+\filt\big[\Bsh[\{X_t\}]\big]
+&=\alpha\filt_1\big[\Bsh[\{X_t\}]\big]+\filt_2\big[\Bsh[\{X_t\}]\big]
+ =\alpha\,\Bsh\big[\filt_1[\{X_t\}]\big]+\Bsh\big[\filt_2[\{X_t\}]\big]\\
+&=\Bsh\big[\alpha\filt_1[\{X_t\}]+\filt_2[\{X_t\}]\big]
+ =\Bsh\big[\filt[\{X_t\}]\big].
+\end{aligned}
+\]
+Both axioms hold, so $\filt$ is LTI. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Cascade of LTI filters \quad\textnormal{[Sheet 13]}}{p11-e2}
+Let $\filt_1,\filt_2$ be LTI. Show the cascade
+$\filt=\filt_1\filt_2$, $\filt[\{X_t\}]=\filt_1[\filt_2[\{X_t\}]]$, is LTI.
+\end{exercise}
+\begin{solution}
+\textbf{Linearity.} For $\alpha\in\Comp$,
+\[
+\begin{aligned}
+\filt[\alpha\{X_t\}+\{Y_t\}]
+&=\filt_1\big[\filt_2[\alpha\{X_t\}+\{Y_t\}]\big]
+ =\filt_1\big[\alpha\filt_2[\{X_t\}]+\filt_2[\{Y_t\}]\big]\\
+&=\alpha\filt_1\big[\filt_2[\{X_t\}]\big]+\filt_1\big[\filt_2[\{Y_t\}]\big]
+ =\alpha\,\filt[\{X_t\}]+\filt[\{Y_t\}].
+\end{aligned}
+\]
+\textbf{Time invariance.} Push $\Bsh$ through each filter in turn:
+\[
+\filt\big[\Bsh[\{X_t\}]\big]
+=\filt_1\big[\filt_2[\Bsh[\{X_t\}]]\big]
+=\filt_1\big[\Bsh[\filt_2[\{X_t\}]]\big]
+=\Bsh\big[\filt_1[\filt_2[\{X_t\}]]\big]
+=\Bsh\big[\filt[\{X_t\}]\big].
+\]
+Hence $\filt$ is LTI. (Note the order is preserved; for general operators
+$\filt_1\filt_2\ne\filt_2\filt_1$, though for polynomials in $\Bsh$ they do
+commute.) \hfill$\square$
+\end{solution}
+
+\begin{exercise}{LTI on $\ell^1$ $\Leftrightarrow$ convolution \quad\textnormal{[Sheet 13]}}{p11-e3}
+Let $\filt:\ell^1\to\Comp^{\Ints}$ be a digital filter such that for each fixed
+$u$ the map $\{X_t\}\mapsto\filt[\{X_t\}]_u$ is continuous in the $\ell^1$ norm.
+Define $h_m=\filt[\{\delta_{t,-m}\}]_0$ and assume $h\in\ell^1$. Prove $\filt$ is
+LTI on $\ell^1$ iff $\filt[\{X_t\}]_u=\sum_{m\in\Ints}h_{u-m}X_m$ for all
+$\{X_t\}\in\ell^1$ and $u\in\Ints$. Justify all limit/sum interchanges.
+\end{exercise}
+\begin{solution}
+\textbf{($\Rightarrow$)} Assume $\filt$ is LTI on $\ell^1$. Truncate:
+$X^{(N)}_t=\sum_{\abs m\le N}X_m\delta_{t,m}$. Since $\{X_t\}\in\ell^1$,
+$\norm{X^{(N)}-X}_1\to0$, so by continuity of
+$\{X_t\}\mapsto\filt[\{X_t\}]_u$,
+\[
+\filt[\{X_t\}]_u=\lim_{N\to\infty}\filt\big[\{X^{(N)}_t\}\big]_u .
+\]
+For each $N$, \emph{linearity} (finite sum) gives
+$\filt[\{X^{(N)}_t\}]_u=\sum_{\abs m\le N}X_m\,\filt[\{\delta_{t,m}\}]_u$, and
+\emph{time invariance} gives
+$\filt[\{\delta_{t,m}\}]_u=\filt[\{\delta_{t,m-u}\}]_0=h_{u-m}$, so
+\[
+\filt\big[\{X^{(N)}_t\}\big]_u=\sum_{\abs m\le N}h_{u-m}X_m .
+\]
+Since $h\in\ell^1$ we have $\norm{h}_\infty\le\norm{h}_1<\infty$, hence
+$\sum_{m\in\Ints}\abs{h_{u-m}X_m}\le\norm{h}_\infty\sum_m\abs{X_m}<\infty$:
+the series converges absolutely, the partial sums converge to it, and
+$\filt[\{X_t\}]_u=\sum_{m\in\Ints}h_{u-m}X_m$.
+
+\textbf{($\Leftarrow$)} Suppose $\filt[\{X_t\}]_u=\sum_m h_{u-m}X_m$ with
+$h\in\ell^1$. Absolute convergence holds because
+$\sum_m\abs{h_{u-m}X_m}\le\norm{h}_\infty\norm{X}_1\le\norm{h}_1\norm{X}_1$.
+\emph{Linearity:} for $\alpha\in\Comp$,
+\[
+\begin{aligned}
+\filt[\alpha\{X_t\}+\{Y_t\}]_u
+&=\sum_m h_{u-m}(\alpha X_m+Y_m)\\
+&=\alpha\sum_m h_{u-m}X_m+\sum_m h_{u-m}Y_m
+ =\alpha\filt[\{X_t\}]_u+\filt[\{Y_t\}]_u .
+\end{aligned}
+\]
+\emph{Time invariance:} absolute convergence allows reindexing $m'=m-1$,
+\[
+\filt[\Bsh[\{X_t\}]]_u=\sum_m h_{u-m}X_{m-1}=\sum_{m'}h_{u-1-m'}X_{m'}
+=\filt[\{X_t\}]_{u-1}=\Bsh[\filt[\{X_t\}]]_u .
+\]
+Hence $\filt$ is LTI on $\ell^1$. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Tapered DFT as convolution with $dZ$ \quad\textnormal{[Sheet 13]}}{p11-e4}
+Let $\{X_t\}$ be stationary, mean zero, with spectral representation
+$X_t=\int_{-1/2}^{1/2}e^{2\pi i f t}\,dZ(f)$. Observe $X_1,\dots,X_n$ and define
+the \emph{tapered DFT}
+$J_h(f)=\sum_{t=1}^n h_t X_t e^{-2\pi i f t}$, with $\norm{h_t}_2^2=1$. Show
+$J_h(f)=\int_{-1/2}^{1/2}H(f-f')\,dZ(f')$, where
+$H(f)=\sum_{t=1}^n h_t e^{-2\pi i f t}$.
+\end{exercise}
+\begin{solution}
+Substitute the spectral representation and interchange the finite sum with the
+integral:
+\[
+\begin{aligned}
+J_h(f)&=\sum_{t=1}^n h_t X_t e^{-2\pi i f t}
+       =\sum_{t=1}^n h_t\!\left(\int_{-1/2}^{1/2}e^{2\pi i f' t}\,dZ(f')\right)\!e^{-2\pi i f t}\\
+      &=\int_{-1/2}^{1/2}\Big(\sum_{t=1}^n h_t\,e^{2\pi i (f'-f) t}\Big)dZ(f')
+       =\int_{-1/2}^{1/2}H(f-f')\,dZ(f'),
+\end{aligned}
+\]
+since $\sum_{t=1}^n h_t e^{2\pi i(f'-f)t}=\sum_{t=1}^n h_t e^{-2\pi i(f-f')t}
+=H(f-f')$. Thus the tapered DFT is the spectral increment $dZ$ smeared by the
+taper's transfer function $H$ centred at $f$. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Spectral density of the differenced process \quad\textnormal{[Sheet 13]}}{p11-e5}
+Let $\{X_t\}$ be stationary and $\{Y_t\}=(I-\Bsh)[\{X_t\}]$, i.e.\
+$Y_t=X_t-X_{t-1}$. Is $\{Y_t\}$ stationary? If so, express $\sdf_Y$ in terms of
+$\sdf_X$.
+\end{exercise}
+\begin{solution}
+$I-\Bsh$ is LTI with impulse response $h_0=1,\ h_1=-1$ (others $0$), so
+$h\in\ell^1$ and $\{Y_t\}$ is stationary (filtering preserves stationarity). Its
+transfer function is
+\[
+H(f)=h_0+h_1 e^{-2\pi i f}=1-e^{-2\pi i f}.
+\]
+Therefore
+\[
+\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)=\abs{1-e^{-2\pi i f}}^2\sdf_X(f).
+\]
+Simplify the gain: $\abs{1-e^{-2\pi i f}}^2=(1-\cos 2\pi f)^2+\sin^2 2\pi f
+=2-2\cos(2\pi f)=4\sin^2(\pi f)$. Hence
+\[
+\boxed{\ \sdf_Y(f)=4\sin^2(\pi f)\,\sdf_X(f).\ }
+\]
+The differencing filter \emph{kills} $f=0$ (since $H(0)=0$) and amplifies high
+frequencies, as expected of a high-pass operation. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Time reversibility of AR($p$) \quad\textnormal{[Sheet 13]}}{p11-e6}
+In an AR($p$) process $X_t=\sum_{j=1}^p\phi_j X_{t-j}+\eps_t$ (Gaussian noise,
+variance $\sigma_\eps^2$, mean zero), set $Y_t=X_{-t}$. Show $\{Y_t\}$ is an
+AR($p$) with the \emph{same} parameters, driven by white noise with the same
+distribution as $\eps$.
+\end{exercise}
+\begin{solution}
+Put $\phi_0=-1$ and define $\tilde\nu_t=\sum_{j=0}^p\phi_j Y_{t-j}
+=-Y_t+\sum_{j=1}^p\phi_j Y_{t-j}$, i.e.\ $Y_t=\sum_{j=1}^p\phi_j Y_{t-j}
+-\tilde\nu_t$; we must show $\{\tilde\nu_t\}$ is white noise $\sim$ that of
+$\eps$ (the sign is immaterial for noise). It is Gaussian (a linear
+combination of Gaussians) with $\E[\tilde\nu_t]=0$ since $\E[X_t]=0$.
+
+\emph{Spectral matching.} For every $\tau$,
+\[
+\acvs^{(Y)}_\tau=\E[Y_t Y_{t+\tau}]=\E[X_{-t}X_{-t-\tau}]
+=\acvs^{(X)}_{-\tau}=\acvs^{(X)}_\tau,
+\]
+so $\sdf_Y(f)=\sdf_X(f)$ for all $f$. Now $\{\tilde\nu_t\}=\Phi(\Bsh)[\{Y_t\}]$
+is an LTI filtering of $\{Y_t\}$, so by the polynomial-filter lemma and the
+output-spectrum theorem,
+\[
+\sdf_{\tilde\nu}(f)=\abs{\Phi(e^{-2\pi i f})}^2\sdf_Y(f)
+=\abs{\Phi(e^{-2\pi i f})}^2\sdf_X(f).
+\]
+But the AR spectral density (the $q=0$ ARMA case) gives
+$\sdf_X(f)=\sigma_\eps^2/\abs{\Phi(e^{-2\pi i f})}^2$, hence
+\[
+\sdf_{\tilde\nu}(f)=\abs{\Phi(e^{-2\pi i f})}^2\cdot
+\frac{\sigma_\eps^2}{\abs{\Phi(e^{-2\pi i f})}^2}=\sigma_\eps^2 .
+\]
+A constant spectral density means $\{\tilde\nu_t\}$ is white noise of variance
+$\sigma_\eps^2$; being Gaussian and mean-zero it has the same distribution as
+$\{\eps_t\}$. Therefore the reversed process is AR($p$) with identical
+coefficients. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Spectral density of an MA(1) via a filter \quad\textnormal{[New]}}{p11-n1}
+Let $\eps_t$ be white noise of variance $\sigma^2$ and $X_t=\eps_t-\theta\eps_{t-1}$.
+Using the LTI machinery, find $\sdf_X(f)$ and check it against the direct ACVS.
+\end{exercise}
+\begin{solution}
+Here $X_t=\Theta(\Bsh)\eps_t$ with $\Theta(z)=1-\theta z$, an LTI filter with
+impulse response $h_0=1,\ h_1=-\theta$. Its transfer function is
+$H(f)=1-\theta e^{-2\pi i f}$, so
+\[
+\sdf_X(f)=\abs{H(f)}^2\sdf_\eps(f)=\sigma^2\abs{1-\theta e^{-2\pi i f}}^2 .
+\]
+Expand:
+\[
+\abs{1-\theta e^{-2\pi i f}}^2=(1-\theta e^{-2\pi i f})(1-\theta e^{2\pi i f})
+=1+\theta^2-2\theta\cos(2\pi f),
+\]
+giving $\sdf_X(f)=\sigma^2\big(1+\theta^2-2\theta\cos(2\pi f)\big)$.
+
+\emph{Check via ACVS.} For this MA(1), $\acvs_0=(1+\theta^2)\sigma^2$,
+$\acvs_{\pm1}=-\theta\sigma^2$, else $0$. Then
+$\sdf_X(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}
+=(1+\theta^2)\sigma^2-\theta\sigma^2(e^{-2\pi i f}+e^{2\pi i f})
+=\sigma^2(1+\theta^2-2\theta\cos 2\pi f)$, identical. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Transfer function and gain of a two-sided moving average \quad\textnormal{[New]}}{p11-n2}
+Let $\filt[\{X_t\}]_u=\tfrac13(X_{u-1}+X_u+X_{u+1})$ (a centred 3-point average).
+Find the impulse response, the transfer function, and the squared gain
+$\abs{H(f)}^2$. What does it do to $f=0$ versus $f=\tfrac13$?
+\end{exercise}
+\begin{solution}
+Writing $\filt[\{X_t\}]_u=\sum_m h_{u-m}X_m=\sum_k h_k X_{u-k}$, the coefficients
+of $X_{u-1},X_u,X_{u+1}$ are $h_1,h_0,h_{-1}$, so
+$h_{-1}=h_0=h_1=\tfrac13$ (others $0$). Then
+\[
+H(f)=\sum_m h_m e^{-2\pi i f m}=\tfrac13\big(e^{2\pi i f}+1+e^{-2\pi i f}\big)
+=\tfrac13\big(1+2\cos(2\pi f)\big).
+\]
+$H$ is real (the filter is symmetric, zero phase), so
+\[
+\abs{H(f)}^2=\tfrac19\big(1+2\cos 2\pi f\big)^2 .
+\]
+At $f=0$: $H(0)=1$, gain $1$ (the mean / DC component passes untouched). At
+$f=\tfrac13$: $\cos(2\pi/3)=-\tfrac12$, so $H=\tfrac13(1-1)=0$ --- that frequency
+is annihilated. The 3-point average is a low-pass smoother with a null at
+$f=\tfrac13$. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Spectral density of an AR(1) \quad\textnormal{[New]}}{p11-n3}
+Let $X_t=\phi X_{t-1}+\eps_t$ with $\abs\phi<1$ and $\eps$ white noise of
+variance $\sigma^2$. Use the polynomial-filter lemma to obtain $\sdf_X(f)$ and
+state where it peaks for $\phi>0$ and for $\phi<0$.
+\end{exercise}
+\begin{solution}
+Rewrite as $\Phi(\Bsh)X_t=\eps_t$ with $\Phi(z)=1-\phi z$. By the
+polynomial-filter lemma the AR filter has transfer function
+$\Phi(e^{-2\pi i f})=1-\phi e^{-2\pi i f}$, so the output-spectrum theorem
+applied to $\Phi(\Bsh)[\{X_t\}]=\{\eps_t\}$ gives
+$\abs{1-\phi e^{-2\pi i f}}^2\sdf_X(f)=\sigma^2$, hence
+\[
+\sdf_X(f)=\frac{\sigma^2}{\abs{1-\phi e^{-2\pi i f}}^2}
+=\frac{\sigma^2}{1+\phi^2-2\phi\cos(2\pi f)} .
+\]
+The denominator is smallest where $\phi\cos(2\pi f)$ is largest. For
+$\phi>0$ this is $f=0$ (spectrum peaks at low frequency --- slowly varying,
+persistent series); for $\phi<0$ it is $f=\tfrac12$ (peak at high frequency ---
+rapidly oscillating series). Stationarity ($\abs\phi<1$) keeps the denominator
+$\ge(1-\abs\phi)^2>0$, so $\sdf_X$ is finite everywhere. \hfill$\square$
+\end{solution}
+
+\begin{exercise}{Cascade gain of difference then smooth \quad\textnormal{[New]}}{p11-n4}
+A series is first differenced, $\{V_t\}=(I-\Bsh)[\{X_t\}]$, then run through the
+3-point average $\filt_2$ of Exercise~\ref{exo:p11-n2}, giving
+$\{Y_t\}=\filt_2[\{V_t\}]$. Find $\sdf_Y$ in terms of $\sdf_X$.
+\end{exercise}
+\begin{solution}
+The whole operation is the cascade $\filt=\filt_2(I-\Bsh)$, which is LTI with
+transfer function the \emph{product} of the two transfer functions:
+\[
+H(f)=\underbrace{(1-e^{-2\pi i f})}_{\text{difference}}\cdot
+\underbrace{\tfrac13(1+2\cos 2\pi f)}_{\text{3-point average}} .
+\]
+The squared gains multiply, so using
+$\abs{1-e^{-2\pi i f}}^2=4\sin^2(\pi f)$,
+\[
+\sdf_Y(f)=\abs{H(f)}^2\sdf_X(f)
+=4\sin^2(\pi f)\cdot\tfrac19\big(1+2\cos 2\pi f\big)^2\,\sdf_X(f).
+\]
+This both removes the $f=0$ component (the difference) and nulls $f=\tfrac13$
+(the average) --- a band-suppressing combination. \hfill$\square$
+\end{solution}
