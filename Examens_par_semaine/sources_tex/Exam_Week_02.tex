@@ -54,17 +54,17 @@ compute $\pacf_1,\pacf_2,\pacf_3$ from the values in (b). Read off the implied m
 
 % ---------------------------------------------------------------
 \problem{5}
-Consider the ARMA(1,1) process $X_t=\phi X_{t-1}+\eps_t+\vartheta\eps_{t-1}$ with $\phi=\tfrac12,\ \vartheta=\tfrac14$.
+\textbf{(Revision of Week 1: stationarity, the ACVS \& ergodicity.)} Let $\{Y_t\}$ be i.i.d.\ with mean $0$ and variance $\sigma_Y^2$, and define $X_t=Y_t+\tfrac12 Y_{t-1}$.
 
-\textbf{(a)} Write the model as $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ and check causality and invertibility from the roots of $\Phi(z)$ and $\Theta(z)$. \hfill(1.5 pts)
+\textbf{(a)} Compute $\E[X_t]$ and the autocovariance $\acvs^X_\tau$ for \emph{all} $\tau\in\Ints$, give the lag-$1$ autocorrelation $\acf_1$, and explain in one sentence why $\{X_t\}$ is weakly stationary. \hfill(2 pts)
 
-\textbf{(b)} Derive the $\psi$-weights of the causal MA($\infty$) representation $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ by matching coefficients in $\Phi(\Bsh)\psi(\Bsh)=\Theta(\Bsh)$. Give $\psi_0,\psi_1,\psi_2$ and the general formula. \hfill(2 pts)
-
-\textbf{(c)} \emph{(Week 1 revision.)} Recall that a candidate sequence $\{\acvs_\tau\}$ is a valid ACVS only if it is positive semi-definite. Decide whether
+\textbf{(b)} \emph{(Validity via positive semi-definiteness.)} A candidate sequence is a valid ACVS of some stationary process only if it is positive semi-definite. Decide whether
 \[
-\acvs_0=1,\qquad \acvs_{\pm1}=0.7,\qquad \acvs_\tau=0\ (\abs\tau\ge2)
+\acvs_0=1,\qquad \acvs_{\pm1}=0.8,\qquad \acvs_\tau=0\ (\abs\tau\ge2)
 \]
-is a valid ACVS of some stationary process, by computing the spectral density $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$ and checking its sign. \hfill(1.5 pts)
+is a valid ACVS, by forming the $3\times3$ covariance matrix $\Gamma_3=[\acvs_{j-k}]_{1\le j,k\le3}$ and testing its definiteness (e.g.\ via its determinant). \hfill(2 pts)
+
+\textbf{(c)} \emph{(Mean ergodicity.)} Show that if $\sum_{\tau\in\Ints}\abs{\acvs_\tau}<\infty$ then $\Var(\bar X_n)\to0$ as $n\to\infty$, where $\bar X_n=\tfrac1n\sum_{t=1}^n X_t$, so that $\bar X_n$ is a consistent (mean-ergodic) estimator of $\mu=\E[X_t]$. \hfill(1 pt)
 \answerpage
 
 \end{document}

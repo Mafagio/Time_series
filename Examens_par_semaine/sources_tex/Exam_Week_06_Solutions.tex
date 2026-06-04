@@ -65,7 +65,7 @@ G(f)=\conj{G(-f)}\quad\Longleftrightarrow\quad G(-f)=\conj{G(f)}\qquad(\text{Her
 \[
 G(f)=G(-f)=\conj{G(f)},
 \]
-so $G(f)$ equals its own conjugate, i.e.\ $G$ is \textbf{real}; and $G(f)=G(-f)$ says $G$ is \textbf{even}. (This is exactly why a valid SDF, the transform of the real even ACVS, is real and even.)
+so $G(f)$ equals its own conjugate, i.e.\ $G$ is \textbf{real}; and $G(f)=G(-f)$ says $G$ is \textbf{even}. (This is the Fourier-theoretic reason a real, even signal always has a real, even transform.)
 
 % ---------------------------------------------------------------
 \solproblem{5}
@@ -131,16 +131,16 @@ D_n(f)=\frac{\sin(n\pi f)}{\sin(\pi f)}\;e^{-\pi i (n-1) f},
 \]
 \hfill(2 pts)
 
-\textbf{(b)} Show that $\abs{D_n(f)}$ vanishes exactly at the nonzero \textbf{Fourier frequencies} $f_k=k/n$, $k=1,\dots,n-1$, while $D_n(0)=n$. (This is why the periodogram of a pure sinusoid at a Fourier frequency does not leak onto the other Fourier frequencies.) \hfill(1.5 pts)
+\textbf{(b)} Show that $\abs{D_n(f)}$ vanishes exactly at the nonzero \textbf{Fourier frequencies} $f_k=k/n$, $k=1,\dots,n-1$, while $D_n(0)=n$. (This is why the finite Fourier transform of a pure sinusoid sitting exactly on a Fourier frequency contributes nothing at the other Fourier frequencies.) \hfill(1.5 pts)
 
-\textbf{(c)} \emph{(Aliasing / Nyquist.)} Let $\{X_t\}$ be obtained by sampling a continuous-time process at interval $\Delta$, and recall the aliasing identity for the sampled spectral density,
+\textbf{(c)} \emph{(Aliasing / Nyquist.)} Let $g\in L^1$ have continuous-time Fourier transform $\mathcal G(f)$, and let $G$ denote the transform of the sampled sequence $\{g(t)\}_{t\in\Delta\Ints}$. Recall the aliasing identity
 \[
-\sdf(f)=\sum_{k\in\Ints}\sdf_{\mathrm{c}}\!\left(f+\frac{k}{\Delta}\right),
+G(f)=\sum_{k\in\Ints}\mathcal G\!\left(f+\frac{k}{\Delta}\right),
 \qquad \abs f\le \frac{1}{2\Delta}.
 \]
-Suppose the continuous SDF is band-limited triangular,
-$\sdf_{\mathrm{c}}(f)=(1-\abs f)\,\ind_{\{\abs f\le 1\}}$.
-For $\Delta=1$ (Nyquist frequency $\tfrac12$) compute the aliased SDF $\sdf(f)$ on $\abs f\le\tfrac12$, and state whether aliasing has occurred and why. \hfill(1.5 pts)
+Suppose $\mathcal G$ is band-limited triangular,
+$\mathcal G(f)=(1-\abs f)\,\ind_{\{\abs f\le 1\}}$.
+For $\Delta=1$ (Nyquist frequency $\tfrac12$) compute the aliased transform $G(f)$ on $\abs f\le\tfrac12$, and state whether aliasing has occurred and why. \hfill(1.5 pts)
 \statementend
 
 \textbf{(a)} The sum is a finite geometric series with ratio $r=e^{-2\pi i f}$. For $f\notin\Ints$ (so $r\neq1$),
@@ -173,26 +173,26 @@ D_n(0)=\lim_{f\to0}\frac{\sin(n\pi f)}{\sin(\pi f)}=\lim_{f\to0}\frac{n\pi f}{\p
 \]
 So $\abs{D_n}$ has a peak of height $n$ at the origin and is exactly zero at every \emph{other} Fourier frequency. Consequently the finite transform of a sinusoid sitting at one Fourier frequency contributes nothing at the remaining Fourier frequencies: there is no spectral leakage \emph{between} Fourier frequencies for an on-grid sinusoid.
 
-\textbf{(c)} With $\Delta=1$ the Nyquist frequency is $\tfrac12$ and the aliasing identity reads $\sdf(f)=\sum_{k\in\Ints}\sdf_{\mathrm{c}}(f+k)$ on $\abs f\le\tfrac12$. Since $\sdf_{\mathrm{c}}$ is supported on $[-1,1]$, for $\abs f\le\tfrac12$ only $k\in\{-1,0,1\}$ can contribute:
+\textbf{(c)} With $\Delta=1$ the Nyquist frequency is $\tfrac12$ and the aliasing identity reads $G(f)=\sum_{k\in\Ints}\mathcal G(f+k)$ on $\abs f\le\tfrac12$. Since $\mathcal G$ is supported on $[-1,1]$, for $\abs f\le\tfrac12$ only $k\in\{-1,0,1\}$ can contribute:
 \[
-\sdf(f)=\sdf_{\mathrm{c}}(f-1)+\sdf_{\mathrm{c}}(f)+\sdf_{\mathrm{c}}(f+1).
+G(f)=\mathcal G(f-1)+\mathcal G(f)+\mathcal G(f+1).
 \]
 Evaluate each term on $\abs f\le\tfrac12$:
 \begin{itemize}
-  \item $\sdf_{\mathrm{c}}(f)=1-\abs f$ (always in support);
-  \item $\sdf_{\mathrm{c}}(f+1)=1-\abs{f+1}$ is nonzero only when $\abs{f+1}\le1$, i.e.\ $f\le0$, where it equals $1-(1+f)=-f$;
-  \item $\sdf_{\mathrm{c}}(f-1)=1-\abs{f-1}$ is nonzero only when $\abs{f-1}\le1$, i.e.\ $f\ge0$, where it equals $1-(1-f)=f$.
+  \item $\mathcal G(f)=1-\abs f$ (always in support);
+  \item $\mathcal G(f+1)=1-\abs{f+1}$ is nonzero only when $\abs{f+1}\le1$, i.e.\ $f\le0$, where it equals $1-(1+f)=-f$;
+  \item $\mathcal G(f-1)=1-\abs{f-1}$ is nonzero only when $\abs{f-1}\le1$, i.e.\ $f\ge0$, where it equals $1-(1-f)=f$.
 \end{itemize}
 Hence
 \[
-\sdf(f)=
+G(f)=
 \begin{cases}
 (1-\abs f)+(-f)=(1+f)+(-f)=1, & -\tfrac12\le f\le 0,\\[2pt]
 (1-\abs f)+f=(1-f)+f=1, & 0\le f\le \tfrac12,
 \end{cases}
 \]
-that is, $\boxed{\,\sdf(f)\equiv1\ \text{ on }\abs f\le\tfrac12.\,}$
-\textbf{Aliasing has occurred.} The continuous spectrum had support out to $\abs f=1$, i.e.\ \emph{beyond} the Nyquist frequency $\tfrac12$; sampling at $\Delta=1$ folds that excess high-frequency power back into the band $[-\tfrac12,\tfrac12]$. Here the folded triangular tails fill in exactly the missing area, turning a triangular continuous SDF into a \emph{flat} (white-looking) sampled SDF --- the high-frequency content has been irretrievably mixed into the low frequencies.
+that is, $\boxed{\,G(f)\equiv1\ \text{ on }\abs f\le\tfrac12.\,}$
+\textbf{Aliasing has occurred.} The continuous transform $\mathcal G$ had support out to $\abs f=1$, i.e.\ \emph{beyond} the Nyquist frequency $\tfrac12$; sampling at $\Delta=1$ folds that excess high-frequency content back into the band $[-\tfrac12,\tfrac12]$. Here the folded triangular tails fill in exactly the missing area, turning a triangular continuous transform into a \emph{flat} sampled transform --- the high-frequency content has been irretrievably mixed into the low frequencies.
 
 % ---------------------------------------------------------------
 \solproblem{5}

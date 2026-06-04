@@ -278,6 +278,31 @@
   .gradebtn{width:42px;height:42px;border:1px solid var(--line);background:var(--paper-2);border-radius:10px;cursor:pointer;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);transition:.15s;}
   .gradebtn:hover{border-color:var(--teal);}
   .gradebtn.on{background:var(--teal);color:#fff;border-color:var(--teal);}
+  /* --- saisie points -> note /6 (avec animation joyeuse/triste) --- */
+  .gradebox{margin-top:22px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--paper-2);}
+  .gradebox h4{margin:0 0 12px;font-family:var(--serif);font-size:16px;color:var(--ink);}
+  .graderow{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+  .graderow label{display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .graderow input{width:104px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);text-align:center;}
+  .graderow input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-soft);}
+  .graderow .gslash{font-family:var(--serif);font-size:24px;color:var(--muted);padding-bottom:7px;}
+  .gradeout{display:none;}
+  .gradeout.show{display:flex;align-items:center;gap:16px;margin-top:14px;padding:14px 18px;border-radius:12px;}
+  .gradeout.good{background:rgba(18,135,111,.10);border:1px solid rgba(18,135,111,.35);}
+  .gradeout.bad{background:rgba(192,73,47,.08);border:1px solid rgba(192,73,47,.32);}
+  .gemoji{font-size:44px;line-height:1;display:inline-block;}
+  .gradeout.good .gemoji{animation:gjoy .55s cubic-bezier(.3,1.4,.5,1) both, gbob 1.7s ease-in-out .6s infinite;}
+  .gradeout.bad .gemoji{animation:gsad .7s ease both;}
+  @keyframes gjoy{0%{transform:scale(.2) rotate(-15deg);opacity:0}60%{transform:scale(1.2) rotate(8deg);opacity:1}80%{transform:scale(.93) rotate(-4deg)}100%{transform:scale(1) rotate(0)}}
+  @keyframes gbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes gsad{0%{transform:translateX(0) scale(.6);opacity:0}25%{opacity:1}40%{transform:translateX(-7px) rotate(-3deg)}60%{transform:translateX(7px) rotate(3deg)}80%{transform:translateX(-4px)}100%{transform:translateX(0) rotate(0) scale(1)}}
+  .gwrap{display:flex;flex-direction:column;gap:2px;}
+  .gnum{font-family:var(--serif);font-weight:700;font-size:32px;color:var(--ink);line-height:1.05;}
+  .gnum small{font-size:15px;color:var(--muted);font-weight:600;}
+  .gmsg{font-family:var(--sans);font-size:13.5px;}
+  .gradeout.good .gmsg{color:var(--teal-2);}
+  .gradeout.bad .gmsg{color:var(--amber-2);}
+  .gradecap{margin:11px 0 0;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.03em;}
 
   /* result */
   .result{background:var(--panel);color:#fff;border-radius:18px;padding:26px;margin:0 0 22px;display:flex;
@@ -1467,7 +1492,7 @@ const MOCK_EXAM = '1_Sources_du_cours/mock-exam.pdf';
 const MOCK_SOL  = '1_Sources_du_cours/mock-exam-solutions.pdf';
 const ASSET_V = '4';                       // anti-cache : à incrémenter à chaque mise à jour des PDF
 const bust = u => u + (u.indexOf('?')<0 ? '?' : '&') + 'v=' + ASSET_V;
-function bestGrade(n){ const g=P.weekExamGrade[n]; return (g===0||g)?g:null; }
+function bestGrade(n){ const e=P.weekExamGrade[n]; if(e&&typeof e==='object') return (e.grade!=null?e.grade:null); return (e===0||e)?e:null; }
 if(window.pdfjsLib){ try{ pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdfjs/pdf.worker.min.js'; }catch(e){} }
 function pdfEmbed(src, id){ id=id||'pdfmain'; return `<div class="docbar"><span class="dn">📄 ${src.split('/').pop()}</span><span class="acts"><a href="#" onclick="openFs('${src}');return false;">Plein écran ⤢</a><a href="${bust(src)}" download="${src.split('/').pop()}">Télécharger ⬇</a></span></div>
     <div class="pdfdoc" id="${id}"><div class="pdfloading">Chargement du document…</div></div>
@@ -1519,10 +1544,38 @@ function copyBox(k){ return `<div class="copybox">
     <input type="file" id="scanIn" accept="image/*,application/pdf" onchange="attachScan('${k}',this)">
     <div id="scanPrev" class="scanprev"></div>
   </div>`; }
-function gradeButtons(current, jsPrefix){ let b=''; for(let g=0;g<=6;g++){ b+=`<button class="gradebtn${current===g?' on':''}" onclick="${jsPrefix}${g},this)">${g}</button>`; }
-  return `<div class="gradebar" id="gradebar"><span class="gl">Ma note /6 :</span>${b}</div>`; }
-function setWeekGrade(n,g,btn){ P.weekExamGrade[n]=g; store.save(); document.querySelectorAll('#gradebar .gradebtn').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); updateSidebar({type:'week',n}); }
-function setExamGrade(g,btn){ P.examGrade=g; store.save(); document.querySelectorAll('#gradebar .gradebtn').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); }
+/* --- saisie « points obtenus / total » -> note /6 + animation joyeuse (>=4) ou triste (<4) --- */
+function gradeBox(stored, kind, n){
+  const totalDef = (kind==='week') ? '20' : '';
+  let pts='', tot=totalDef;
+  if(stored && typeof stored==='object'){ pts=(stored.pts!=null?stored.pts:''); tot=(stored.total!=null?stored.total:totalDef); }
+  const onin = (kind==='week') ? `gradeCalc('week',${n})` : `gradeCalc('exam')`;
+  return `<div class="gradebox">
+    <h4>Ma note /6 — calcul automatique</h4>
+    <div class="graderow">
+      <label>Points obtenus<input type="number" id="gPts" min="0" step="0.5" value="${pts}" placeholder="0" oninput="${onin}"></label>
+      <span class="gslash">/</span>
+      <label>Total du barème<input type="number" id="gTot" min="0.5" step="0.5" value="${tot}" placeholder="20" oninput="${onin}"></label>
+    </div>
+    <div id="gradeOut" class="gradeout"></div>
+    <p class="gradecap">Barème linéaire 1 → 6 (60 % ⇒ 4.0, la réussite). Arrondi au quart de point.</p>
+  </div>`;
+}
+function gradeCalc(kind, n){
+  const pe=$("gPts"), te=$("gTot"), out=$("gradeOut"); if(!out) return;
+  const pts=parseFloat(pe&&pe.value), tot=parseFloat(te&&te.value);
+  if(!(tot>0) || isNaN(pts) || pts<0){ out.className='gradeout'; out.innerHTML=''; saveGrade(kind,n,null); return; }
+  const r=Math.max(0,Math.min(1,pts/tot));
+  const grade=Math.round((1+5*r)*4)/4;                 // échelle EPFL 1→6, arrondi au quart
+  const happy=grade>=4;
+  out.className='gradeout show '+(happy?'good':'bad');
+  out.innerHTML=`<span class="gemoji">${happy?'😄':'😟'}</span>`
+    +`<span class="gwrap"><span class="gnum">${grade} <small>/ 6</small></span>`
+    +`<span class="gmsg">${happy?'Réussi — bravo&nbsp;! 🎉':'En dessous de 4 — accroche-toi 💪'}</span></span>`;
+  saveGrade(kind,n,{pts:pts,total:tot,grade:grade});
+}
+function saveGrade(kind,n,obj){ if(kind==='week') P.weekExamGrade[n]=obj; else P.examGrade=obj; store.save(); if(kind==='week') updateSidebar({type:'week',n}); }
+function restoreGrade(kind,n){ const s=(kind==='week')?P.weekExamGrade[n]:P.examGrade; if(s&&typeof s==='object'&&s.grade!=null) gradeCalc(kind,n); }
 function showSol(src){ const w=$("solWrap"); if(w) w.style.display='block'; const b=$("solBtn"); if(b) b.style.display='none'; renderPdfInto('pdfsol', src); }
 
 /* --- plein écran « dans le site » (overlay PDF.js, croix qui apparaît à la souris, Échap pour sortir) --- */
@@ -1813,16 +1866,17 @@ function renderExam(){
     <div class="exam-note"><strong>Examen blanc réel du cours</strong> · sans calculatrice. Compose sur papier, dépose ta copie, puis révèle le <strong>corrigé (à la fin)</strong> et note-toi /6.</div>
     ${pdfEmbed(MOCK_EXAM)}
     ${copyBox('ts-scan-exam')}
-    ${gradeButtons(P.examGrade, 'setExamGrade(')}
+    ${gradeBox(P.examGrade,'exam')}
     <div class="quiz-actions">
       <button id="solBtn" class="btn btn-amber btn-lg" onclick="showSol('${MOCK_SOL}')">Voir le corrigé</button>
       <a class="btn btn-ghost" href="#/">← Accueil</a>
     </div>
-    <div id="solWrap" style="display:none"><div class="sec-title" style="margin-top:26px">Corrigé</div><div class="pdfdoc" id="pdfsol"></div></div>
+    <div id="solWrap" style="display:none"><div class="sec-title" style="margin-top:26px">Corrigé</div>${pdfEmbed(MOCK_SOL,'pdfsol')}</div>
   </div>`;
   $("brandMeta").textContent = `time_series/examen_blanc`;
   updateSidebar({type:'exam'});
   refreshScan('ts-scan-exam');
+  restoreGrade('exam');
   startChrono();
   renderPdfInto('pdfmain', MOCK_EXAM);
 }
@@ -1841,17 +1895,18 @@ function renderWeekExam(n){
     <div class="exam-note"><strong>Durée conseillée : 60 min</strong> · 4 exercices / 20 points · sans calculatrice. Compose sur papier (un exercice par page dans le sujet), dépose ta copie, puis révèle le <strong>corrigé (à la fin)</strong> et note-toi /6.</div>
     ${pdfEmbed(examPath(n))}
     ${copyBox('ts-scan-w'+n)}
-    ${gradeButtons(bestGrade(n), `setWeekGrade(${n},`)}
+    ${gradeBox(P.weekExamGrade[n],'week',n)}
     <div class="quiz-actions">
       <button id="solBtn" class="btn btn-amber btn-lg" onclick="showSol('${solPath(n)}')">Voir le corrigé</button>
       <a class="btn btn-ghost" href="#/semaine/${n}">← Retour au cours</a>
       ${n<COURSE.length?`<a class="btn btn-ghost" href="#/semaine/${n+1}">Semaine ${n+1} →</a>`:''}
     </div>
-    <div id="solWrap" style="display:none"><div class="sec-title" style="margin-top:26px">Corrigé</div><div class="pdfdoc" id="pdfsol"></div></div>
+    <div id="solWrap" style="display:none"><div class="sec-title" style="margin-top:26px">Corrigé</div>${pdfEmbed(solPath(n),'pdfsol')}</div>
   </div>`;
   $("brandMeta").textContent = `time_series/semaine_${n}/examen`;
   updateSidebar({type:'week', n});
   refreshScan('ts-scan-w'+n);
+  restoreGrade('week',n);
   startChrono();
   renderPdfInto('pdfmain', examPath(n));
 }

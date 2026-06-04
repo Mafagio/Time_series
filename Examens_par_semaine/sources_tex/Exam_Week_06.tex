@@ -54,16 +54,16 @@ D_n(f)=\frac{\sin(n\pi f)}{\sin(\pi f)}\;e^{-\pi i (n-1) f},
 \]
 \hfill(2 pts)
 
-\textbf{(b)} Show that $\abs{D_n(f)}$ vanishes exactly at the nonzero \textbf{Fourier frequencies} $f_k=k/n$, $k=1,\dots,n-1$, while $D_n(0)=n$. (This is why the periodogram of a pure sinusoid at a Fourier frequency does not leak onto the other Fourier frequencies.) \hfill(1.5 pts)
+\textbf{(b)} Show that $\abs{D_n(f)}$ vanishes exactly at the nonzero \textbf{Fourier frequencies} $f_k=k/n$, $k=1,\dots,n-1$, while $D_n(0)=n$. (This is why the finite Fourier transform of a pure sinusoid sitting exactly on a Fourier frequency contributes nothing at the other Fourier frequencies.) \hfill(1.5 pts)
 
-\textbf{(c)} \emph{(Aliasing / Nyquist.)} Let $\{X_t\}$ be obtained by sampling a continuous-time process at interval $\Delta$, and recall the aliasing identity for the sampled spectral density,
+\textbf{(c)} \emph{(Aliasing / Nyquist.)} Let $g\in L^1$ have continuous-time Fourier transform $\mathcal G(f)$, and let $G$ denote the transform of the sampled sequence $\{g(t)\}_{t\in\Delta\Ints}$. Recall the aliasing identity
 \[
-\sdf(f)=\sum_{k\in\Ints}\sdf_{\mathrm{c}}\!\left(f+\frac{k}{\Delta}\right),
+G(f)=\sum_{k\in\Ints}\mathcal G\!\left(f+\frac{k}{\Delta}\right),
 \qquad \abs f\le \frac{1}{2\Delta}.
 \]
-Suppose the continuous SDF is band-limited triangular,
-$\sdf_{\mathrm{c}}(f)=(1-\abs f)\,\ind_{\{\abs f\le 1\}}$.
-For $\Delta=1$ (Nyquist frequency $\tfrac12$) compute the aliased SDF $\sdf(f)$ on $\abs f\le\tfrac12$, and state whether aliasing has occurred and why. \hfill(1.5 pts)
+Suppose $\mathcal G$ is band-limited triangular,
+$\mathcal G(f)=(1-\abs f)\,\ind_{\{\abs f\le 1\}}$.
+For $\Delta=1$ (Nyquist frequency $\tfrac12$) compute the aliased transform $G(f)$ on $\abs f\le\tfrac12$, and state whether aliasing has occurred and why. \hfill(1.5 pts)
 \answerpage
 
 % ---------------------------------------------------------------

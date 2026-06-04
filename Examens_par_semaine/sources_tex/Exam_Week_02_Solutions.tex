@@ -165,49 +165,47 @@ The PACF cuts off after lag $2$ while the ACF in (b) tails off: this is the \tex
 % ---------------------------------------------------------------
 \solproblem{5}
 \statementstart
-Consider the ARMA(1,1) process $X_t=\phi X_{t-1}+\eps_t+\vartheta\eps_{t-1}$ with $\phi=\tfrac12,\ \vartheta=\tfrac14$.
+\textbf{(Revision of Week 1: stationarity, the ACVS \& ergodicity.)} Let $\{Y_t\}$ be i.i.d.\ with mean $0$ and variance $\sigma_Y^2$, and define $X_t=Y_t+\tfrac12 Y_{t-1}$.
 
-\textbf{(a)} Write the model as $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ and check causality and invertibility from the roots of $\Phi(z)$ and $\Theta(z)$. \hfill(1.5 pts)
+\textbf{(a)} Compute $\E[X_t]$ and the autocovariance $\acvs^X_\tau$ for \emph{all} $\tau\in\Ints$, give the lag-$1$ autocorrelation $\acf_1$, and explain in one sentence why $\{X_t\}$ is weakly stationary. \hfill(2 pts)
 
-\textbf{(b)} Derive the $\psi$-weights of the causal MA($\infty$) representation $X_t=\sum_{j\ge0}\psi_j\eps_{t-j}$ by matching coefficients in $\Phi(\Bsh)\psi(\Bsh)=\Theta(\Bsh)$. Give $\psi_0,\psi_1,\psi_2$ and the general formula. \hfill(2 pts)
+\textbf{(b)} \emph{(Validity via positive semi-definiteness.)} A candidate sequence is a valid ACVS of some stationary process only if it is positive semi-definite. Decide whether $\acvs_0=1$, $\acvs_{\pm1}=0.8$, $\acvs_\tau=0$ ($\abs\tau\ge2$) is a valid ACVS, by forming the $3\times3$ covariance matrix $\Gamma_3=[\acvs_{j-k}]_{1\le j,k\le3}$ and testing its definiteness. \hfill(2 pts)
 
-\textbf{(c)} \emph{(Week 1 revision.)} Recall that a candidate sequence $\{\acvs_\tau\}$ is a valid ACVS only if it is positive semi-definite. Decide whether
-\[
-\acvs_0=1,\qquad \acvs_{\pm1}=0.7,\qquad \acvs_\tau=0\ (\abs\tau\ge2)
-\]
-is a valid ACVS of some stationary process, by computing the spectral density $\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}$ and checking its sign. \hfill(1.5 pts)
+\textbf{(c)} \emph{(Mean ergodicity.)} Show that if $\sum_{\tau}\abs{\acvs_\tau}<\infty$ then $\Var(\bar X_n)\to0$, where $\bar X_n=\tfrac1n\sum_{t=1}^n X_t$, so $\bar X_n$ is a consistent (mean-ergodic) estimator of $\mu=\E[X_t]$. \hfill(1 pt)
 \statementend
 
-\textbf{(a)} In backshift form $X_t-\phi X_{t-1}=\eps_t+\vartheta\eps_{t-1}$ reads $\Phi(\Bsh)X_t=\Theta(\Bsh)\eps_t$ with
+\textbf{(a)} Since $\E[Y_t]=0$, the mean is constant: $\E[X_t]=\E[Y_t]+\tfrac12\E[Y_{t-1}]=0$. The $Y$'s are uncorrelated with variance $\sigma_Y^2$, so
 \[
-\Phi(z)=1-\phi z=1-\tfrac12 z,
-\qquad
-\Theta(z)=1+\vartheta z=1+\tfrac14 z.
+\acvs^X_0=\Var(X_t)=\Var(Y_t)+\tfrac14\Var(Y_{t-1})=\Bigl(1+\tfrac14\Bigr)\sigma_Y^2=\tfrac54\sigma_Y^2,
 \]
-$\Phi(z)$ has root $z=1/\phi=2$, with $\abs2>1$ $\Rightarrow$ \textbf{causal}. $\Theta(z)$ has root $z=-1/\vartheta=-4$, with $\abs{-4}>1$ $\Rightarrow$ \textbf{invertible}.
+\[
+\acvs^X_1=\Cov\!\bigl(Y_t+\tfrac12Y_{t-1},\,Y_{t-1}+\tfrac12Y_{t-2}\bigr)=\tfrac12\Var(Y_{t-1})=\tfrac12\sigma_Y^2,
+\]
+and $\acvs^X_\tau=0$ for $\abs\tau\ge2$ (no shared $Y$ index). Hence
+\[
+\acf_1=\frac{\acvs^X_1}{\acvs^X_0}=\frac{1/2}{5/4}=\frac25=0.4 .
+\]
+The mean is constant and $\acvs^X_\tau$ depends only on the lag $\tau$ (not on $t$), with $\acvs^X_0<\infty$; therefore $\{X_t\}$ is weakly stationary.
 
-\textbf{(b)} Write $\psi(z)=\sum_{j\ge0}\psi_j z^j$ and match coefficients in $\Phi(z)\psi(z)=\Theta(z)$, i.e.
+\textbf{(b)} The covariance matrix of $(X_1,X_2,X_3)$ is the symmetric Toeplitz matrix
 \[
-(1-\phi z)\sum_{j\ge0}\psi_j z^j=1+\vartheta z.
+\Gamma_3=\begin{pmatrix}1&0.8&0\\[2pt] 0.8&1&0.8\\[2pt] 0&0.8&1\end{pmatrix}.
 \]
-Coefficient of $z^0$: $\psi_0=1$. Coefficient of $z^1$: $\psi_1-\phi\psi_0=\vartheta$, so $\psi_1=\phi+\vartheta$. Coefficient of $z^j$ for $j\ge2$: $\psi_j-\phi\psi_{j-1}=0$, so $\psi_j=\phi\,\psi_{j-1}$. Solving the recursion gives the general formula
+Positive semi-definiteness requires \emph{every} such covariance matrix $\Gamma_n$ to have a non-negative determinant. Expanding along the first row,
 \[
-\psi_0=1,\qquad \psi_j=(\phi+\vartheta)\,\phi^{\,j-1}\quad(j\ge1).
+\det\Gamma_3=1\cdot(1-0.8^2)-0.8\cdot(0.8-0)+0=(1-0.64)-0.64=-0.28<0 .
 \]
-With $\phi=\tfrac12,\ \vartheta=\tfrac14$ we have $\phi+\vartheta=\tfrac34$, hence
-\[
-\psi_0=1,\qquad
-\psi_1=\tfrac34,\qquad
-\psi_2=\tfrac34\cdot\tfrac12=\tfrac38.
-\]
-(The weights decay like $\phi^{j}$, so $\sum_j\abs{\psi_j}=1+\tfrac34\sum_{j\ge0}(\tfrac12)^j=1+\tfrac34\cdot2=\tfrac52<\infty$, confirming causality.)
+A positive-semi-definite matrix cannot have a negative determinant, so $\Gamma_3$ is \emph{not} positive semi-definite (it has a negative eigenvalue). Hence the sequence is \textbf{not} a valid ACVS of any stationary process. (Intuitively a lag-$1$ correlation of $0.8$ with zero correlation beyond lag $1$ is ``too strong'': contrast part~(a), whose genuine model only reaches $\acf_1=0.4$.)
 
-\textbf{(c)} \textbf{No}, the sequence is not a valid ACVS. A valid ACVS must be positive semi-definite, equivalently have a non-negative spectral density. Here, using $\acvs_{-1}=\acvs_1$,
+\textbf{(c)} Expand the variance of the sample mean and group the $n-\abs\tau$ pairs at each lag $\tau$:
 \[
-\sdf(f)=\sum_\tau\acvs_\tau e^{-2\pi i f\tau}
-=\acvs_0+2\acvs_1\cos(2\pi f)
-=1+1.4\cos(2\pi f).
+\Var(\bar X_n)=\frac1{n^2}\sum_{s=1}^n\sum_{t=1}^n\Cov(X_s,X_t)=\frac1{n^2}\sum_{s,t}\acvs_{s-t}
+=\frac1n\sum_{\tau=-(n-1)}^{\,n-1}\Bigl(1-\frac{\abs\tau}{n}\Bigr)\acvs_\tau .
 \]
-At $f=\tfrac12$ this equals $1+1.4\cos(\pi)=1-1.4=-0.6<0$. Since the spectral density goes negative, the sequence fails positive semi-definiteness and \emph{cannot} be the ACVS of any stationary process. (Equivalently $\acf_1=0.7>\tfrac12$, which is impossible for an MA(1)-type two-tap correlation.)
+Bounding the weights by $0\le 1-\abs\tau/n\le1$,
+\[
+\Var(\bar X_n)\le\frac1n\sum_{\tau=-(n-1)}^{\,n-1}\abs{\acvs_\tau}\le\frac1n\sum_{\tau\in\Ints}\abs{\acvs_\tau}=\frac{C}{n}\xrightarrow[n\to\infty]{}0,
+\]
+with $C=\sum_\tau\abs{\acvs_\tau}<\infty$ by hypothesis. Since $\E[\bar X_n]=\mu$, this means $\bar X_n\to\mu$ in mean square, i.e.\ $\bar X_n$ is a consistent (mean-ergodic) estimator of $\mu$.
 
 \end{document}
