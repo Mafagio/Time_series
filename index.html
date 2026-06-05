@@ -1901,7 +1901,7 @@ function renderWeekExam(n){
       <div><span class="wk-tag" style="color:var(--amber);background:rgba(210,135,43,.14)">Semaine ${n} · Examen</span><h2>${w.title}</h2></div>
       <div class="quiz-meta"><div class="chrono" id="chrono">⏱ <span>00:00</span></div></div>
     </div>
-    <div class="exam-note"><strong>Durée conseillée : 60 min</strong> · 4 exercices / 20 points · sans calculatrice. Compose sur papier (un exercice par page dans le sujet), dépose ta copie, puis révèle le <strong>corrigé (à la fin)</strong> et note-toi /6.</div>
+    <div class="exam-note"><strong>Durée conseillée : 60 min</strong> · ${n===2?'5 exercices / 25 points':'4 exercices / 20 points'} · sans calculatrice. Compose sur papier (un exercice par page dans le sujet), dépose ta copie, puis révèle le <strong>corrigé (à la fin)</strong> et note-toi /6.</div>
     ${pdfEmbed(examPath(n))}
     ${copyBox('ts-scan-w'+n)}
     ${gradeBox(P.weekExamGrade[n],'week',n)}

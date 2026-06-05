@@ -1,9 +1,39 @@
 \documentclass[11pt]{article}
 \input{examstyle}
+\usepackage{tikz}
+% --- mini ACF/PACF stem (lollipop) plot: #1 = significance band, #2 = "lag/val,..." (lags 1..8) ---
+\newcommand{\stemplot}[2]{%
+\begin{tikzpicture}[x=0.52cm,y=1.25cm,baseline=-0.45cm]
+  \fill[black!7] (0.4,-#1) rectangle (8.7,#1);
+  \draw[gray,dashed] (0.4,#1)--(8.7,#1);
+  \draw[gray,dashed] (0.4,-#1)--(8.7,-#1);
+  \draw[->] (0,0)--(9.3,0) node[right,font=\tiny]{lag};
+  \draw[->] (0,-0.6)--(0,1.05);
+  \foreach \l/\v in {#2}{\draw[line width=1.3pt] (\l,0)--(\l,\v); \fill (\l,\v) circle(1.6pt);}
+  \foreach \k in {2,4,6,8}{\node[font=\tiny,below=1.5pt] at (\k,0) {\k};}
+\end{tikzpicture}}
+% --- one (ACF,PACF) pair, captioned ---
+\newcommand{\acfpacf}[2]{%
+\begin{tabular}{@{}cc@{}}
+{\scriptsize\itshape sample ACF} & {\scriptsize\itshape sample PACF}\\[-2pt]
+\stemplot{0.196}{#1} & \stemplot{0.196}{#2}\\
+\end{tabular}}
 \begin{document}
 
 \examheader{Week 2: ARMA Models and the PACF}{60 minutes}
-\pointstable
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|p{5cm}|p{4cm}|}
+  \hline
+  \textbf{Exercise} & \textbf{Points}\\\hline
+  1 & \\\hline
+  2 & \\\hline
+  3 & \\\hline
+  4 & \\\hline
+  5 & \\\hline
+  \textbf{Total} & \\\hline
+\end{tabular}
+\end{center}
 \begin{center}\itshape Justify every answer. Throughout, $\eps_t$ is a mean-zero white noise of variance $\sigma^2$.\end{center}
 
 % ---------------------------------------------------------------
@@ -65,6 +95,23 @@ compute $\pacf_1,\pacf_2,\pacf_3$ from the values in (b). Read off the implied m
 is a valid ACVS, by forming the $3\times3$ covariance matrix $\Gamma_3=[\acvs_{j-k}]_{1\le j,k\le3}$ and testing its definiteness (e.g.\ via its determinant). \hfill(2 pts)
 
 \textbf{(c)} \emph{(Mean ergodicity.)} Show that if $\sum_{\tau\in\Ints}\abs{\acvs_\tau}<\infty$ then $\Var(\bar X_n)\to0$ as $n\to\infty$, where $\bar X_n=\tfrac1n\sum_{t=1}^n X_t$, so that $\bar X_n$ is a consistent (mean-ergodic) estimator of $\mu=\E[X_t]$. \hfill(1 pt)
+\answerpage
+
+% ---------------------------------------------------------------
+\problem{5}
+\textbf{Model identification from a correlogram.} Three time series, each of length $n=100$, produced the sample autocorrelation (ACF) and partial autocorrelation (PACF) functions shown below. The dashed lines mark the $\pm1.96/\sqrt n\approx\pm0.20$ significance band, and the lag-$0$ value (always $1$) is omitted. For each series, name the most plausible model --- \emph{white noise}, MA($q$), AR($p$), or ARMA($p,q$) --- give the order(s) $p$ and/or $q$, and \emph{justify} using the cut-off~/~tail-off identification rules.
+
+\medskip
+\textbf{(a)}\hfill(2 pts)\\[2pt]
+\begin{center}\acfpacf{1/0.71,2/0.50,3/0.36,4/0.24,5/0.18,6/0.11,7/0.08,8/0.05}{1/0.71,2/0.06,3/-0.04,4/0.05,5/-0.03,6/0.03,7/-0.04,8/0.02}\end{center}
+
+\medskip
+\textbf{(b)}\hfill(2 pts)\\[2pt]
+\begin{center}\acfpacf{1/0.58,2/-0.42,3/0.05,4/-0.06,5/0.03,6/-0.04,7/0.02,8/-0.03}{1/0.58,2/-0.55,3/0.42,4/-0.30,5/0.18,6/-0.12,7/0.07,8/-0.04}\end{center}
+
+\medskip
+\textbf{(c)}\hfill(1 pt)\\[2pt]
+\begin{center}\acfpacf{1/0.07,2/-0.10,3/0.05,4/0.08,5/-0.06,6/0.03,7/-0.09,8/0.04}{1/0.07,2/-0.09,3/0.06,4/0.07,5/-0.05,6/0.02,7/-0.08,8/0.05}\end{center}
 \answerpage
 
 \end{document}

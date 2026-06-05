@@ -1,5 +1,23 @@
 \documentclass[11pt]{article}
 \input{examstyle}
+\usepackage{tikz}
+% --- mini ACF/PACF stem (lollipop) plot: #1 = significance band, #2 = "lag/val,..." (lags 1..8) ---
+\newcommand{\stemplot}[2]{%
+\begin{tikzpicture}[x=0.52cm,y=1.25cm,baseline=-0.45cm]
+  \fill[black!7] (0.4,-#1) rectangle (8.7,#1);
+  \draw[gray,dashed] (0.4,#1)--(8.7,#1);
+  \draw[gray,dashed] (0.4,-#1)--(8.7,-#1);
+  \draw[->] (0,0)--(9.3,0) node[right,font=\tiny]{lag};
+  \draw[->] (0,-0.6)--(0,1.05);
+  \foreach \l/\v in {#2}{\draw[line width=1.3pt] (\l,0)--(\l,\v); \fill (\l,\v) circle(1.6pt);}
+  \foreach \k in {2,4,6,8}{\node[font=\tiny,below=1.5pt] at (\k,0) {\k};}
+\end{tikzpicture}}
+% --- one (ACF,PACF) pair, captioned ---
+\newcommand{\acfpacf}[2]{%
+\begin{tabular}{@{}cc@{}}
+{\scriptsize\itshape sample ACF} & {\scriptsize\itshape sample PACF}\\[-2pt]
+\stemplot{0.196}{#1} & \stemplot{0.196}{#2}\\
+\end{tabular}}
 \begin{document}
 
 \solheader{Week 2: ARMA Models and the PACF}
@@ -207,5 +225,22 @@ Bounding the weights by $0\le 1-\abs\tau/n\le1$,
 \Var(\bar X_n)\le\frac1n\sum_{\tau=-(n-1)}^{\,n-1}\abs{\acvs_\tau}\le\frac1n\sum_{\tau\in\Ints}\abs{\acvs_\tau}=\frac{C}{n}\xrightarrow[n\to\infty]{}0,
 \]
 with $C=\sum_\tau\abs{\acvs_\tau}<\infty$ by hypothesis. Since $\E[\bar X_n]=\mu$, this means $\bar X_n\to\mu$ in mean square, i.e.\ $\bar X_n$ is a consistent (mean-ergodic) estimator of $\mu$.
+
+% ---------------------------------------------------------------
+\solproblem{5}
+\statementstart
+\textbf{Model identification from a correlogram.} Three time series, each of length $n=100$, produced the sample ACF and PACF shown (below, with each part). The dashed lines mark the $\pm1.96/\sqrt n\approx\pm0.20$ band and the lag-$0$ value (always $1$) is omitted. For each series, name the most plausible model (white noise, MA($q$), AR($p$), ARMA($p,q$)), give the order(s), and justify with the cut-off / tail-off rules.
+\statementend
+
+\textbf{Identification rule (the punchline of the week).} \emph{ACF cuts off after lag $q$, PACF tails off} $\Rightarrow$ MA($q$); \emph{PACF cuts off after lag $p$, ACF tails off} $\Rightarrow$ AR($p$); \emph{both tail off} $\Rightarrow$ ARMA($p,q$); \emph{neither is significant} $\Rightarrow$ white noise. Here ``cuts off'' means the values drop inside the $\pm1.96/\sqrt n$ band and stay there, while ``tails off'' means a gradual (geometric, possibly sign-alternating) decay.
+
+\textbf{(a)} \begin{center}\acfpacf{1/0.71,2/0.50,3/0.36,4/0.24,5/0.18,6/0.11,7/0.08,8/0.05}{1/0.71,2/0.06,3/-0.04,4/0.05,5/-0.03,6/0.03,7/-0.04,8/0.02}\end{center}
+The PACF is significant only at lag $1$ ($\approx0.71$) and lies inside the band for every lag $\ge2$ --- it \emph{cuts off after lag $1$} --- whereas the ACF decays geometrically ($0.71,0.50,0.36,0.24,\dots\approx 0.71^{\,\tau}$) and only \emph{tails off}. PACF cut-off at lag $1$ $+$ ACF tail-off $\Rightarrow$ \textbf{AR(1)}, with $\phi\approx\acf_1\approx0.7>0$ (monotone positive decay).
+
+\textbf{(b)} \begin{center}\acfpacf{1/0.58,2/-0.42,3/0.05,4/-0.06,5/0.03,6/-0.04,7/0.02,8/-0.03}{1/0.58,2/-0.55,3/0.42,4/-0.30,5/0.18,6/-0.12,7/0.07,8/-0.04}\end{center}
+The ACF is significant only at lags $1$ and $2$ ($0.58,\,-0.42$) and is inside the band for every lag $\ge3$ --- it \emph{cuts off after lag $2$} --- whereas the PACF decays with alternating sign and only tails off. ACF cut-off at lag $2$ $+$ PACF tail-off $\Rightarrow$ \textbf{MA(2)}.
+
+\textbf{(c)} \begin{center}\acfpacf{1/0.07,2/-0.10,3/0.05,4/0.08,5/-0.06,6/0.03,7/-0.09,8/0.04}{1/0.07,2/-0.09,3/0.06,4/0.07,5/-0.05,6/0.02,7/-0.08,8/0.05}\end{center}
+\emph{Every} ACF and PACF value lies inside the $\pm0.20$ band, so nothing is statistically significant. There is no linear dependence to model: the series is consistent with \textbf{white noise}. Fitting any AR or MA structure here would be over-fitting pure noise. (Had \emph{both} functions instead tailed off without either cutting off, the diagnosis would have been a mixed \textbf{ARMA($p,q$)}.)
 
 \end{document}
