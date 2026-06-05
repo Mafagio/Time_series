@@ -257,6 +257,10 @@
     backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.4);}
   .pdffs-close:hover{background:var(--red);border-color:var(--red);}
   .pdffs.show-close .pdffs-close{opacity:1;}
+  .pdffs-chrono{position:fixed;top:16px;left:18px;z-index:10000;display:flex;align-items:center;gap:7px;
+    padding:9px 15px;border-radius:999px;background:rgba(24,33,30,.82);color:#fff;border:1px solid rgba(255,255,255,.28);
+    font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:.04em;backdrop-filter:blur(4px);box-shadow:0 4px 14px rgba(0,0,0,.35);}
+  .pdffs-chrono span{font-variant-numeric:tabular-nums;}
   /* ---- barre latérale repliable (desktop) ---- */
   #deskNavOpen{display:none;position:fixed;top:14px;left:14px;z-index:60;width:42px;height:42px;border-radius:11px;
     border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:18px;
@@ -366,6 +370,7 @@
 </div>
 <button id="deskNavOpen" onclick="toggleDeskNav()" title="Afficher le menu" aria-label="Afficher le menu">☰</button>
 <div id="pdfFs" class="pdffs" style="display:none" onmousemove="fsShowClose()">
+  <div id="pdfFsChrono" class="pdffs-chrono" style="display:none">⏱ <span>00:00</span></div>
   <button id="pdfFsClose" class="pdffs-close" onclick="closeFs()" title="Fermer (Échap)" aria-label="Fermer">✕</button>
   <div id="pdffsdoc" class="pdffs-doc"></div>
 </div>
@@ -1581,8 +1586,10 @@ function showSol(src){ const w=$("solWrap"); if(w) w.style.display='block'; cons
 /* --- plein écran « dans le site » (overlay PDF.js, croix qui apparaît à la souris, Échap pour sortir) --- */
 let fsTimer=null;
 function openFs(url){ const fs=$("pdfFs"); if(!fs) return; fs.style.display='block'; document.body.style.overflow='hidden';
-  const doc=$("pdffsdoc"); if(doc) doc.dataset.loaded=''; renderPdfInto('pdffsdoc', url, 1100); fsShowClose(); }
-function closeFs(){ const fs=$("pdfFs"); if(!fs) return; fs.style.display='none'; document.body.style.overflow=''; const doc=$("pdffsdoc"); if(doc){ doc.innerHTML=''; doc.dataset.loaded=''; } }
+  const doc=$("pdffsdoc"); if(doc) doc.dataset.loaded=''; renderPdfInto('pdffsdoc', url, 1100);
+  const fc=$("pdfFsChrono"); if(fc){ if(chronoTimer){ const src=$("chrono"); fc.querySelector('span').textContent = src ? src.querySelector('span').textContent : '00:00'; fc.style.display='flex'; } else { fc.style.display='none'; } }
+  fsShowClose(); }
+function closeFs(){ const fs=$("pdfFs"); if(!fs) return; fs.style.display='none'; document.body.style.overflow=''; const doc=$("pdffsdoc"); if(doc){ doc.innerHTML=''; doc.dataset.loaded=''; } const fc=$("pdfFsChrono"); if(fc) fc.style.display='none'; }
 function fsShowClose(){ const fs=$("pdfFs"); if(!fs) return; fs.classList.add('show-close'); clearTimeout(fsTimer); fsTimer=setTimeout(()=>{ const x=$("pdfFs"); if(x) x.classList.remove('show-close'); }, 2200); }
 
 /* --- repli de la barre latérale (desktop), mémorisé --- */
@@ -1852,7 +1859,9 @@ function startChrono(){
   chronoStart=Date.now();
   const tick=()=>{ const s=Math.floor((Date.now()-chronoStart)/1000);
     const el=$("chrono"); if(!el) {clearChrono();return;}
-    el.querySelector('span').textContent = String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+    const txt = String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+    el.querySelector('span').textContent = txt;
+    const fc=$("pdfFsChrono"); if(fc) fc.querySelector('span').textContent = txt; };
   tick(); chronoTimer=setInterval(tick,1000);
 }
 function renderExam(){
